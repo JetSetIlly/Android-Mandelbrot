@@ -1,13 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "jetsetilly.mandelbrot"
-        minSdkVersion 21
-        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
@@ -15,6 +12,22 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        flavor1 {
+            compileSdkVersion 19
+            versionName "1.0-kitkat"
+            minSdkVersion 19
+            targetSdkVersion 19
+        }
+
+        flavor2 {
+            compileSdkVersion 21
+            versionName "1.0-icecream"
+            minSdkVersion 21
+            targetSdkVersion 21
         }
     }
 }

@@ -140,6 +140,7 @@ containing a value of this type.
         public static final int ic_progress_goldstar=0x7f020005;
         public static final int ic_settings=0x7f020006;
         public static final int ic_settings_light=0x7f020007;
+        public static final int progress_background=0x7f020008;
     }
     public static final class id {
         public static final int action_palette=0x7f0a000c;

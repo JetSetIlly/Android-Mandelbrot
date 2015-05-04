@@ -21,6 +21,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     private final long DOUBLE_TOUCH_TIME = 500000000;
     private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
 
+    private final double ZOOM_SATURATION = 0.6; // 0 = gray scale, 1 = identity
+
     // force the render routine into a different mode -- useful when changing settings
     static public enum RenderMode {NORMAL, FORCE_REDRAW, NO_CACHE};
 
@@ -73,13 +75,16 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         pnt = new Paint();
 
         zoom_color_matrix = new ColorMatrix();
-        zoom_color_matrix.setSaturation((float) 0.5); // 0 = gray scale, 1 = identity
+        zoom_color_matrix.setSaturation((float) ZOOM_SATURATION);
         zoom_color_filter = new ColorMatrixColorFilter(zoom_color_matrix);
 
         this.setOnTouchListener(this);
     }
 
     public void completeSetup() {
+        // set default palette
+        palette_settings.setPalette();
+
         mandelbrot = new Mandelbrot(this);
         startRender();
     }
@@ -87,9 +92,15 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
 
 
     private void doDraw_iterationZero(float dx, float dy) {
-        int zero_color = zero_color_random_generator.nextInt(palette_settings.zero_palette.length);
+        int zero_color;
 
-        zero_color = palette_settings.zero_palette[zero_color];
+        if (palette_settings.white_noise_zero_color) {
+            zero_color = zero_color_random_generator.nextInt(palette_settings.zero_palette.length);
+            zero_color = palette_settings.zero_palette[zero_color];
+        } else {
+            zero_color = palette_settings.zero_color;
+        }
+
         pnt.setColor(zero_color);
         canvas.drawPoint(dx, dy, pnt);
     }
@@ -170,10 +181,18 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
             }
 
             canvas = new Canvas(new_bm);
+
+            // fill colour to first colour in current palette
+            canvas.drawColor(palette_settings.palette[0]);
+
+            // move bitmap
             canvas.drawBitmap(display_bm, -offset_x, -offset_y, pnt);
             scrollTo(0, 0); // reset scroll of image view
         } else {
             canvas = new Canvas(new_bm);
+
+            // fill colour to first colour in current palette
+            canvas.drawColor(palette_settings.palette[0]);
         }
 
         // lose reference to old bitmap(s)
@@ -197,7 +216,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         Rect blit = new Rect(0, 0, getWidth(), getHeight());
         Bitmap tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new Canvas(tmp_bm);
-
 
         pnt.setColorFilter(zoom_color_filter);
         canvas.drawBitmap(display_bm, blit, blit, pnt);

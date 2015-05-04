@@ -14,20 +14,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         class="jetsetilly.mandelbrot.RenderCanvas"
-        android:id="@+id/fractalView" />
+        android:id="@+id/fractalView"
+        android:cropToPadding="false" />
 
     <view
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         class="jetsetilly.mandelbrot.ProgressView"
-        android:src="@drawable/ic_progress_goldstar"
+        android:src="@mipmap/ic_progress"
         android:id="@+id/progressView"
-        android:layout_gravity="right|bottom"
+        android:layout_gravity="end|bottom"
         android:visibility="invisible"
         android:elevation="10dp"
         android:background="@drawable/progress_background"
         android:layout_margin="20dp"
-        android:padding="10dp" />
+        android:padding="7dp"
+        android:cropToPadding="false"
+        android:clickable="false"
+        android:baselineAlignBottom="false"
+        android:adjustViewBounds="false" />
 </FrameLayout>
 
 

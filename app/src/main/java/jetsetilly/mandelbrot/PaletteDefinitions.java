@@ -2,13 +2,16 @@ package jetsetilly.mandelbrot;
 
 public class PaletteDefinitions {
     /* palette definitions */
-    private int DEF_PALETTE_ID = 0;
+    public int DEF_PALETTE_ID = 0;
 
     public String[] palette_titles = {
             "Original", "Original (redux)", "Eat Your Greens", "Purple Pencils",
             "Spearmint Blue", "Jennifer Juniper"
     };
 
+    public int zero_color = 0xFF000000;
+
+    public boolean white_noise_zero_color = false;
     public int[] zero_palette = {0xFF000000, 0xFF111111, 0xFF222222, 0xFF333333};
 
     public int[][] palettes = {
@@ -84,19 +87,23 @@ public class PaletteDefinitions {
     };
     /* end of palette definitions */
 
-    private int palette_id = DEF_PALETTE_ID;
-    public int[] palette = palettes[palette_id]; // this is what RenderCanvas uses
+    private int palette_id;
+    public int[] palette; // this is what RenderCanvas uses
 
 
     /* helper functions */
+    public void setPalette() {
+        setPalette(DEF_PALETTE_ID);
+    }
+
     public void setPalette(int id) {
-        if (id != palette_id) {
-            palette_id = id;
-            palette = palettes[palette_id];
-        }
+        palette_id = id;
+        palette = palettes[palette_id];
+
+        // set render canvas background
+        MainActivity.render_canvas.setBackgroundColor(palette[0]);
     }
     /* end of helper functions */
-
 
     /* singleton pattern */
     private static PaletteDefinitions singleton = new PaletteDefinitions();

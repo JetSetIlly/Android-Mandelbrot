@@ -12,7 +12,7 @@ import android.widget.ImageView;
 // TODO: it seems wasteful to setup the animations each time but setting them up once doesn't seem to work. there must be a way of recycling the animation
 
 public class ProgressView extends ImageView {
-    private int spin_frame_count = 24;
+    private int spin_frame_count = 360;
     private int spin_duration = 1000;
     private int visibility_duration = 300;
 

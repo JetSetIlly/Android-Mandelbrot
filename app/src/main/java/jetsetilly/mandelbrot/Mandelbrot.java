@@ -126,8 +126,6 @@ public class Mandelbrot {
     public void startRender(int offset_x, int offset_y, int zoom, boolean force_redraw, boolean no_cache) {
         stopRender();
 
-        MainActivity.progress.setBusy();
-
         // we do this every time in case settings have changed
         correctMandelbrotRange();
 
@@ -299,6 +297,7 @@ public class Mandelbrot {
 
         @Override
         protected void onProgressUpdate(Void... v) {
+            MainActivity.progress.setBusy();
             context.update();
         }
 

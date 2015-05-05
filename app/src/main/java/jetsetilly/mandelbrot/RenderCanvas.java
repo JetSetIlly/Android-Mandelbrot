@@ -14,14 +14,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.util.Random;
-
 public class RenderCanvas extends ImageView implements View.OnTouchListener, MandelbrotCanvas  {
     private final String DBG_TAG = "render canvas";
     private final long DOUBLE_TOUCH_TIME = 500000000;
     private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
 
-    private final double ZOOM_SATURATION = 0.0; // 0 = gray scale, 1 = identity
+    private final double ZOOM_SATURATION = 0.65; // 0 = gray scale, 1 = identity
 
     private MainActivity context;
 
@@ -31,7 +29,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     private Bitmap render_bm;       // display and render bitmaps are the same until we start the zoom process
     private Canvas canvas;
     private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
-    private Random zero_color_random_generator = new Random();
 
     private long touch_time = 0;
     private int touch_id = -1;
@@ -125,7 +122,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
             if (palette_cnt[palette_entry] > palette_cnt[palette_cnt_highest]) {
                 palette_cnt_highest = palette_entry;
             }
-
         }
     }
 
@@ -197,7 +193,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
             }
 
             // move bitmap
-            canvas.drawBitmap(display_bm, -offset_x, -offset_y, pnt);
+            canvas.drawBitmap(display_bm, -offset_x, -offset_y, null);
             scrollTo(0, 0); // reset scroll of image view
         }
 
@@ -227,6 +223,9 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         Rect blit = new Rect(0, 0, getWidth(), getHeight());
         Bitmap tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         tmp_canvas = new Canvas(tmp_bm);
+
+        // we're resetting because some palettes don't like it if we don't. no, this doesn't make sense to me either
+        pnt.reset();
 
         pnt.setColorFilter(zoom_color_filter);
         tmp_canvas.drawBitmap(display_bm, blit, blit, pnt);
@@ -261,7 +260,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         /* do offset */
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new Canvas(tmp_bm);
-        canvas.drawBitmap(render_bm, (int) (-offset_x * zoom_factor * 2), (int) (-offset_y * zoom_factor * 2), pnt);
+        canvas.drawBitmap(render_bm, (int) (-offset_x * zoom_factor * 2), (int) (-offset_y * zoom_factor * 2), null);
 
         /* do zoom */
         new_left = zoom_factor * getWidth();
@@ -275,7 +274,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int)new_top, (int)new_right, (int)new_bottom);
 
-        canvas.drawBitmap(tmp_bm, blit_from, blit_to, pnt);
+        canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
 
         /* attach bitmap to */
         setImageBitmap(display_bm);

@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
             public void run() {
-                render_canvas.completeSetup();
+                render_canvas.kickStartCanvas();
             }
         });
     }

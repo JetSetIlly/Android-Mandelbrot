@@ -16,16 +16,18 @@ android {
     }
 
     productFlavors {
+        /*
         flavor1 {
             compileSdkVersion 19
             versionName "1.0-kitkat"
             minSdkVersion 19
             targetSdkVersion 19
         }
+        */
 
         flavor2 {
             compileSdkVersion 21
-            versionName "1.0-icecream"
+            versionName "1.0-lollipop"
             minSdkVersion 21
             targetSdkVersion 21
         }

@@ -20,10 +20,15 @@ public class Mandelbrot {
     private double fractal_ratio;
 
     /* ui related stuff */
+    private final int PASSES_REDRAW = 1;
+    private final int PASSES_NEWDRAW = 4;
+    private final int UPDATE_REDRAW = 200;
+    private final int UPDATE_NEWDRAW = 1;
+
     private enum RenderMode {TOP_DOWN, CENTRE}
     private RenderMode render_mode;
-    public int num_passes = 4; // in lines
-    public int canvas_update_frequency = 1; // in lines
+    public int num_passes = PASSES_NEWDRAW; // in lines
+    public int canvas_update_frequency = UPDATE_NEWDRAW; // in lines
 
     /* render cache useful when moving the fractal around without zooming*/
     private MandelbrotCache cache;
@@ -134,12 +139,15 @@ public class Mandelbrot {
         queue.force_redraw = render_completed && force_redraw;
 
         if (queue.force_redraw) {
-            // top down rendering a touch more efficient than other modes
+            // quicker to draw from the top if data has already been calculated
             render_mode = RenderMode.TOP_DOWN;
+            num_passes = PASSES_REDRAW;
+            canvas_update_frequency = UPDATE_REDRAW;
         } else {
-            // centre rendering is less efficient than top down but more
-            // visually pleasing
+            // more visually pleasing to draw from the centre
             render_mode = RenderMode.CENTRE;
+            num_passes = PASSES_NEWDRAW;
+            canvas_update_frequency = UPDATE_NEWDRAW;
         }
 
         scrollBy(offset_x, offset_y);
@@ -154,7 +162,6 @@ public class Mandelbrot {
         } else {
             cache.setOffset(offset_x, offset_y);
         }
-
 
         calculatePixelScale();
         Log.d(DBG_TAG, this.toString());
@@ -219,6 +226,8 @@ public class Mandelbrot {
             if (!queue.force_redraw) {
                 if (((pass + 1) * cy) % canvas_update_frequency == 0)
                     publishProgress();
+            } else {
+                publishProgress();
             }
         }
 
@@ -306,6 +315,7 @@ public class Mandelbrot {
             context.update();
             render_completed = true;
             MainActivity.progress.unsetBusy();
+            MainActivity.render_canvas.completeRender();
         }
     }
 

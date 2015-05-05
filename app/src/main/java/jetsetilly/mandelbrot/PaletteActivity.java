@@ -31,7 +31,7 @@ public class PaletteActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 palette_settings.setPalette(position);
-                MainActivity.render_canvas.startRender(RenderCanvas.RenderMode.FORCE_REDRAW);
+                MainActivity.render_canvas.startRender(RenderCanvas.RenderMode.CHANGE_PALETTE);
             }
         });
     }

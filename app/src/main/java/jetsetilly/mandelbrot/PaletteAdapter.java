@@ -62,7 +62,7 @@ public class PaletteAdapter implements ListAdapter {
         for (int i = 0; i < num_colours; ++ i) {
             lft = (float) i * stripe_width;
 
-            pnt.setColor(palette_settings.palettes[position][i+1]); // skip first colour which is always black
+            pnt.setColor(palette_settings.palettes[position][i]);
             cnv.drawRect(lft, 0, lft + stripe_width, iv.getHeight(), pnt);
         }
 

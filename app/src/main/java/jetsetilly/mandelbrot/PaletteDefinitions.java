@@ -64,7 +64,7 @@ public class PaletteDefinitions {
             },
 
             {
-                    0xFF007CAC, 0xFFFFFFFF,
+                    0xFF007CAC, 0xFFFFEEFF,
                     0xFFFFFFFF, 0xFFD3DCE1, 0xFF00C0FF,
                     0xFF020202, 0xFF3B3B3B, 0xFF7B7B7B,
                     0xFFCECECE, 0xFFFFFFFF, 0xFF232526,

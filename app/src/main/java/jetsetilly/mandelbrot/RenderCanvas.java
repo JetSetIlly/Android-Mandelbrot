@@ -24,7 +24,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     private final double ZOOM_SATURATION = 0.6; // 0 = gray scale, 1 = identity
 
     // force the render routine into a different mode -- useful when changing settings
-    static public enum RenderMode {NORMAL, FORCE_REDRAW, NO_CACHE};
+    static public enum RenderMode {NORMAL, CHANGE_PALETTE, CHANGE_SETTINGS};
 
     private MainActivity context;
 
@@ -50,11 +50,15 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but
     public int offset_y; // I think keeping our own books makes the intention clearer
 
+    /* filter to apply to zoomed images */
     ColorMatrixColorFilter zoom_color_filter;
     ColorMatrix zoom_color_matrix;
 
+    /* count the frequency at which each colour is used
+     used to change the background colour of the ImageView */
     private int palette_cnt[] = new int[0];
     private int palette_cnt_highest = 0;
+
 
     /* initialisation */
     public RenderCanvas(Context context) {
@@ -83,7 +87,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         this.setOnTouchListener(this);
     }
 
-    public void completeSetup() {
+    public void kickStartCanvas() {
         // set default palette
         palette_settings.setPalette();
 
@@ -94,21 +98,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         startRender();
     }
     /* end of initialisation */
-
-
-    private void doDraw_iterationZero(float dx, float dy) {
-        int zero_color;
-
-        if (palette_settings.white_noise_zero_color) {
-            zero_color = zero_color_random_generator.nextInt(palette_settings.zero_palette.length);
-            zero_color = palette_settings.zero_palette[zero_color];
-        } else {
-            zero_color = palette_settings.zero_color;
-        }
-
-        pnt.setColor(zero_color);
-        canvas.drawPoint(dx, dy, pnt);
-    }
 
     /* MandelbrotCanvas implementation */
     public void doDraw(float dx, float dy, int iteration)
@@ -156,7 +145,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     /* end of MandelbrotCanvas implementation */
 
 
-    /* helper/property functions */
+    /* property functions */
     public double getCanvasMidX() {
         return getWidth() / 2;
     }
@@ -166,12 +155,20 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     }
 
     boolean touchSensitivity(float point_a, float point_b) {
-        if (point_a - point_b >= -40 && point_a - point_b <= 40)
+        if (point_a - point_b >= -40 && point_a - point_b <= 40) {
             return true;
+        }
 
         return false;
     }
-    /* end of helper/property functions */
+    /* end of property functions */
+
+    /* render control */
+    public void completeRender() {
+        // change background colour - also done in stopRender() because this function
+        // won't be called if the render is interrupted
+        setBackgroundColor(palette_settings.palette[palette_cnt_highest]);
+    }
 
     public void stopRender() {
         // change background colour - we do it here so that we perform the change
@@ -217,9 +214,15 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         palette_cnt_highest = 0;
 
         // start thread
-        mandelbrot.startRender(offset_x, offset_y, zoom_amount,
-                mode== RenderMode.FORCE_REDRAW,
-                mode== RenderMode.NO_CACHE);
+        if (mode==RenderMode.CHANGE_PALETTE) {
+            mandelbrot.startRender(offset_x, offset_y, zoom_amount, true, false);
+
+        } else if (mode==RenderMode.CHANGE_SETTINGS) {
+            mandelbrot.startRender(offset_x, offset_y, zoom_amount, false, true);
+
+        } else {
+            mandelbrot.startRender(offset_x, offset_y, zoom_amount, false, false);
+        }
 
         // offset and zoom amount is now meaningless
         // although these values are reset when we resume touch events later
@@ -227,6 +230,22 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         offset_x = 0;
         offset_y = 0;
         zoom_amount = 0;
+    }
+    /* end of render control */
+
+    private void doDraw_iterationZero(float dx, float dy) {
+        /* helper function for doDraw() implementations above */
+        int zero_color;
+
+        if (palette_settings.white_noise_zero_color) {
+            zero_color = zero_color_random_generator.nextInt(palette_settings.zero_palette.length);
+            zero_color = palette_settings.zero_palette[zero_color];
+        } else {
+            zero_color = palette_settings.zero_color;
+        }
+
+        pnt.setColor(zero_color);
+        canvas.drawPoint(dx, dy, pnt);
     }
 
     private void fadeDisplayBitmap() {

@@ -9,10 +9,8 @@ public class PaletteDefinitions {
             "Spearmint Blue", "Jennifer Juniper"
     };
 
+    // zero color for all palettes
     public int zero_color = 0xFF000000;
-
-    public boolean white_noise_zero_color = false;
-    public int[] zero_palette = {0xFF000000, 0xFF111111, 0xFF222222, 0xFF333333};
 
     public int[][] palettes = {
             {

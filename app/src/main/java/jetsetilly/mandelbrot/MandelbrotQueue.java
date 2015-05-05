@@ -10,11 +10,8 @@ public class MandelbrotQueue {
     private MandelbrotCanvas context;
     private PointQueue[] queues;
 
-    public boolean force_redraw;
-
     public MandelbrotQueue(MandelbrotCanvas context) {
         this.context = context;
-        this.force_redraw = false;
         resetQueues();
     }
 
@@ -34,10 +31,9 @@ public class MandelbrotQueue {
     }
 
     public void pushDraw(int cx, int cy, int iteration) {
-        if (iteration >= 0 || force_redraw)
-            // take the absolute value of iteration -- this is important in case force_redraw is
-            // true because in some cases iteration will be a negative number
-            queues[Math.abs(iteration) % queues.length].pushDraw(cx, cy);
+        // take the absolute value of iteration -- this is important in case quick_draw is
+        // true because in some cases iteration will be a negative number
+        queues[Math.abs(iteration) % queues.length].pushDraw(cx, cy);
     }
 
     class PointQueue {

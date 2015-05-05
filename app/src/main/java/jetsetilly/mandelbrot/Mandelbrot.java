@@ -1,5 +1,6 @@
 package jetsetilly.mandelbrot;
 
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -19,19 +20,20 @@ public class Mandelbrot {
     private double pixel_scale;
     private double fractal_ratio;
 
+    /* no_render_area is used to define that area of the canvas
+    that do not need to be rendered again because those pixels (hopefully)
+    already appear on the canvas
+     */
+    private Rect no_render_area;
+
     /* ui related stuff */
-    private final int PASSES_REDRAW = 1;
-    private final int PASSES_NEWDRAW = 4;
-    private final int UPDATE_REDRAW = 200;
-    private final int UPDATE_NEWDRAW = 1;
+    private final int DEF_NUM_PASSES = 4;
+    private final int DEF_UPDATE_FREQ = 1;
 
     private enum RenderMode {TOP_DOWN, CENTRE}
     private RenderMode render_mode;
-    public int num_passes = PASSES_NEWDRAW; // in lines
-    public int canvas_update_frequency = UPDATE_NEWDRAW; // in lines
-
-    /* render cache useful when moving the fractal around without zooming*/
-    private MandelbrotCache cache;
+    public int num_passes = DEF_NUM_PASSES; // in lines
+    public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
 
     /* render queue */
     private MandelbrotQueue queue;
@@ -45,7 +47,6 @@ public class Mandelbrot {
         canvas_height = context.getCanvasHeight();
         canvas_ratio = (double) canvas_width / (double) canvas_height;
 
-        cache = new MandelbrotCache(canvas_width, canvas_height);
         queue = new MandelbrotQueue(context);
     }
 
@@ -121,46 +122,39 @@ public class Mandelbrot {
 
         render_thr.cancel(true);
         render_thr = null;
-
-        // commit the changes to the cache otherwise the image and cache will be out of sync
-        if (!render_completed) {
-            cache.resetCache();
-        }
     }
 
-    public void startRender(int offset_x, int offset_y, int zoom, boolean force_redraw, boolean no_cache) {
+    public void startRender(int offset_x, int offset_y, int zoom) {
         stopRender();
+
+        // initialise no_render_area
+        no_render_area = new Rect(0, 0, canvas_width, canvas_height);
 
         // we do this every time in case settings have changed
         correctMandelbrotRange();
 
-        // only allow the force_redraw flag to be obeyed if the last
-        // render event completed
-        queue.force_redraw = render_completed && force_redraw;
-
-        if (queue.force_redraw) {
-            // quicker to draw from the top if data has already been calculated
-            render_mode = RenderMode.TOP_DOWN;
-            num_passes = PASSES_REDRAW;
-            canvas_update_frequency = UPDATE_REDRAW;
-        } else {
-            // more visually pleasing to draw from the centre
-            render_mode = RenderMode.CENTRE;
-            num_passes = PASSES_NEWDRAW;
-            canvas_update_frequency = UPDATE_NEWDRAW;
-        }
+        // make sure render mode etc. is set correctly
+        render_mode = RenderMode.CENTRE;
+        num_passes = DEF_NUM_PASSES;
+        canvas_update_frequency = DEF_UPDATE_FREQ;
 
         scrollBy(offset_x, offset_y);
 
         if (zoom != 0) {
             zoomByPixels(zoom);
-            no_cache = true;
-        }
+        } else if (render_completed) {
+            /* define no_render_area more accurately */
+            if (offset_x < 0) {
+                no_render_area.right = -offset_x;
+            } else if (offset_x > 0) {
+                no_render_area.left = canvas_width - offset_x;
+            }
 
-        if (no_cache) {
-            cache.resetCache();
-        } else {
-            cache.setOffset(offset_x, offset_y);
+            if (offset_y < 0) {
+                no_render_area.top = -offset_y;
+            } else if (offset_y > 0) {
+                no_render_area.bottom = canvas_height - offset_y;
+            }
         }
 
         calculatePixelScale();
@@ -180,7 +174,6 @@ public class Mandelbrot {
          */
 
         final static public String DBG_TAG = "render thread";
-        private int cache_hits = 0;
 
         private int doIterations(double x, double y) {
             double A, B, U, V;
@@ -203,30 +196,8 @@ public class Mandelbrot {
             return 0;
         }
 
-        private int getIterationValue(double x, double y, int cx, int cy) {
-            // returns iteration value as a negative number if it was found in the cache
-            int iteration;
-
-            if (cache.isInCache(cx, cy)) {
-                iteration = cache.readCache(cx, cy);
-                if (iteration != MandelbrotCache.CACHE_UNSET ) {
-                    cache.writeSwap(cx, cy, iteration);
-                    cache_hits ++;
-                    return -iteration;
-                }
-            }
-
-            iteration = doIterations(x, y);
-            cache.writeSwap(cx, cy, iteration);
-
-            return iteration;
-        }
-
         protected void checkUpdate(int pass, int cy) {
-            if (!queue.force_redraw) {
-                if (((pass + 1) * cy) % canvas_update_frequency == 0)
-                    publishProgress();
-            } else {
+            if (((pass + 1) * cy) % canvas_update_frequency == 0) {
                 publishProgress();
             }
         }
@@ -235,25 +206,23 @@ public class Mandelbrot {
         protected Integer doInBackground(Void... v) {
             int cx, cy, cyb;
             double x, y, yb;
-            int iteration;
 
             double start_time = System.nanoTime();
 
             render_completed = false;
 
             queue.resetQueues();
-            cache.resetSwap();
 
             switch (render_mode) {
                 case TOP_DOWN:
+                    /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                     for (int pass = 0; pass < num_passes; ++ pass) {
                         y = mandelbrot_settings.imaginary_lower + (pixel_scale * pass);
                         for (cy = pass; cy < canvas_height; cy += num_passes, y += (pixel_scale * num_passes)) {
 
                             x = mandelbrot_settings.real_left;
                             for (cx = 0; cx < canvas_width; ++ cx, x += pixel_scale) {
-                                iteration = getIterationValue(x, y, cx, cy);
-                                queue.pushDraw(cx, cy, iteration);
+                                queue.pushDraw(cx, cy, doIterations(x, y));
                             }
 
                             // exit early if necessary
@@ -272,17 +241,40 @@ public class Mandelbrot {
                         y = mandelbrot_settings.imaginary_lower + ((half_height + pass) * pixel_scale);
                         yb = mandelbrot_settings.imaginary_lower + ((half_height - num_passes + pass) * pixel_scale);
                         for (cy = pass, cyb = num_passes - pass; cy < half_height; cy += num_passes, cyb += num_passes, y += (pixel_scale * num_passes), yb -= (pixel_scale * num_passes)) {
-                            x = mandelbrot_settings.real_left;
-                            for (cx = 0; cx < canvas_width; ++ cx, x += pixel_scale) {
-                                // bottom half of image
-                                iteration = getIterationValue(x, y, cx, half_height + cy);
-                                queue.pushDraw(cx, half_height + cy, iteration);
+                            int this_line_start;
+                            int this_line_end;
+                            int y_line;
 
-                                // top half of image
-                                if (cyb <= half_height) {
-                                    iteration = getIterationValue(x, yb, cx, half_height - cyb);
-                                    queue.pushDraw(cx, half_height - cyb, iteration);
-                                }
+                            // bottom half of image
+                            y_line = half_height + cy;
+                            x = mandelbrot_settings.real_left;
+                            if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
+                                x += (pixel_scale * no_render_area.left);
+                                this_line_start = no_render_area.left;
+                                this_line_end = no_render_area.right;
+                            } else {
+                                this_line_start = 0;
+                                this_line_end = canvas_width;
+                            }
+
+                            for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
+                                queue.pushDraw(cx, y_line, doIterations(x, y));
+                            }
+
+                            // top half of image
+                            y_line = half_height - cyb;
+                            x = mandelbrot_settings.real_left;
+                            if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
+                                x += (pixel_scale * no_render_area.left);
+                                this_line_start = no_render_area.left;
+                                this_line_end = no_render_area.right;
+                            } else {
+                                this_line_start = 0;
+                                this_line_end = canvas_width;
+                            }
+
+                            for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
+                                queue.pushDraw(cx, y_line, doIterations(x, yb));
                             }
 
                             // exit early if necessary
@@ -296,12 +288,10 @@ public class Mandelbrot {
             }
 
             queue.finaliseDraw();
-            cache.commitSwap();
 
             Log.d(DBG_TAG, "Elapsed time: " + (System.nanoTime() - start_time) + "ms");
-            Log.d(DBG_TAG, "Cache hits: " + cache_hits);
 
-            return cache_hits;
+            return 0;
         }
 
         @Override

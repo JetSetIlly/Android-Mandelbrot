@@ -21,10 +21,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     private final long DOUBLE_TOUCH_TIME = 500000000;
     private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
 
-    private final double ZOOM_SATURATION = 0.6; // 0 = gray scale, 1 = identity
-
-    // force the render routine into a different mode -- useful when changing settings
-    static public enum RenderMode {NORMAL, CHANGE_PALETTE, CHANGE_SETTINGS};
+    private final double ZOOM_SATURATION = 0.0; // 0 = gray scale, 1 = identity
 
     private MainActivity context;
 
@@ -103,7 +100,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public void doDraw(float dx, float dy, int iteration)
     {
         if (iteration == 0 ) {
-            doDraw_iterationZero(dx, dy);
+            pnt.setColor(palette_settings.zero_color);
+            canvas.drawPoint(dx, dy, pnt);
         } else {
             pnt.setColor(palette_settings.palette[iteration % palette_settings.palette.length]);
             canvas.drawPoint(dx, dy, pnt);
@@ -113,8 +111,10 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public void doDraw(float[] points, int points_len, int iteration)
     {
         if (iteration == 0 ) {
-            for (int i = 0; i < points.length; i += 2)
-                doDraw_iterationZero(points[i], points[i+1]);
+            for (int i = 0; i < points.length; i += 2) {
+                pnt.setColor(palette_settings.zero_color);
+                canvas.drawPoint(points[i], points[i+1], pnt);
+            }
         } else {
             int palette_entry = iteration % palette_settings.palette.length;
             pnt.setColor(palette_settings.palette[palette_entry]);
@@ -181,10 +181,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     }
 
     public void startRender() {
-        startRender(RenderMode.NORMAL);
-    }
-
-    public void startRender(RenderMode mode) {
         Bitmap new_bm;
 
         stopRender();
@@ -196,7 +192,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         canvas.drawColor(palette_settings.palette[palette_cnt_highest]);
 
         if (display_bm != null) {
-            if (zoom_amount != 0 || mode != RenderMode.NORMAL) {
+            if (zoom_amount != 0) {
                 fadeDisplayBitmap();
             }
 
@@ -213,16 +209,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         palette_cnt = new int[palette_settings.palette.length];
         palette_cnt_highest = 0;
 
-        // start thread
-        if (mode==RenderMode.CHANGE_PALETTE) {
-            mandelbrot.startRender(offset_x, offset_y, zoom_amount, true, false);
-
-        } else if (mode==RenderMode.CHANGE_SETTINGS) {
-            mandelbrot.startRender(offset_x, offset_y, zoom_amount, false, true);
-
-        } else {
-            mandelbrot.startRender(offset_x, offset_y, zoom_amount, false, false);
-        }
+        // start render thread
+        mandelbrot.startRender(offset_x, offset_y, zoom_amount);
 
         // offset and zoom amount is now meaningless
         // although these values are reset when we resume touch events later
@@ -232,21 +220,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         zoom_amount = 0;
     }
     /* end of render control */
-
-    private void doDraw_iterationZero(float dx, float dy) {
-        /* helper function for doDraw() implementations above */
-        int zero_color;
-
-        if (palette_settings.white_noise_zero_color) {
-            zero_color = zero_color_random_generator.nextInt(palette_settings.zero_palette.length);
-            zero_color = palette_settings.zero_palette[zero_color];
-        } else {
-            zero_color = palette_settings.zero_color;
-        }
-
-        pnt.setColor(zero_color);
-        canvas.drawPoint(dx, dy, pnt);
-    }
 
     private void fadeDisplayBitmap() {
         Canvas tmp_canvas;  // using temporary canvas so we don't clobber the real canvas

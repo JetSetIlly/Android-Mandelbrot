@@ -35,7 +35,7 @@ public class SettingsActivity extends Activity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (dirty_settings) {
-                    MainActivity.render_canvas.startRender(RenderCanvas.RenderMode.CHANGE_SETTINGS);
+                    MainActivity.render_canvas.startRender();
                 }
 
                 finish();

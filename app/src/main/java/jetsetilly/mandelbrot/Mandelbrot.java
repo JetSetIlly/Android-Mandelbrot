@@ -27,6 +27,7 @@ public class Mandelbrot {
     private Rect no_render_area;
 
     /* ui related stuff */
+    private final double PROGRESS_WAIT = 1000000000; // in nanoseconds
     private final int DEF_NUM_PASSES = 4;
     private final int DEF_UPDATE_FREQ = 1;
 
@@ -175,6 +176,8 @@ public class Mandelbrot {
 
         final static public String DBG_TAG = "render thread";
 
+        boolean show_progress;
+
         private int doIterations(double x, double y) {
             double A, B, U, V;
             int iteration;
@@ -209,6 +212,7 @@ public class Mandelbrot {
 
             double start_time = System.nanoTime();
 
+            show_progress = false;
             render_completed = false;
 
             queue.resetQueues();
@@ -282,6 +286,14 @@ public class Mandelbrot {
 
                             // update if necessary
                             checkUpdate(pass, cy);
+
+                            if (!show_progress) {
+                                // only show progress if time elapsed so far is more than PROGRESS WAIT
+                                // AND only if we're less than halfway through the render
+                                if (System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes / 2) {
+                                    show_progress = true;
+                                }
+                            }
                         }
                     }
                     break;
@@ -296,7 +308,9 @@ public class Mandelbrot {
 
         @Override
         protected void onProgressUpdate(Void... v) {
-            MainActivity.progress.setBusy();
+            if (show_progress) {
+                MainActivity.progress.setBusy();
+            }
             context.update();
         }
 

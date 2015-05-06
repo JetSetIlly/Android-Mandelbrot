@@ -29,6 +29,9 @@ public class ProgressView extends ImageView {
     }
 
     public void setBusy() {
+        // quick exit if progress is already visible
+        if (isShown()) return;
+
         final TranslateAnimation visibility_on_anim = new TranslateAnimation(getMeasuredWidth(), 0, getMeasuredHeight(), 0);
         visibility_on_anim.setDuration(visibility_duration);
 
@@ -56,12 +59,13 @@ public class ProgressView extends ImageView {
             }
         });
 
-        if (!isShown()) {
-            startAnimation(visibility_on_anim);
-        }
+        startAnimation(visibility_on_anim);
     }
 
     public void unsetBusy() {
+        // quick exit if progress is not visible
+        if (!isShown()) return;
+
         Animation spinner;
         long delay = 0;
 

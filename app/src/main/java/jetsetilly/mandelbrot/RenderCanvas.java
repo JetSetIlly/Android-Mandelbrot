@@ -245,6 +245,10 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     }
 
     private void zoomBy(int amount) {
+        zoomBy(amount, false);
+    }
+
+    private void zoomBy(int amount, boolean deferred_display) {
         double new_left, new_right, new_top, new_bottom;
         double zoom_factor;
         Bitmap tmp_bm;
@@ -276,8 +280,9 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
 
         canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
 
-        /* attach bitmap to */
-        setImageBitmap(display_bm);
+        if (!deferred_display) {
+            setImageBitmap(display_bm);
+        }
     }
 
     /* event listeners */
@@ -302,7 +307,12 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
 
                     performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
-                    zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT);
+                    // defer displaying of zoomed image - this means that there
+                    // will be a zoomed image pointed to by display_bm but
+                    // which hasn't been "attached" to the ImageView
+                    // later in the startRender() method, this display_bm
+                    // will be scrolled and then displayed.
+                    zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
                 } else {
                     if (context.inActionBar(new_y)) {
                         context.hideActionBar(false);

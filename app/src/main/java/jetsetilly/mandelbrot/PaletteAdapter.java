@@ -54,7 +54,7 @@ public class PaletteAdapter implements ListAdapter {
         Canvas cnv = new Canvas(bm);
         Paint pnt = new Paint();
 
-        int num_colours = Math.min(MAX_COLOURS_TO_PREVIEW, palette_settings.palettes[position].length)-1;
+        int num_colours = Math.min(MAX_COLOURS_TO_PREVIEW, palette_settings.palettes[position].length);
         int stripe_width = Math.max(1, bm.getWidth() / num_colours);
         float lft = 0;
 

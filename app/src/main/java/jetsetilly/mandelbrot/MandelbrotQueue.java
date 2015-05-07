@@ -31,9 +31,14 @@ public class MandelbrotQueue {
     }
 
     public void pushDraw(int cx, int cy, int iteration) {
-        // take the absolute value of iteration -- this is important in case quick_draw is
-        // true because in some cases iteration will be a negative number
-        queues[Math.abs(iteration) % queues.length].pushDraw(cx, cy);
+        if (iteration == 0) {
+            queues[0].pushDraw(cx, cy);
+        } else {
+            // make sure we don't write into queue[0] which is reserved for zero space
+            int i = (iteration % (queues.length-1))+1;
+
+            queues[i].pushDraw(cx, cy);
+        }
     }
 
     class PointQueue {

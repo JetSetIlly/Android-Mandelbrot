@@ -1,19 +1,23 @@
 package jetsetilly.mandelbrot;
 
+import android.content.Context;
+
+import java.util.Random;
+
 public class PaletteDefinitions {
     /* palette definitions */
     public int DEF_PALETTE_ID = 0;
 
     public String[] palette_titles = {
             "Original", "Original (redux)", "Eat Your Greens", "Purple Pencils",
-            "Spearmint Blue", "Jennifer Juniper"
+            "Spearmint Blue", "Jennifer Juniper", "Monochrome"
     };
 
-    // zero color for all palettes
-    public int zero_color = 0xFF000000;
-
+    /* first colour is the color used for zero space. it is not used for any other
+    iteration. see MandelbrotQueue() for details.
+     */
     public int[][] palettes = {
-            {
+            {       0xFF000000,
                     0xFF4E474F, 0xFF8E869D,
                     0xFFFF941D, 0xFFFFEE45, 0xFF66B0E2,
                     0xFF4D006C, 0xFF0057DD, 0xFF13B2DC,
@@ -25,7 +29,7 @@ public class PaletteDefinitions {
                     0xFFFFFF00, 0xFF2F53F3
             },
 
-            {
+            {       0xFF000000,
                     0xFF868182, 0xFFFF950C,
                     0xFFFFFF14, 0xFF13A1FF, 0xFFA2DADA,
                     0xFF9D8876, 0xFFFFEB58, 0xFF00DEFF,
@@ -37,7 +41,7 @@ public class PaletteDefinitions {
                     0xFF5BE7FF, 0xFFF0D08E
             },
 
-            {
+            {       0xFF000000,
                     0xFF254C23, 0xFFA08A7B,
                     0xFF9380FF, 0xFFC2BAFF, 0xFFB299FF,
                     0xFFEEFF00, 0xFFFFFF00, 0xFFFFFF00,
@@ -49,7 +53,7 @@ public class PaletteDefinitions {
                     0xFF00A5FF, 0xFF01F2FF
             },
 
-            {
+            {       0xFF000000,
                     0xFF7A6D66, 0xFFFFA50C,
                     0xFF00FFFF, 0xFFFBF5E0, 0xFFB0CEA0,
                     0xFFA78671, 0xFFFFEE53, 0xFF00CFFF,
@@ -61,7 +65,7 @@ public class PaletteDefinitions {
                     0xFFDEE6ED, 0xFF9EB7D4
             },
 
-            {
+            {       0xFF000000,
                     0xFF007CAC, 0xFFFFEEFF,
                     0xFFFFFFFF, 0xFFD3DCE1, 0xFF00C0FF,
                     0xFF020202, 0xFF3B3B3B, 0xFF7B7B7B,
@@ -73,7 +77,7 @@ public class PaletteDefinitions {
                     0xFFC1C1C1, 0xFFFFFF
             },
 
-            {
+            {       0xFF000000,
                     0xFF3F4642, 0xFF869BA5, 0xFF09A0FF, 0xFFCDCFDE, 0xFF87CEE8,
                     0xFF2D5643, 0xFF56AE51, 0xFF54A1AD, 0xFFF6D2C6, 0xFF8FCAAE,
                     0xFF00005E, 0xFF0018F5, 0xFF00D5E9, 0xFF0075FF, 0xFF00FFFF,
@@ -81,25 +85,57 @@ public class PaletteDefinitions {
                     0xFF2F1A36, 0xFFA9619D, 0xFFE69ED6, 0xFFEED6EF, 0xFFE676A9,
                     0xFFAA5F6A, 0xFFE67596, 0xFFF7F5F6, 0xFFE5CDD2, 0xFFE3B2A9,
                     0xFF724045, 0xFFA95A6F, 0xFFBE6C88, 0xFFB98894, 0xFFD69FAE
-            }
+            },
+
+            {0xFF000000, 0xFFFFFFFF}
     };
     /* end of palette definitions */
 
     private int palette_id;
     public int[] palette; // this is what RenderCanvas uses
 
+    /* count the frequency at which each colour is used
+     used to change the background colour of the RenderCanvas */
+    public int palette_cnt[];
+    public int palette_cnt_highest;
 
-    /* helper functions */
-    public void setPalette() {
+    public PaletteDefinitions() {
+        super();
         setPalette(DEF_PALETTE_ID);
+        resetCount();
     }
 
+    /* helper functions */
     public void setPalette(int id) {
         palette_id = id;
         palette = palettes[palette_id];
+        resetCount();
+    }
 
-        // set render canvas background
-        MainActivity.render_canvas.setBackgroundColor(palette[0]);
+    public void resetCount() {
+        palette_cnt = new int[palette.length];
+        palette_cnt_highest = 0;
+
+        // palette_cnt_highest is used to fill the screen
+        // when starting rendering. set it to a random number to begin with
+        palette_cnt_highest = new Random().nextInt(palette.length-1)+1;
+    }
+
+    public int mostFrequentColor() {
+        return palette[palette_cnt_highest];
+    }
+
+    public void updateCount(int palette_entry)
+    {
+        palette_cnt[palette_entry] ++;
+
+        // we don't want to consider palette[0] for the palette_cnt_highest
+        // it's the zero space color it's not really a color
+        if (palette_entry == 0) return;
+
+        if (palette_cnt[palette_entry] > palette_cnt[palette_cnt_highest]) {
+            palette_cnt_highest = palette_entry;
+        }
     }
     /* end of helper functions */
 

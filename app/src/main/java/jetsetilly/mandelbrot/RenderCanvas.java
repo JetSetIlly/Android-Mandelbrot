@@ -48,12 +48,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     ColorMatrixColorFilter zoom_color_filter;
     ColorMatrix zoom_color_matrix;
 
-    /* count the frequency at which each colour is used
-     used to change the background colour of the ImageView */
-    private int palette_cnt[] = new int[0];
-    private int palette_cnt_highest = 0;
-
-
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
@@ -82,11 +76,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     }
 
     public void kickStartCanvas() {
-        // set default palette
-        palette_settings.setPalette();
-
-        // set background color to first palette entry
-        setBackgroundColor(palette_settings.palette[0]);
+        // set background color
+        setBackgroundColor(palette_settings.mostFrequentColor());
 
         mandelbrot = new Mandelbrot(this);
         startRender();
@@ -96,33 +87,22 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     /* MandelbrotCanvas implementation */
     public void doDraw(float dx, float dy, int iteration)
     {
-        if (iteration == 0 ) {
-            pnt.setColor(palette_settings.zero_color);
-            canvas.drawPoint(dx, dy, pnt);
-        } else {
-            pnt.setColor(palette_settings.palette[iteration % palette_settings.palette.length]);
-            canvas.drawPoint(dx, dy, pnt);
-        }
+        int palette_entry = iteration % palette_settings.palette.length;
+
+        pnt.setColor(palette_settings.palette[palette_entry]);
+        canvas.drawPoint(dx, dy, pnt);
+
+        palette_settings.updateCount(palette_entry);
     }
 
     public void doDraw(float[] points, int points_len, int iteration)
     {
-        if (iteration == 0 ) {
-            for (int i = 0; i < points.length; i += 2) {
-                pnt.setColor(palette_settings.zero_color);
-                canvas.drawPoint(points[i], points[i+1], pnt);
-            }
-        } else {
-            int palette_entry = iteration % palette_settings.palette.length;
-            pnt.setColor(palette_settings.palette[palette_entry]);
-            canvas.drawPoints(points, 0, points_len, pnt);
+        int palette_entry = iteration % palette_settings.palette.length;
 
-            // update frequency count
-            palette_cnt[palette_entry] ++;
-            if (palette_cnt[palette_entry] > palette_cnt[palette_cnt_highest]) {
-                palette_cnt_highest = palette_entry;
-            }
-        }
+        pnt.setColor(palette_settings.palette[palette_entry]);
+        canvas.drawPoints(points, 0, points_len, pnt);
+
+        palette_settings.updateCount(palette_entry);
     }
 
     public void update() {
@@ -163,7 +143,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public void completeRender() {
         // change background colour - also done in stopRender() because this function
         // won't be called if the render is interrupted
-        setBackgroundColor(palette_settings.palette[palette_cnt_highest]);
+        setBackgroundColor(palette_settings.mostFrequentColor());
     }
 
     public void stopRender() {
@@ -171,7 +151,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         // it in all instances. when the render is interrupted by a touch event
         // and when startRender is called (startRender() calls stopRender() to make sure
         // there is nothing currently going on).
-        setBackgroundColor(palette_settings.palette[palette_cnt_highest]);
+        setBackgroundColor(palette_settings.mostFrequentColor());
 
         mandelbrot.stopRender();
     }
@@ -185,7 +165,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         canvas = new Canvas(new_bm);
 
         // fill colour to first colour in current palette
-        canvas.drawColor(palette_settings.palette[palette_cnt_highest]);
+        canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
             if (zoom_amount != 0) {
@@ -201,9 +181,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         display_bm = render_bm = new_bm;
         setImageBitmap(display_bm);
 
-        // reset palette_cnt variables
-        palette_cnt = new int[palette_settings.palette.length];
-        palette_cnt_highest = 0;
+        // reset palette count
+        palette_settings.resetCount();
 
         // start render thread
         mandelbrot.startRender(offset_x, offset_y, zoom_amount);

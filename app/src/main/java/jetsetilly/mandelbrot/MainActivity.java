@@ -17,11 +17,9 @@ public class MainActivity extends Activity {
     private ActionBar action_bar;
 
     // declaring this as static so that it is globally accessible
-    // if this seems strange then take a look at this:
+    // if this seems strange then take a look at this (straight from the horses mouth):
     //
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
-    //
-    // straight from the horses mouth
     static public RenderCanvas render_canvas;
     static public ProgressView progress;
 

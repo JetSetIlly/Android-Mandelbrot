@@ -16,5 +16,11 @@
         android:icon="@drawable/ic_settings_light"
         android:showAsAction="ifRoom"
     />
+
+    <item
+        android:id="@+id/action_save"
+        android:title="@string/action_save"
+        android:showAsAction="never"
+    />
 </menu>
 

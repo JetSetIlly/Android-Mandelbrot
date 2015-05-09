@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -84,6 +85,15 @@ public class MainActivity extends Activity {
             case R.id.action_settings:
                 Intent settings_intent = new Intent(this, SettingsActivity.class);
                 startActivity(settings_intent);
+                return true;
+
+            case R.id.action_save:
+                if (render_canvas.saveImage()) {
+                    Toast.makeText(this, R.string.action_save_success, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
+                }
+
                 return true;
         }
 

@@ -7,12 +7,20 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class RenderCanvas extends ImageView implements View.OnTouchListener, MandelbrotCanvas  {
     private final String DBG_TAG = "render canvas";
@@ -120,6 +128,35 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
 
+    public boolean saveImage() {
+        FileOutputStream f;
+
+        // TODO: saving image to "Pictures" but it's not showing up in gallery - investigate why
+
+        try {
+            f = new FileOutputStream(
+                    String.format("%s/%s/%s_%s.png",
+                            Environment.getExternalStorageDirectory().getAbsolutePath(),
+                            "Pictures",
+                            context.getString(R.string.app_name),
+                            new SimpleDateFormat("ssmmhhddmmyyyy", Locale.ENGLISH).format(Calendar.getInstance().getTime()))
+            );
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        display_bm.compress(Bitmap.CompressFormat.PNG, 100, f);
+
+        try {
+            f.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
 
     /* property functions */
     public double getCanvasMidX() {

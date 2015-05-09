@@ -9,7 +9,7 @@ public class PaletteDefinitions {
     public int DEF_PALETTE_ID = 0;
 
     public String[] palette_titles = {
-            "Original", "Original (redux)", "Eat Your Greens", "Purple Pencils",
+            "Original", "Original (variation)", "Eat Your Greens", "Purple Pencils",
             "Spearmint Blue", "Jennifer Juniper", "Monochrome"
     };
 
@@ -87,17 +87,17 @@ public class PaletteDefinitions {
                     0xFF724045, 0xFFA95A6F, 0xFFBE6C88, 0xFFB98894, 0xFFD69FAE
             },
 
-            {0xFF000000, 0xFFFFFFFF}
+            {0xFF000000, 0xFFFFFFFF, 0xFFDDDDDD}
     };
     /* end of palette definitions */
 
-    private int palette_id;
+    public int palette_id;
     public int[] palette; // this is what RenderCanvas uses
 
     /* count the frequency at which each colour is used
      used to change the background colour of the RenderCanvas */
-    public int palette_cnt[];
-    public int palette_cnt_highest;
+    private int palette_cnt[];
+    private int palette_cnt_highest;
 
     public PaletteDefinitions() {
         super();
@@ -114,11 +114,18 @@ public class PaletteDefinitions {
 
     public void resetCount() {
         palette_cnt = new int[palette.length];
-        palette_cnt_highest = 0;
 
         // palette_cnt_highest is used to fill the screen
         // when starting rendering. set it to a random number to begin with
-        palette_cnt_highest = new Random().nextInt(palette.length-1)+1;
+        palette_cnt_highest = 1; // new Random().nextInt(palette.length-1)+1;
+    }
+
+    public int numColors() {
+        return numColors(palette_id);
+    }
+
+    public int numColors(int id) {
+        return palettes[id].length;
     }
 
     public int mostFrequentColor() {

@@ -5,7 +5,7 @@ import android.util.Log;
 public class MandelbrotQueue {
     final static public String DBG_TAG = "mandelbrot queue";
 
-    private final int BUFFER_SIZE = 2048; // this should be an even number
+    private final int BUFFER_SIZE = 4096; // this should be an even number
 
     private MandelbrotCanvas context;
     private PointQueue[] queues;

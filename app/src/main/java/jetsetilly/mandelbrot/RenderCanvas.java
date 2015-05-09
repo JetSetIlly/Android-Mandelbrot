@@ -117,7 +117,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         return getHeight();
     }
 
-    public int getPaletteSize() { return palette_settings.palette.length; }
+    public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
 
 

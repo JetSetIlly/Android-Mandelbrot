@@ -13,6 +13,10 @@
         android:id="@+id/palette_listview"
         android:layout_gravity="center|top"
         android:choiceMode="singleChoice"
-        android:scrollingCache="false"
-        android:smoothScrollbar="true" />
+        android:scrollingCache="true"
+        android:smoothScrollbar="true"
+        android:clickable="true"
+        android:divider="@android:drawable/divider_horizontal_bright"
+        android:dividerHeight="@dimen/activity_horizontal_margin"
+        android:drawSelectorOnTop="false" />
 </FrameLayout>

@@ -10,7 +10,7 @@ public class PaletteDefinitions {
 
     public String[] palette_titles = {
             "Original", "Original (variation)", "Eat Your Greens", "Purple Pencils",
-            "Spearmint Blue", "Jennifer Juniper", "Monochrome"
+            "Spearmint Blue", "Jennifer Juniper", "Candied Stripes", "Sunnydale", "Monochrome"
     };
 
     /* first colour is the color used for zero space. it is not used for any other
@@ -87,7 +87,26 @@ public class PaletteDefinitions {
                     0xFF724045, 0xFFA95A6F, 0xFFBE6C88, 0xFFB98894, 0xFFD69FAE
             },
 
-            {0xFF000000, 0xFFFFFFFF, 0xFFDDDDDD}
+            {       0xFF000000,
+                    0xFF213877, 0xFF0a5bff, 0xFF2d98c2,
+                    0xFF99ccff, 0xFF55dddd, 0xFF33eeff,
+                    0xFF00ddee, 0xFF67f391, 0xFF38f070,
+                    0xFF00b783, 0xFF0c8260, 0xFF660099,
+                    0xFF771199, 0xFFd045e7, 0xFFcc66ee,
+                    0xFFec84ef, 0xFFf0adf4, 0xFFf76df7,
+                    0xFFff51c5, 0xFFff0fcf
+            },
+
+            {       0xFF000000,
+                    0xFF660000,    0xFFffaa00,    0xFFfff070,
+                    0xFF2d322c,    0xFF221100,    0xFF441100,
+                    0xFF0a2805,    0xFF115522,    0xFF115f00,
+                    0xFF228811,    0xFF667722,    0xFF505962,
+                    0xFF333343,    0xFF2b2177,    0xFF330066,
+                    0xFF140f37,    0xFF110022,    0xFF000011
+            },
+
+            {0xFF000000, 0xFF222222, 0xFF444444}
     };
     /* end of palette definitions */
 

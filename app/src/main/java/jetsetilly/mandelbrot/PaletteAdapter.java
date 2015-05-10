@@ -38,11 +38,7 @@ public class PaletteAdapter implements ListAdapter {
 
         // set title
         TextView title = (TextView) rowView.findViewById(R.id.palette_title);
-        title.setText(palette_settings.palette_titles[position]);
-
-        // num of colours
-        TextView num_colours = (TextView) rowView.findViewById(R.id.num_colours);
-        num_colours.setText("" + palette_settings.numColors(position));
+        title.setText(palette_settings.palette_titles[position] + "  (" + palette_settings.numColors(position) + ")");
 
         // defer drawing of paint palette preview until such time ImageView is fully initialised
         // TODO: put this into an AsyncTask?

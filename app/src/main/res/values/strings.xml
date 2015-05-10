@@ -3,6 +3,7 @@
     <string name="action_palette">Palette</string>
     <string name="action_settings">Settings</string>
     <string name="action_save">Save Image</string>
+    <string name="action_reset">Reset Coordinates</string>
     <string name="settings_max_iterations_label">Maximum Iterations</string>
 
     <string name="action_save_success">Image Saved</string>

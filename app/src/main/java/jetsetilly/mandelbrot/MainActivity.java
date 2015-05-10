@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -33,8 +32,6 @@ public class MainActivity extends Activity {
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
     static public RenderCanvas render_canvas;
     static public ProgressView progress;
-
-    private SettingsMandelbrot mandelbrot_settings = SettingsMandelbrot.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +102,11 @@ public class MainActivity extends Activity {
                 }
 
                 return true;
+
+            case R.id.action_reset:
+                SettingsMandelbrot.getInstance().resetCoords();
+                render_canvas.kickStartCanvas();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -132,7 +134,6 @@ public class MainActivity extends Activity {
     public boolean saveImage() {
         long curr_time = System.currentTimeMillis();
 
-
         String title = String.format("%s_%s.jpeg",
                 this.getString(R.string.app_name),
                 new SimpleDateFormat("ssmmhhddmmyyyy", Locale.ENGLISH).format(curr_time));
@@ -147,17 +148,6 @@ public class MainActivity extends Activity {
         Uri url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
         // TODO: album in pictures folder
-        /*
-        url = Uri.withAppendedPath(url, this.getString(R.string.app_name));
-        File url_f = new File(url.toString());
-        if (!url_f.exists()) {
-            try {
-                url_f.mkdirs();
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        */
 
         try {
             url = cr.insert(url, values);

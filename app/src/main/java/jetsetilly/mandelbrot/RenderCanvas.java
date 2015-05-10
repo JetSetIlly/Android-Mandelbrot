@@ -1,7 +1,5 @@
 package jetsetilly.mandelbrot;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,17 +7,12 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class RenderCanvas extends ImageView implements View.OnTouchListener, MandelbrotCanvas  {
     private final String DBG_TAG = "render canvas";
@@ -127,41 +120,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
 
-    public boolean saveImage() {
-        long curr_time = System.currentTimeMillis();
-
-        // TODO: saving image to "Pictures" but it's not showing up in gallery - investigate why
-
-        String title = String.format("%s_%s.png",
-                context.getString(R.string.app_name),
-                new SimpleDateFormat("ssmmhhddmmyyyy", Locale.ENGLISH).format(curr_time));
-
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DESCRIPTION, context.getString(R.string.app_name));
-        values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-
-        ContentResolver cr = context.getContentResolver();
-        Uri url = null;
-
-        try {
-            url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-            OutputStream o = cr.openOutputStream(url);
-            display_bm.compress(Bitmap.CompressFormat.PNG, 100, o);
-
-         } catch (Exception e) {
-            if (url != null) {
-                cr.delete(url, null, null);
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
     /* property functions */
     public double getCanvasMidX() {
         return getWidth() / 2;
@@ -177,6 +135,10 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         }
 
         return false;
+    }
+
+    public Bitmap getDisplayedBitmap() {
+        return display_bm;
     }
     /* end of property functions */
 

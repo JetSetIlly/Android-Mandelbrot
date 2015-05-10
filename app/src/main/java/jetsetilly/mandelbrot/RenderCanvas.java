@@ -10,7 +10,6 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,14 +17,8 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 public class RenderCanvas extends ImageView implements View.OnTouchListener, MandelbrotCanvas  {

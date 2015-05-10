@@ -2,13 +2,23 @@ package jetsetilly.mandelbrot;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 
 public class MainActivity extends Activity {
@@ -88,7 +98,7 @@ public class MainActivity extends Activity {
                 return true;
 
             case R.id.action_save:
-                if (render_canvas.saveImage()) {
+                if (saveImage()) {
                     Toast.makeText(this, R.string.action_save_success, Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
@@ -118,4 +128,51 @@ public class MainActivity extends Activity {
         }
     }
     /* end of action bar control */
+
+    public boolean saveImage() {
+        long curr_time = System.currentTimeMillis();
+
+
+        String title = String.format("%s_%s.jpeg",
+                this.getString(R.string.app_name),
+                new SimpleDateFormat("ssmmhhddmmyyyy", Locale.ENGLISH).format(curr_time));
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, this.getString(R.string.app_name));
+        values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+        ContentResolver cr = this.getContentResolver();
+        Uri url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        // TODO: album in pictures folder
+        /*
+        url = Uri.withAppendedPath(url, this.getString(R.string.app_name));
+        File url_f = new File(url.toString());
+        if (!url_f.exists()) {
+            try {
+                url_f.mkdirs();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        */
+
+        try {
+            url = cr.insert(url, values);
+
+            OutputStream o = cr.openOutputStream(url);
+            render_canvas.getDisplayedBitmap().compress(Bitmap.CompressFormat.JPEG, 100, o);
+        } catch (Exception e) {
+            if (url != null) {
+                cr.delete(url, null, null);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
 }

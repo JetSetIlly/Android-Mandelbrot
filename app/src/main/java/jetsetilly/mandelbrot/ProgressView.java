@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 public class ProgressView extends ImageView {
     private final double PROGRESS_WAIT = 1000000000; // in nanoseconds
+    private final float PROGRESS_DELAY = (float) 0.5;   // the fraction of the total num_passes to wait before showing the progress animation
 
     private int spin_frame_count = 360;
     private int spin_duration = 1000;
@@ -40,7 +41,7 @@ public class ProgressView extends ImageView {
             start_time = System.nanoTime();
         }
 
-        if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes / 2)) {
+        if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
             return;
         }
 

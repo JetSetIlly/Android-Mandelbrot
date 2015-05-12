@@ -14,9 +14,11 @@ public class RenderCanvasTouch {
 
     private RenderCanvas canvas;
 
-    private long touch_time = 0;
-    private int touch_id = -1;
     private enum TouchState {IDLE, TOUCH, MOVE, DOUBLE_TOUCH}
+
+    private long touch_time = 0;
+
+    private int touch_id = -1;
     private TouchState touch_state = TouchState.IDLE;
     private float touch_x, touch_y;
 

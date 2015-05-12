@@ -4,6 +4,8 @@ import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.nio.charset.MalformedInputException;
+
 
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
@@ -27,7 +29,6 @@ public class Mandelbrot {
     private Rect no_render_area;
 
     /* ui related stuff */
-    private final double PROGRESS_WAIT = 1000000000; // in nanoseconds
     private final int DEF_NUM_PASSES = 4;
     private final int DEF_UPDATE_FREQ = 1;
 
@@ -165,7 +166,7 @@ public class Mandelbrot {
         render_thr.execute();
     }
 
-    class MandelbrotThread extends AsyncTask<Void, Void, Integer> {
+    class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
         /* from the android documentation:
 
         AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
@@ -175,8 +176,6 @@ public class Mandelbrot {
          */
 
         final static public String DBG_TAG = "render thread";
-
-        boolean show_progress;
 
         private int doIterations(double x, double y) {
             double A, B, U, V;
@@ -201,7 +200,7 @@ public class Mandelbrot {
 
         protected void checkUpdate(int pass, int cy) {
             if (((pass + 1) * cy) % canvas_update_frequency == 0) {
-                publishProgress();
+                publishProgress(pass);
             }
         }
 
@@ -210,11 +209,7 @@ public class Mandelbrot {
             int cx, cy, cyb;
             double x, y, yb;
 
-            double start_time = System.nanoTime();
-
-            show_progress = false;
             render_completed = false;
-
             queue.resetQueues();
 
             switch (render_mode) {
@@ -286,14 +281,6 @@ public class Mandelbrot {
 
                             // update if necessary
                             checkUpdate(pass, cy);
-
-                            if (!show_progress) {
-                                // only show progress if time elapsed so far is more than PROGRESS WAIT
-                                // AND only if we're less than halfway through the render
-                                if (System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes / 2) {
-                                    show_progress = true;
-                                }
-                            }
                         }
                     }
                     break;
@@ -301,16 +288,12 @@ public class Mandelbrot {
 
             queue.finaliseDraw();
 
-            Log.d(DBG_TAG, "Elapsed time: " + (System.nanoTime() - start_time) + "ms");
-
             return 0;
         }
 
         @Override
-        protected void onProgressUpdate(Void... v) {
-            if (show_progress) {
-                MainActivity.progress.setBusy();
-            }
+        protected void onProgressUpdate(Integer... pass) {
+            MainActivity.progress.setBusy(pass[0], num_passes);
             context.update();
         }
 

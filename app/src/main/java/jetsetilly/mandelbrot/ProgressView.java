@@ -12,9 +12,13 @@ import android.widget.ImageView;
 // TODO: it seems wasteful to setup the animations each time but setting them up once doesn't seem to work. there must be a way of recycling the animation
 
 public class ProgressView extends ImageView {
+    private final double PROGRESS_WAIT = 1000000000; // in nanoseconds
+
     private int spin_frame_count = 360;
     private int spin_duration = 1000;
     private int visibility_duration = 300;
+
+    private double start_time = 0.0;
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -28,21 +32,32 @@ public class ProgressView extends ImageView {
         super(context);
     }
 
-    public void setBusy() {
+    public void setBusy(int pass, int num_passes) {
         // quick exit if progress is already visible
         if (isShown()) return;
+
+        if (start_time == 0.0) {
+            start_time = System.nanoTime();
+        }
+
+        if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes / 2)) {
+            return;
+        }
 
         final TranslateAnimation visibility_on_anim = new TranslateAnimation(getMeasuredWidth(), 0, getMeasuredHeight(), 0);
         visibility_on_anim.setDuration(visibility_duration);
 
         final Animation spin_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_view_anim_spin);
         spin_anim.setDuration(spin_duration);
+
+        /*
         spin_anim.setInterpolator(new Interpolator() {
             @Override
             public float getInterpolation(float input) {
                 return (float) Math.floor(input * spin_frame_count) / spin_frame_count;
             }
         });
+        */
 
         // listener for visibility_on_anim because so that we can string
         // it together with the spin animation
@@ -63,6 +78,9 @@ public class ProgressView extends ImageView {
     }
 
     public void unsetBusy() {
+        // reset start_time before checking isShown() below
+        start_time = 0.0;
+
         // quick exit if progress is not visible
         if (!isShown()) return;
 

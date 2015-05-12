@@ -30,11 +30,7 @@ public class RenderCanvasTouch {
     }
 
     private boolean touchSensitivity(float point_a, float point_b) {
-        if ((point_a - point_b >= -TOUCH_SENSITIVITY) && (point_a - point_b <= TOUCH_SENSITIVITY)) {
-            return true;
-        }
-
-        return false;
+        return (point_a - point_b >= -TOUCH_SENSITIVITY) && (point_a - point_b <= TOUCH_SENSITIVITY);
     }
 
     public boolean onTouch(View view, MotionEvent event) {

@@ -14,14 +14,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-public class RenderCanvas extends ImageView implements View.OnTouchListener, MandelbrotCanvas  {
+public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.OnTouchListener {
     private final String DBG_TAG = "render canvas";
-    private final long DOUBLE_TOUCH_TIME = 500000000;
-    private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
 
     private final double ZOOM_SATURATION = 0.65; // 0 = gray scale, 1 = identity
 
     private MainActivity context;
+    private RenderCanvasTouch touch;
 
     private Mandelbrot mandelbrot;
     private Paint pnt;
@@ -29,16 +28,6 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
     private Bitmap render_bm;       // display and render bitmaps are the same until we start the zoom process
     private Canvas canvas;
     private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
-
-    private long touch_time = 0;
-    private int touch_id = -1;
-    private enum TouchState {IDLE, TOUCH, MOVE, DOUBLE_TOUCH}
-    private TouchState touch_state = TouchState.IDLE;
-    private float touch_x, touch_y;
-
-    private int second_touch_id = -1;
-    private TouchState second_touch_state = TouchState.IDLE;
-    private float second_touch_x, second_touch_y;
 
     public int zoom_amount; // cumulative on touch events. resets to zero on down event
     public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but
@@ -65,6 +54,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
 
     private void init(Context context) {
         this.context = (MainActivity) context;
+        this.touch = new RenderCanvasTouch(this);
 
         pnt = new Paint();
 
@@ -129,16 +119,19 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         return getHeight() / 2;
     }
 
-    boolean touchSensitivity(float point_a, float point_b) {
-        if (point_a - point_b >= -40 && point_a - point_b <= 40) {
-            return true;
-        }
-
-        return false;
-    }
-
     public Bitmap getDisplayedBitmap() {
         return display_bm;
+    }
+
+    public boolean checkActionBar(float x, float y) {
+        // returns false if coordinates are in action bar, otherwise true
+        if (context.inActionBar(y)) {
+            context.hideActionBar(false);
+            return false;
+        }
+
+        context.hideActionBar(true);
+        return true;
     }
     /* end of property functions */
 
@@ -207,6 +200,7 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         tmp_canvas = new Canvas(tmp_bm);
 
         // we're resetting because some palettes don't like it if we don't. no, this doesn't make sense to me either
+        // TODO: understand why we need to do this
         pnt.reset();
 
         pnt.setColorFilter(zoom_color_filter);
@@ -226,11 +220,11 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         this.offset_y += y;
     }
 
-    private void zoomBy(int amount) {
+    public void zoomBy(int amount) {
         zoomBy(amount, false);
     }
 
-    private void zoomBy(int amount, boolean deferred_display) {
+    public void zoomBy(int amount, boolean deferred_display) {
         double new_left, new_right, new_top, new_bottom;
         double zoom_factor;
         Bitmap tmp_bm;
@@ -267,141 +261,8 @@ public class RenderCanvas extends ImageView implements View.OnTouchListener, Man
         }
     }
 
-    /* event listeners */
+    // implemente View.OnTouchListener
     public boolean onTouch(View view, MotionEvent event) {
-        float new_x, new_y;
-
-        switch (event.getActionMasked())
-        {
-            case MotionEvent.ACTION_DOWN:
-                long new_time = System.nanoTime();
-
-                touch_id = event.getPointerId(0);
-                new_x = event.getX();
-                new_y = event.getY();
-
-                Log.d(DBG_TAG, "x: " + new_x + " y: " + new_y);
-
-                if (new_time - touch_time < DOUBLE_TOUCH_TIME && touchSensitivity(new_x, touch_x) && touchSensitivity(new_y, touch_y)) {
-                    touch_state = TouchState.DOUBLE_TOUCH;
-                    offset_x = (int) (new_x - getCanvasMidX());
-                    offset_y = (int) (new_y - getCanvasMidY());
-
-                    performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
-
-                    // defer displaying of zoomed image - this means that there
-                    // will be a zoomed image pointed to by display_bm but
-                    // which hasn't been "attached" to the ImageView
-                    // later in the startRender() method, this display_bm
-                    // will be scrolled and then displayed.
-                    zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
-                } else {
-                    if (context.inActionBar(new_y)) {
-                        context.hideActionBar(false);
-                    } else {
-                        touch_state = TouchState.TOUCH;
-                        zoom_amount = 0;
-                        offset_x = 0;
-                        offset_y = 0;
-                        context.hideActionBar(true);
-                    }
-                }
-
-                touch_time = new_time;
-                touch_x = new_x;
-                touch_y = new_y;
-
-                break;
-
-            case MotionEvent.ACTION_POINTER_DOWN:
-                // only handle second touch if first touch hasn't
-                // start to do anything
-                if (touch_state == TouchState.MOVE)
-                    break;
-
-                // no need to record touches after the second
-                if (second_touch_id == -1)  {
-                    int second_touch_idx = event.getActionIndex();
-                    second_touch_id = event.getPointerId(second_touch_idx);
-                    second_touch_state = TouchState.TOUCH;
-                    second_touch_x = event.getX(second_touch_idx);
-                    second_touch_y = event.getY(second_touch_idx);
-
-                    Log.d(DBG_TAG, "initial second touch id: " + second_touch_id);
-                }
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                // we will still receive move events in the event of initial touch events
-                // being cancelled so we break early in this case
-                if (touch_id == -1 && second_touch_id == -1)
-                    break;
-
-                int this_touch_idx = event.getActionIndex();
-                int this_touch_id = event.getPointerId(this_touch_idx);
-
-                new_x = event.getX(this_touch_idx);
-                new_y = event.getY(this_touch_idx);
-
-                if (second_touch_id != -1 && touch_state != TouchState.MOVE ) {
-
-                    if (new_x != second_touch_x && new_y != second_touch_y) {
-                        int zoom_amount;
-
-                        second_touch_state = TouchState.MOVE;
-
-                        if (this_touch_id == touch_id) {
-                            zoom_amount = (int) (touch_y - new_y) * 2;
-                        } else {
-                            zoom_amount = (int) (second_touch_y - new_y) * 2;
-                        }
-
-                        if (touch_y > second_touch_y)
-                            zoom_amount = -zoom_amount;
-
-                        zoomBy(zoom_amount);
-                    }
-
-                } else if (second_touch_state != TouchState.MOVE) {
-                    if (new_x != touch_x && new_y != touch_y) {
-                        touch_state = TouchState.MOVE;
-                        scrollBy((int) (touch_x - new_x), (int) (touch_y - new_y));
-                    }
-                }
-
-                // update (second) touch coordinates
-                if (this_touch_id == touch_id) {
-                    touch_x = new_x;
-                    touch_y = new_y;
-                } else {
-                    second_touch_x = new_x;
-                    second_touch_y = new_y;
-                }
-
-                break;
-
-            case MotionEvent.ACTION_POINTER_UP:
-                if (second_touch_id == -1)
-                    break;
-
-                /*** deliberate fall through of case statement ***/
-
-            case MotionEvent.ACTION_UP:
-                if (touch_state == TouchState.MOVE || touch_state == TouchState.DOUBLE_TOUCH || second_touch_state == TouchState.MOVE) {
-                    startRender();
-                }
-
-                // cancel both touch events to prevent weird movement/zooming
-                touch_id = -1;
-                touch_state = TouchState.IDLE;
-                second_touch_id = -1;
-                second_touch_state = TouchState.IDLE;
-
-                break;
-        }
-
-        return true;
+        return touch.onTouch(view, event);
     }
-
-    /* end of event listeners */
 }

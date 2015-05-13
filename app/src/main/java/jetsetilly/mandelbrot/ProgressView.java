@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
+import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
@@ -48,7 +49,8 @@ public class ProgressView extends ImageView {
         final TranslateAnimation visibility_on_anim = new TranslateAnimation(getMeasuredWidth(), 0, getMeasuredHeight(), 0);
         visibility_on_anim.setDuration(visibility_duration);
 
-        final Animation spin_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_view_anim_spin);
+        final Animation spin_anim = new RotateAnimation(0, 360, getMeasuredWidth()/2, getMeasuredHeight()/2);
+        spin_anim.setRepeatCount(Animation.INFINITE);
         spin_anim.setDuration(spin_duration);
 
         /*

@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,10 +22,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     private RenderCanvasTouch touch;
 
     private Mandelbrot mandelbrot;
-    private Paint pnt;
-    private Bitmap display_bm;
-    private Bitmap render_bm;       // display and render bitmaps are the same until we start the zoom process
+    private Bitmap display_bm, render_bm;
     private Canvas canvas;
+    private Paint pnt;
     private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
 
     public int zoom_amount; // cumulative on touch events. resets to zero on down event
@@ -153,12 +151,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     }
 
     public void startRender() {
-        Bitmap new_bm;
-
         stopRender();
 
-        new_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(new_bm);
+        render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current palette
         canvas.drawColor(palette_settings.mostFrequentColor());
@@ -174,7 +170,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         }
 
         // lose reference to old bitmap(s)
-        display_bm = render_bm = new_bm;
+        display_bm = render_bm;
         setImageBitmap(display_bm);
 
         // reset palette count
@@ -193,11 +189,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     /* end of render control */
 
     private void fadeDisplayBitmap() {
-        Canvas tmp_canvas;  // using temporary canvas so we don't clobber the real canvas
-
         Rect blit = new Rect(0, 0, getWidth(), getHeight());
         Bitmap tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        tmp_canvas = new Canvas(tmp_bm);
+
+        // using temporary canvas so we don't clobber the real canvas
+        Canvas tmp_canvas = new Canvas(tmp_bm);
 
         // we're resetting because some palettes don't like it if we don't. no, this doesn't make sense to me either
         // TODO: understand why we need to do this
@@ -232,17 +228,20 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
 
         stopRender(); // stop render to avoid smearing
 
-        /* calculate zoom */
+        // calculate zoom
         zoom_amount += amount;
         zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
         Log.d(DBG_TAG, "zf: " + zoom_factor);
 
-        /* do offset */
+        /// do offset
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new Canvas(tmp_bm);
+
+        // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
+        // without the zoom_factor going crazy or losing definition
         canvas.drawBitmap(render_bm, (int) (-offset_x * zoom_factor * 2), (int) (-offset_y * zoom_factor * 2), null);
 
-        /* do zoom */
+        // do zoom
         new_left = zoom_factor * getWidth();
         new_right = getWidth() - new_left;
         new_top = zoom_factor * getHeight();
@@ -261,7 +260,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         }
     }
 
-    // implemente View.OnTouchListener
+    // implements View.OnTouchListener
     public boolean onTouch(View view, MotionEvent event) {
         return touch.onTouch(view, event);
     }

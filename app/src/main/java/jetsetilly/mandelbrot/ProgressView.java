@@ -49,7 +49,7 @@ public class ProgressView extends ImageView {
         final TranslateAnimation visibility_on_anim = new TranslateAnimation(getMeasuredWidth(), 0, getMeasuredHeight(), 0);
         visibility_on_anim.setDuration(visibility_duration);
 
-        final Animation spin_anim = new RotateAnimation(0, 360, getMeasuredWidth()/2, getMeasuredHeight()/2);
+        final Animation spin_anim = new RotateAnimation(0, spin_frame_count, getMeasuredWidth()/2, getMeasuredHeight()/2);
         spin_anim.setRepeatCount(Animation.INFINITE);
         spin_anim.setDuration(spin_duration);
 

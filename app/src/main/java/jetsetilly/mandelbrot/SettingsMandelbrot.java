@@ -1,11 +1,8 @@
 package jetsetilly.mandelbrot;
 
-public class SettingsMandelbrot {
-    public String[][] presentable_settings = {
-            {"Max Iterations", "max_iterations"},
-            {"Bailout Value", "bailout_value"}
-    };
+import java.lang.reflect.Field;
 
+public class SettingsMandelbrot {
     private final double DEF_REAL_LEFT = -2.11;
     private final double DEF_REAL_RIGHT = 1.16;
     private final double DEF_IMAG_UPPER = 2.94;

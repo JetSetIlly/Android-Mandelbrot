@@ -1,12 +1,17 @@
 package jetsetilly.mandelbrot;
 
-import android.content.Context;
-
-import java.util.Random;
+import java.util.Comparator;
 
 public class PaletteDefinitions {
     /* palette definitions */
-    public int DEF_PALETTE_ID = 0;
+    public final int DEF_PALETTE_ID = 0;
+
+    public final int HUE = 0;
+    public final int SATURATION = 1;
+    public final int VALUE = 2;
+
+    public final int LOWEST_TO_HIGHEST = -1;
+    public final int HIGHEST_TO_LOWEST = 1;
 
     public String[] palette_titles = {
             "Original", "Original (variation)", "Eat Your Greens", "Purple Pencils",
@@ -163,6 +168,50 @@ public class PaletteDefinitions {
             palette_cnt_highest = palette_entry;
         }
     }
+
+    private float colorLightness(int color) {
+        int R = android.graphics.Color.red(color);
+        int G = android.graphics.Color.green(color);
+        int B = android.graphics.Color.blue(color);
+
+        int M = R;
+        if (G > M) M = G;
+        if(B > M) M = B;
+
+        int m = R;
+        if (G < m) m = G;
+        if (B < m) m = B;
+
+        return (M + m)/(float) 510;
+    }
+
+    public int rankColor(int rank) {
+        return rankColor(rank, HIGHEST_TO_LOWEST);
+    }
+
+    public int rankColor(int rank, final int direction) {
+        float[][] lightness = new float[palette.length][2];
+
+        for (int i = 0; i < palette.length; ++ i) {
+            lightness[i][0] = colorLightness(palette[i]);
+            lightness[i][1] = i;
+        }
+
+        java.util.Arrays.sort(lightness, new Comparator<float[]>() {
+            @Override
+            public int compare(float[] lhs, float[] rhs) {
+                if (lhs[0] < rhs[0])
+                    return direction;
+                else if (lhs[0] > rhs[0])
+                    return -direction;
+                else
+                    return 0;
+            }
+        });
+
+        return palette[(int) lightness[rank][1]];
+    }
+
     /* end of helper functions */
 
     /* singleton pattern */

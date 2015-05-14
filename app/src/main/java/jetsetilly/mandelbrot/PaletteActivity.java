@@ -11,6 +11,8 @@ import android.widget.ListView;
 public class PaletteActivity extends Activity {
     private final String DBG_TAG = "palette activity";
 
+    private MainActivity context;
+
     private PaletteAdapter palette_adapter;
     private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
 

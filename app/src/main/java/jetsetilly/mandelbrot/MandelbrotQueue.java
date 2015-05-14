@@ -34,8 +34,12 @@ public class MandelbrotQueue {
         if (iteration == 0) {
             queues[0].pushDraw(cx, cy);
         } else {
-            // make sure we don't write into queue[0] which is reserved for zero space
-            int i = (iteration % (queues.length-1))+1;
+            // make sure we don't write into queue[queues.length] which is reserved for zero space
+            int i = iteration;
+
+            if (iteration >= queues.length) {
+                i = (iteration % (queues.length - 1)) + 1;
+            }
 
             queues[i].pushDraw(cx, cy);
         }

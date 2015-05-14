@@ -75,22 +75,22 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     /* MandelbrotCanvas implementation */
     public void doDraw(float dx, float dy, int iteration)
     {
-        int palette_entry = iteration % palette_settings.palette.length;
+        // iteration has already been limited to the palette size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.palette[palette_entry]);
+        pnt.setColor(palette_settings.palette[iteration]);
         canvas.drawPoint(dx, dy, pnt);
 
-        palette_settings.updateCount(palette_entry);
+        palette_settings.updateCount(iteration);
     }
 
     public void doDraw(float[] points, int points_len, int iteration)
     {
-        int palette_entry = iteration % palette_settings.palette.length;
+        // iteration has already been limited to the palette size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.palette[palette_entry]);
+        pnt.setColor(palette_settings.palette[iteration]);
         canvas.drawPoints(points, 0, points_len, pnt);
 
-        palette_settings.updateCount(palette_entry);
+        palette_settings.updateCount(iteration);
     }
 
     public void update() {

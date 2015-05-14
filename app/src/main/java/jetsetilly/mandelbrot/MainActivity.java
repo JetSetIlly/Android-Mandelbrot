@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -24,14 +25,17 @@ public class MainActivity extends Activity {
     private final String DBG_TAG = "main activity";
 
     private View decoration; // window manager (for want of a better phrase)
-    private ActionBar action_bar;
 
-    // declaring this as static so that it is globally accessible
+    // declaring these as static so that it is globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     //
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
     static public RenderCanvas render_canvas;
     static public ProgressView progress;
+
+    // this is static too, so that a call to setActionBarColor() can affect it
+    static private ActionBar action_bar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +133,7 @@ public class MainActivity extends Activity {
             action_bar.show();
         }
     }
+
     /* end of action bar control */
 
     public boolean saveImage() {

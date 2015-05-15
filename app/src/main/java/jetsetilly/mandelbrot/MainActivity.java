@@ -24,8 +24,6 @@ import java.util.Locale;
 public class MainActivity extends Activity {
     private final String DBG_TAG = "main activity";
 
-    private View decoration; // window manager (for want of a better phrase)
-
     // declaring these as static so that it is globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     //
@@ -35,6 +33,9 @@ public class MainActivity extends Activity {
 
     // this is static too, so that a call to setActionBarColor() can affect it
     static private ActionBar action_bar;
+
+    // window manager (for want of a better phrase)
+    private View decoration;
 
 
     @Override

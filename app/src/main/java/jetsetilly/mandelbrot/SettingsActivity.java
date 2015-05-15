@@ -30,7 +30,7 @@ public class SettingsActivity extends Activity implements SeekBar.OnSeekBarChang
         iterations.setOnSeekBarChangeListener(this);
         bailout.setOnSeekBarChangeListener(this);
 
-        iteration_min = (int) (mandelbrot_settings.max_iterations * 0.5);
+        iteration_min = (int) (mandelbrot_settings.max_iterations * 0.25);
         iteration_max = (int) (mandelbrot_settings.max_iterations * 1.5);
 
         iterations.setMax(iteration_max);

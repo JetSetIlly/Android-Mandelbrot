@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 public class PaletteDefinitions {
     /* palette definitions */
-    public final int DEF_PALETTE_ID = 0;
+    public final int DEF_PALETTE_ID = 5;
 
     public final int HUE = 0;
     public final int SATURATION = 1;
@@ -14,8 +14,7 @@ public class PaletteDefinitions {
     public final int HIGHEST_TO_LOWEST = 1;
 
     public String[] palette_titles = {
-            "Original", "Original (variation)", "Eat Your Greens", "Purple Pencils",
-            "Spearmint Blue", "Jennifer Juniper", "Candied Stripes", "Sunnydale", "Monochrome"
+            "Original","Green", "Purple", "Blue", "Juniper", "Candied Stripes", "Sunnydale", "Monochrome"
     };
 
     /* first colour is the color used for zero space. it is not used for any other
@@ -32,18 +31,6 @@ public class PaletteDefinitions {
                     0xFF00DEFF, 0xFF32ABFF, 0xFFFFB75B,
                     0xFF807986, 0xFFFF1D00, 0xFFFF8000,
                     0xFFFFFF00, 0xFF2F53F3
-            },
-
-            {       0xFF000000,
-                    0xFF868182, 0xFFFF950C,
-                    0xFFFFFF14, 0xFF13A1FF, 0xFFA2DADA,
-                    0xFF9D8876, 0xFFFFEB58, 0xFF00DEFF,
-                    0xFF32ABFF, 0xFFFFB75B, 0xFF80798C,
-                    0xFFFF1D00, 0xFFFF8000, 0xFFFFFF00,
-                    0xFF2F53F3, 0xFF110C07, 0xFF93A584,
-                    0xFF00D5FF, 0xFF00CAFF, 0xFF7AD8C9,
-                    0xFF6A6454, 0xFF00FAFF, 0xFF00FFFF,
-                    0xFF5BE7FF, 0xFFF0D08E
             },
 
             {       0xFF000000,
@@ -111,7 +98,7 @@ public class PaletteDefinitions {
                     0xFF140f37,    0xFF110022,    0xFF000011
             },
 
-            {0xFF000000, 0xFF222222, 0xFF444444}
+            {0xFF000000, 0xFFDDDDDD, 0xFFAAAAAA}
     };
     /* end of palette definitions */
 
@@ -183,10 +170,6 @@ public class PaletteDefinitions {
         if (B < m) m = B;
 
         return (M + m)/(float) 510;
-    }
-
-    public int rankColor(int rank) {
-        return rankColor(rank, HIGHEST_TO_LOWEST);
     }
 
     public int rankColor(int rank, final int direction) {

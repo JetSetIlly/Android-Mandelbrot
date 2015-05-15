@@ -5,7 +5,6 @@ import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +13,10 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 public class PaletteAdapter implements ListAdapter {
-    final static public String DBG_TAG = "palette adapter";
+    final static public String DBG_TAG = "colours adapter";
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
-    private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
+    private PaletteControl palette_settings = PaletteControl.getInstance();
     private PaletteActivity context;
 
     public PaletteAdapter(PaletteActivity context) {
@@ -38,9 +37,9 @@ public class PaletteAdapter implements ListAdapter {
 
         // set title
         TextView title = (TextView) rowView.findViewById(R.id.palette_title);
-        title.setText(palette_settings.palette_titles[position] + "  (" + palette_settings.numColors(position) + ")");
+        title.setText(palette_settings.palettes[position].name + "  (" + palette_settings.numColors(position) + ")");
 
-        // defer drawing of paint palette preview until such time ImageView is fully initialised
+        // defer drawing of paint colours preview until such time ImageView is fully initialised
         // TODO: put this into an AsyncTask?
         final ImageView iv = (ImageView) rowView.findViewById(R.id.palette_preview);
         iv.post(new Runnable() {
@@ -64,7 +63,7 @@ public class PaletteAdapter implements ListAdapter {
         for (int i = 0; i < num_colours; ++ i) {
             lft = (float) i * stripe_width;
 
-            pnt.setColor(palette_settings.palettes[position][i]);
+            pnt.setColor(palette_settings.palettes[position].colours[i]);
             cnv.drawRect(lft, 0, lft + stripe_width, iv.getHeight(), pnt);
         }
         // widen the last colour to make sure all the entire width of the bitmap is used

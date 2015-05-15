@@ -9,12 +9,12 @@ import android.widget.ListView;
 
 
 public class PaletteActivity extends Activity {
-    private final String DBG_TAG = "palette activity";
+    private final String DBG_TAG = "colours activity";
 
     private MainActivity context;
 
     private PaletteAdapter palette_adapter;
-    private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
+    private PaletteControl palette_settings = PaletteControl.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,7 @@ public class PaletteActivity extends Activity {
 
         palette_adapter = new PaletteAdapter(this);
 
-        // add palette adapter to this list view
+        // add colours adapter to this list view
         ListView lv;
         lv = (ListView) findViewById(R.id.palette_listview);
         lv.setAdapter(palette_adapter);
@@ -32,7 +32,7 @@ public class PaletteActivity extends Activity {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                palette_settings.setPalette(position);
+                palette_settings.setColours(position);
                 MainActivity.render_canvas.startRender();
             }
         });

@@ -25,7 +25,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     private Bitmap display_bm, render_bm;
     private Canvas canvas;
     private Paint pnt;
-    private PaletteDefinitions palette_settings = PaletteDefinitions.getInstance();
+    private PaletteControl palette_settings = PaletteControl.getInstance();
 
     public int zoom_amount; // cumulative on touch events. resets to zero on down event
     public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but
@@ -75,9 +75,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     /* MandelbrotCanvas implementation */
     public void doDraw(float dx, float dy, int iteration)
     {
-        // iteration has already been limited to the palette size in MandelbrotQueue
+        // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.palette[iteration]);
+        pnt.setColor(palette_settings.colours[iteration]);
         canvas.drawPoint(dx, dy, pnt);
 
         palette_settings.updateCount(iteration);
@@ -85,9 +85,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
 
     public void doDraw(float[] points, int points_len, int iteration)
     {
-        // iteration has already been limited to the palette size in MandelbrotQueue
+        // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.palette[iteration]);
+        pnt.setColor(palette_settings.colours[iteration]);
         canvas.drawPoints(points, 0, points_len, pnt);
 
         palette_settings.updateCount(iteration);
@@ -156,7 +156,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new Canvas(render_bm);
 
-        // fill colour to first colour in current palette
+        // fill colour to first colour in current colours
         canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
@@ -173,7 +173,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         display_bm = render_bm;
         setImageBitmap(display_bm);
 
-        // reset palette count
+        // reset colours count
         palette_settings.resetCount();
 
         // start render thread

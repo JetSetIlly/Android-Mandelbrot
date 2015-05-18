@@ -16,7 +16,8 @@
         android:scrollingCache="true"
         android:smoothScrollbar="true"
         android:clickable="true"
-        android:divider="@android:drawable/divider_horizontal_bright"
-        android:dividerHeight="@dimen/activity_horizontal_margin"
-        android:drawSelectorOnTop="false" />
+        android:drawSelectorOnTop="false"
+        android:dividerHeight="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" />
 </FrameLayout>

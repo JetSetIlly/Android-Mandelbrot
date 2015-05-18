@@ -11,6 +11,8 @@ import android.widget.ListView;
 public class PaletteActivity extends Activity {
     private final String DBG_TAG = "colours activity";
 
+    private ListView lv;
+
     private MainActivity context;
 
     private PaletteAdapter palette_adapter;
@@ -24,7 +26,6 @@ public class PaletteActivity extends Activity {
         palette_adapter = new PaletteAdapter(this);
 
         // add colours adapter to this list view
-        ListView lv;
         lv = (ListView) findViewById(R.id.palette_listview);
         lv.setAdapter(palette_adapter);
 
@@ -32,8 +33,16 @@ public class PaletteActivity extends Activity {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                palette_adapter.setPaletteCard(view);
                 palette_settings.setColours(position);
                 MainActivity.render_canvas.startRender();
+            }
+        });
+
+        lv.post(new Runnable() {
+            public void run() {
+                // TODO: scroll to selected entry before listview is shown to prevent ugliness
+                lv.smoothScrollToPosition(palette_settings.selected_id);
             }
         });
     }

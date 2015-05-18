@@ -19,5 +19,6 @@
         android:drawSelectorOnTop="false"
         android:dividerHeight="10dp"
         android:paddingLeft="10dp"
-        android:paddingRight="10dp" />
+        android:paddingRight="10dp"
+        android:paddingTop="5dp" />
 </FrameLayout>

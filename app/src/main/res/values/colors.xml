@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="palette_activity_selected_card">#71C3DE</color>
+    <color name="palette_activity_unselected_card">#FFFFFF</color>
+</resources>

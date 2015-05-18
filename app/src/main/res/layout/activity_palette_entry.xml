@@ -7,6 +7,8 @@
     class="android.support.v7.widget.CardView"
     android:id="@+id/palette_card"
     card_view:cardCornerRadius="10dp"
+    card_view:cardBackgroundColor="@color/palette_activity_unselected_card"
+    android:translationZ="@dimen/palette_activity_unselected_card"
     >
 
     <LinearLayout

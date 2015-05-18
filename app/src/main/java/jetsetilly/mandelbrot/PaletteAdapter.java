@@ -1,16 +1,23 @@
 package jetsetilly.mandelbrot;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.support.v7.widget.CardView;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.lang.reflect.Type;
 
 public class PaletteAdapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";
@@ -19,36 +26,98 @@ public class PaletteAdapter implements ListAdapter {
     private PaletteControl palette_settings = PaletteControl.getInstance();
     private PaletteActivity context;
 
+    // z heights for selected/unselected cards
+    private float selected_z;
+    private float unselected_z;
+
+    // colors for selected/unselected cards
+    private int selected_color;
+    private int unselected_color;
+
+    // currently selected row view
+    private View selected_row_view = null;
+
+
     public PaletteAdapter(PaletteActivity context) {
+        super();
+
         this.context = context;
+
+        Resources rs =  context.getResources();
+
+        selected_z = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                rs.getDimension(R.dimen.palette_activity_selected_card),
+                rs.getDisplayMetrics());
+
+        unselected_z = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                rs.getDimension(R.dimen.palette_activity_unselected_card),
+                rs.getDisplayMetrics());
+
+        selected_color = rs.getColor(R.color.palette_activity_selected_card);
+        unselected_color = rs.getColor(R.color.palette_activity_unselected_card);
     }
 
     /* implementation of ListAdapter */
     public View getView(final int position, View convertView, ViewGroup parent) {
-        View rowView;
+        final View row_view;
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (convertView == null) {
-            rowView = inflater.inflate(R.layout.activity_palette_entry, parent, false);
+            row_view = inflater.inflate(R.layout.activity_palette_entry, parent, false);
         } else {
-            rowView = convertView;
+            row_view = convertView;
         }
 
         // set title
-        TextView title = (TextView) rowView.findViewById(R.id.palette_title);
+        TextView title = (TextView) row_view.findViewById(R.id.palette_title);
         title.setText(palette_settings.palettes[position].name + "  (" + palette_settings.numColors(position) + ")");
 
         // defer drawing of paint colours preview until such time ImageView is fully initialised
         // TODO: put this into an AsyncTask?
-        final ImageView iv = (ImageView) rowView.findViewById(R.id.palette_preview);
+        final ImageView iv = (ImageView) row_view.findViewById(R.id.palette_preview);
         iv.post(new Runnable() {
             public void run() {
                 paintPalettePreview(iv, position);
+
+                Log.d(DBG_TAG, "" + position);
+
+                // make sure we unset the palette card in case this row_view is being
+                // reused -- we'll set it again below if necessary
+                unsetPaletteCard(row_view);
+
+                // set palette card
+                if (position == palette_settings.selected_id) {
+                    setPaletteCard(row_view);
+                }
+
             }
         });
 
-        return rowView;
+        return row_view;
+    }
+    public void unsetPaletteCard(View row_view) {
+        CardView cv;
+
+        cv = (CardView) row_view.findViewById(R.id.palette_card);
+        cv.setTranslationZ(unselected_z);
+        cv.setCardBackgroundColor(unselected_color);
+    }
+
+    public void setPaletteCard(View row_view) {
+        CardView cv;
+
+        if (selected_row_view != null) {
+            unsetPaletteCard(selected_row_view);
+        }
+
+        cv = (CardView) row_view.findViewById(R.id.palette_card);
+        cv.setTranslationZ(selected_z);
+        cv.setCardBackgroundColor(selected_color);
+
+        selected_row_view = row_view;
     }
 
     private void paintPalettePreview(ImageView iv, int position) {

@@ -11,7 +11,7 @@ import android.widget.ListView;
 public class PaletteActivity extends Activity {
     private final String DBG_TAG = "colours activity";
 
-    private ListView lv;
+    public ListView lv;
 
     private MainActivity context;
 
@@ -56,9 +56,21 @@ public class PaletteActivity extends Activity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                setTransitionAnim();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        setTransitionAnim();
+    }
+
+    /* sets animation for going back to main activity*/
+    private void setTransitionAnim() {
+        overridePendingTransition(R.animator.push_down_fade_in, R.animator.push_down_fade_out);
     }
 }

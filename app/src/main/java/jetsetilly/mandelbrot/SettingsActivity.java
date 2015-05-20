@@ -92,9 +92,22 @@ public class SettingsActivity extends Activity implements SeekBar.OnSeekBarChang
                 }
 
                 finish();
+                setTransitionAnim();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        setTransitionAnim();
+    }
+
+    /* sets animation for going back to main activity*/
+    private void setTransitionAnim() {
+        overridePendingTransition(R.animator.push_up_fade_in, R.animator.push_up_fade_out);
     }
 }

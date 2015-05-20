@@ -7,7 +7,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -92,11 +91,13 @@ public class MainActivity extends Activity {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, PaletteActivity.class);
                 startActivity(palette_intent);
+                overridePendingTransition(R.animator.push_up_fade_in, R.animator.push_up_fade_out);
                 return true;
 
             case R.id.action_settings:
                 Intent settings_intent = new Intent(this, SettingsActivity.class);
                 startActivity(settings_intent);
+                overridePendingTransition(R.animator.push_down_fade_in, R.animator.push_down_fade_out);
                 return true;
 
             case R.id.action_save:
@@ -134,8 +135,8 @@ public class MainActivity extends Activity {
             action_bar.show();
         }
     }
-
     /* end of action bar control */
+
 
     public boolean saveImage() {
         long curr_time = System.currentTimeMillis();
@@ -170,5 +171,4 @@ public class MainActivity extends Activity {
 
         return true;
     }
-
 }

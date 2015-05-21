@@ -5,4 +5,7 @@
 
     <dimen name="palette_activity_selected_card">0dp</dimen>
     <dimen name="palette_activity_unselected_card">1dp</dimen>
+
+    <dimen name="palette_activity_preview_height">100dp</dimen>
+    <!-- deliberately no definition for preview_width -->
 </resources>

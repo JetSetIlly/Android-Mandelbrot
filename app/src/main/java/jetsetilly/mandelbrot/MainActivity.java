@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +23,10 @@ import java.util.Locale;
 
 public class MainActivity extends Activity {
     private final String DBG_TAG = "main activity";
+
+    // allow other classes to access resources (used in PaletteDefinition)
+    // not sure if there is a more elegant way to do this - this seems heavy handed
+    static public Resources resources;
 
     // declaring these as static so that it is globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
@@ -40,6 +45,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        resources = getResources();
         setContentView(R.layout.activity_main);
 
         // action bar control

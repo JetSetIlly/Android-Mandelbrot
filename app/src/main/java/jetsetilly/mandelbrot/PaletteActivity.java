@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,10 +40,10 @@ public class PaletteActivity extends Activity {
             }
         });
 
+        // scroll list to the correct location
         lv.post(new Runnable() {
             public void run() {
-                // TODO: scroll to selected entry before listview is shown to prevent ugliness
-                lv.smoothScrollToPosition(palette_settings.selected_id);
+                lv.setSelection(palette_settings.selected_id);
             }
         });
     }

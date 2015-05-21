@@ -8,17 +8,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
-
-import java.lang.reflect.Type;
 
 public class PaletteAdapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";
@@ -35,20 +31,8 @@ public class PaletteAdapter implements ListAdapter {
     private int selected_color;
     private int unselected_color;
 
-    // currently selected row view
+    // currently selected row view - used to unset a previously selected card
     private View selected_row_view = null;
-
-    // class used to send palette information to paintPalettePreview ASync task
-    class PalettePainterInfo {
-        public ImageView iv;
-        public int position;
-
-        public PalettePainterInfo(ImageView iv, int position)   {
-            this.iv = iv;
-            this.position = position;
-        }
-    }
-    // end of class
 
 
     public PaletteAdapter(PaletteActivity context) {
@@ -88,14 +72,10 @@ public class PaletteAdapter implements ListAdapter {
         TextView title = (TextView) row_view.findViewById(R.id.palette_title);
         title.setText(palette_settings.palettes[position].name + "  (" + palette_settings.numColors(position) + ")");
 
-        // defer drawing of paint colours preview until such time ImageView is fully initialised
         final ImageView iv = (ImageView) row_view.findViewById(R.id.palette_preview);
-        iv.post(new Runnable() {
-            public void run() {
-                PalettePainterInfo info = new PalettePainterInfo(iv, position);
-                new paintPalettePreview().execute(info);
-            }
-        });
+        // setting image bitmap immediately seems to work without queueing it
+        // by calling iv.post()
+        iv.setImageBitmap(palette_settings.palettes[position].preview_bm);
 
         // make sure we unset the palette card in case this row_view is being
         // reused -- we'll set it again below if necessary
@@ -129,44 +109,6 @@ public class PaletteAdapter implements ListAdapter {
         cv.setCardBackgroundColor(selected_color);
 
         selected_row_view = row_view;
-    }
-
-    class paintPalettePreview extends AsyncTask<PalettePainterInfo, Void, Void> {
-        private ImageView iv;
-        private Integer position;
-        private Bitmap bm;
-
-        @Override
-        protected Void doInBackground(PalettePainterInfo ... painter_info) {
-            iv = painter_info[0].iv;
-            position = painter_info[0].position;
-
-            bm = Bitmap.createBitmap(iv.getMeasuredWidth(), iv.getMeasuredHeight(), Bitmap.Config.RGB_565);
-            Canvas cnv = new Canvas(bm);
-            Paint pnt = new Paint();
-            int num_colours = Math.min(MAX_COLOURS_TO_PREVIEW, palette_settings.numColors(position));
-            int stripe_width = Math.max(1, bm.getWidth() / num_colours);
-            float lft = 0;
-
-            // one stripe per colour
-            for (int i = 0; i < num_colours; ++i) {
-                lft = (float) i * stripe_width;
-
-                pnt.setColor(palette_settings.palettes[position].colours[i]);
-                cnv.drawRect(lft, 0, lft + stripe_width, iv.getHeight(), pnt);
-            }
-            // widen the last colour to make sure all the entire width of the bitmap is used
-            cnv.drawRect(lft, 0, iv.getWidth(), iv.getHeight(), pnt);
-
-            publishProgress();
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void ... v) {
-            // attach bitmap to image view
-            iv.setImageBitmap(bm);
-        }
     }
 
     public long getItemId(int position) {

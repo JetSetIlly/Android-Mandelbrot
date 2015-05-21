@@ -1,14 +1,43 @@
 package jetsetilly.mandelbrot;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import java.util.Comparator;
 
 public class PaletteDefinition {
+    final static int MAX_COLOURS_TO_PREVIEW = 128;
+
     public String   name;
     public int[]  colours;
+    public Bitmap preview_bm;
+
+    static int preview_height = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_activity_preview_height);
+    static int preview_width = MAX_COLOURS_TO_PREVIEW * 10;
 
     public PaletteDefinition(String name, int[] colours) {
         this.name = name;
         this.colours = colours;
+
+        generatePalettePreview();
+    }
+
+    private void generatePalettePreview() {
+        int num_colours = Math.min(MAX_COLOURS_TO_PREVIEW, colours.length);
+        int stripe_width = Math.max(1, preview_width / num_colours);
+        float lft = 0;
+
+        preview_bm = Bitmap.createBitmap(stripe_width * colours.length, preview_height, Bitmap.Config.RGB_565);
+        Canvas cnv = new Canvas(preview_bm);
+        Paint pnt = new Paint();
+
+        // one stripe per colour
+        for (int i = 0; i < num_colours; ++i) {
+            lft = (float) i * stripe_width;
+
+            pnt.setColor(colours[i]);
+            cnv.drawRect(lft, 0, lft + stripe_width, preview_height, pnt);
+        }
     }
 
     static public float colorLightness(int color) {

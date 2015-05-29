@@ -8,4 +8,8 @@
 
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
+
+    <string name="palette_all">All</string>
+    <string name="palette_favourites">Favourites</string>
+    <string name="palette_community">Community</string>
 </resources>

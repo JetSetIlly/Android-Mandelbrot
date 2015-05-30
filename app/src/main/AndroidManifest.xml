@@ -23,7 +23,7 @@
 
         <activity
             android:name=".PaletteActivity"
-            android:label="@string/action_palette"
+            android:label="@string/action_colours"
             android:parentActivityName=".MainActivity" >
         </activity>
 

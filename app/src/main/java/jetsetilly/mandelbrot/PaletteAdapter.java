@@ -3,10 +3,6 @@ package jetsetilly.mandelbrot;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.DataSetObserver;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -63,7 +59,7 @@ public class PaletteAdapter implements ListAdapter {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (convert_view == null) {
-            row_view = inflater.inflate(R.layout.activity_palette_entry, parent, false);
+            row_view = inflater.inflate(R.layout.activity_colours_palette_preview, parent, false);
         } else {
             row_view = convert_view;
         }
@@ -129,7 +125,7 @@ public class PaletteAdapter implements ListAdapter {
 
     public int getItemViewType(int position)
     {
-        return R.layout.activity_palette_entry;
+        return R.layout.activity_colours_palette_preview;
     }
 
     public void unregisterDataSetObserver(DataSetObserver observer) {

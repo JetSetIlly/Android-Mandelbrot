@@ -1,15 +1,16 @@
 <resources>
     <string name="app_name">Mandelbrot</string>
-    <string name="action_palette">Palette</string>
+    <string name="action_colours">Colours</string>
     <string name="action_settings">Settings</string>
     <string name="action_save">Save Image</string>
     <string name="action_reset">Reset Coordinates</string>
     <string name="settings_max_iterations_label">Maximum Iterations</string>
+    <string name="settings_bailout_label">Bailout Value</string>
 
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
 
-    <string name="palette_all">All</string>
-    <string name="palette_favourites">Favourites</string>
-    <string name="palette_community">Community</string>
+    <string name="colours_all_palettes">All Palettes</string>
+    <string name="colours_favourite_palettes">Favourite Palettes</string>
+    <string name="colours_mixer">Mixer</string>
 </resources>

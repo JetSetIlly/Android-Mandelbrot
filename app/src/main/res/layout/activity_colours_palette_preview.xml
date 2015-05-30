@@ -5,11 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     class="android.support.v7.widget.CardView"
-    android:id="@+id/palette_card"
     card_view:cardCornerRadius="10dp"
     card_view:cardBackgroundColor="@color/palette_activity_unselected_card"
-    android:translationZ="@dimen/palette_activity_unselected_card"
-    >
+    android:id="@+id/palette_card"
+    android:translationZ="@dimen/palette_activity_unselected_card">
 
     <LinearLayout
         android:orientation="vertical"
@@ -21,9 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             class="android.support.v7.widget.CardView"
-            android:id="@+id/palette_container"
-            card_view:cardCornerRadius="8dp"
-            >
+            card_view:cardCornerRadius="8dp" >
 
             <ImageView
                 android:id="@+id/palette_preview"

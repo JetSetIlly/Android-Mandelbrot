@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/settings_container"
-    android:weightSum="1">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -13,14 +11,14 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="Maximum Iterations"
+                android:text="@string/settings_max_iterations_label"
                 android:id="@+id/label_max_iterations" />
 
             <TextView
@@ -28,14 +26,12 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:id="@+id/iterations"
-                android:layout_gravity="right" />
+                android:layout_gravity="end" />
 
             <SeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/seek_iterations"
-                android:layout_column="0"
-                android:layout_span="2" />
+                android:id="@+id/seek_iterations" />
 
             <Space
                 android:layout_width="match_parent"
@@ -45,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="Bailout Value"
+                android:text="@string/settings_bailout_label"
                 android:id="@+id/label_bailout" />
 
             <TextView
@@ -53,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:id="@+id/bailout"
-                android:layout_gravity="right" />
+                android:layout_gravity="end" />
 
             <SeekBar
                 android:layout_width="match_parent"

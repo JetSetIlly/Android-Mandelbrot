@@ -1,7 +1,7 @@
 package jetsetilly.mandelbrot;
 
+import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -11,8 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
-
 import jetsetilly.mandelbrot.view.SlidingTabLayout;
 
 
@@ -20,16 +18,19 @@ public class PaletteActivity extends Activity {
     private final String DBG_TAG = "palette activity";
 
     private PaletteControl palette_settings = PaletteControl.getInstance();
+    private ActionBar action_bar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_palette);
+        setContentView(R.layout.activity_colours);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.palette_pager);
+        action_bar = getActionBar();
+
+        ViewPager pager = (ViewPager) findViewById(R.id.colours_pager);
         pager.setAdapter(new PalettePager(this));
 
-        SlidingTabLayout tabs = (SlidingTabLayout) findViewById(R.id.palette_tabs);
+        SlidingTabLayout tabs = (SlidingTabLayout) findViewById(R.id.colours_tabs);
         tabs.setViewPager(pager);
     }
 
@@ -85,13 +86,13 @@ public class PaletteActivity extends Activity {
 
             switch (position) {
                 case 0:
-                    return r.getString(R.string.palette_all);
+                    return r.getString(R.string.colours_all_palettes);
 
                 case 1:
-                    return r.getString(R.string.palette_favourites);
+                    return r.getString(R.string.colours_favourite_palettes);
 
                 case 2:
-                    return r.getString(R.string.palette_community);
+                    return r.getString(R.string.colours_mixer);
             }
 
             return "*error*";
@@ -100,7 +101,7 @@ public class PaletteActivity extends Activity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             // Inflate a new layout from our resources
-            View view = context.getLayoutInflater().inflate(R.layout.activity_palette_page, container, false);
+            View view = context.getLayoutInflater().inflate(R.layout.activity_colours_page, container, false);
             // Add the newly created View to the ViewPager
             container.addView(view);
 
@@ -110,7 +111,7 @@ public class PaletteActivity extends Activity {
             final PaletteAdapter palette_adapter = new PaletteAdapter(context);
 
             // add colours adapter to this list view
-            final ListView lv = (ListView) view.findViewById(R.id.palette_listview);
+            final ListView lv = (ListView) view.findViewById(R.id.palettes_list);
             lv.setAdapter(palette_adapter);
 
             // react to selections in list view

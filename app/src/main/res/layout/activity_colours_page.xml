@@ -3,14 +3,12 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_vertical|center_horizontal"
-    android:id="@+id/palette_container"
-    android:weightSum="1">
+    android:gravity="center_vertical|center_horizontal">
 
     <ListView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/palette_listview"
+        android:id="@+id/palettes_list"
         android:layout_gravity="center|top"
         android:choiceMode="singleChoice"
         android:scrollingCache="true"

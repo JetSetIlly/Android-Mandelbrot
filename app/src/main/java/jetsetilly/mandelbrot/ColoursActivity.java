@@ -14,7 +14,7 @@ import android.widget.ListView;
 import jetsetilly.mandelbrot.view.SlidingTabLayout;
 
 
-public class PaletteActivity extends Activity {
+public class ColoursActivity extends Activity {
     private final String DBG_TAG = "palette activity";
 
     private PaletteControl palette_settings = PaletteControl.getInstance();
@@ -64,9 +64,9 @@ public class PaletteActivity extends Activity {
     class PalettePager extends PagerAdapter {
         private final String DBG_TAG = "palette pager adapter";
 
-        private PaletteActivity context;
+        private ColoursActivity context;
 
-        public PalettePager(PaletteActivity context) {
+        public PalettePager(ColoursActivity context) {
             this.context = context;
         }
 

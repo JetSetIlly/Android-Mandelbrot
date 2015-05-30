@@ -1,6 +1,6 @@
 package jetsetilly.mandelbrot;
 
-public class PaletteControl {
+public class PaletteSettings {
     /* colours definitions */
     public final int DEF_PALETTE_ID = 0;
 
@@ -112,7 +112,7 @@ public class PaletteControl {
     private int colour_cnt[];
     private int colour_cnt_highest;
 
-    public PaletteControl() {
+    public PaletteSettings() {
         super();
         setColours(DEF_PALETTE_ID);
         resetCount();
@@ -162,8 +162,8 @@ public class PaletteControl {
     /* colour counting */
 
     /* singleton pattern */
-    private static PaletteControl singleton = new PaletteControl();
-    public static PaletteControl getInstance() {
+    private static PaletteSettings singleton = new PaletteSettings();
+    public static PaletteSettings getInstance() {
         return singleton;
     }
     /* end of singleton pattern */

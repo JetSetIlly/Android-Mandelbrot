@@ -17,7 +17,7 @@ import jetsetilly.mandelbrot.view.SlidingTabLayout;
 public class ColoursActivity extends Activity {
     private final String DBG_TAG = "palette activity";
 
-    private PaletteControl palette_settings = PaletteControl.getInstance();
+    private PaletteSettings palette_settings = PaletteSettings.getInstance();
     private ActionBar action_bar;
 
     @Override

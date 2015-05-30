@@ -25,7 +25,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     private Bitmap display_bm, render_bm;
     private Canvas canvas;
     private Paint pnt;
-    private PaletteControl palette_settings = PaletteControl.getInstance();
+    private PaletteSettings palette_settings = PaletteSettings.getInstance();
 
     public int zoom_amount; // cumulative on touch events. resets to zero on down event
     public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but

@@ -17,7 +17,7 @@ public class PaletteAdapter implements ListAdapter {
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
     private PaletteControl palette_settings = PaletteControl.getInstance();
-    private PaletteActivity context;
+    private ColoursActivity context;
 
     // z heights for selected/unselected cards
     private float selected_z;
@@ -31,7 +31,7 @@ public class PaletteAdapter implements ListAdapter {
     private View selected_row_view = null;
 
 
-    public PaletteAdapter(PaletteActivity context) {
+    public PaletteAdapter(ColoursActivity context) {
         super();
 
         this.context = context;

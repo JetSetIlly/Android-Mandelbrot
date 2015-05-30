@@ -95,7 +95,7 @@ public class MainActivity extends Activity {
 
         switch (item.getItemId()) {
             case R.id.action_palette:
-                Intent palette_intent = new Intent(this, PaletteActivity.class);
+                Intent palette_intent = new Intent(this, ColoursActivity.class);
                 startActivity(palette_intent);
                 overridePendingTransition(R.animator.push_up_fade_in, R.animator.push_up_fade_out);
                 return true;

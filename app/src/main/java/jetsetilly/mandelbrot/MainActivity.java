@@ -97,13 +97,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, ColoursActivity.class);
                 startActivity(palette_intent);
-                overridePendingTransition(R.animator.push_up_fade_in, R.animator.push_up_fade_out);
+                overridePendingTransition(R.animator.push_right_fade_in, R.animator.push_right_fade_out);
                 return true;
 
             case R.id.action_settings:
                 Intent settings_intent = new Intent(this, SettingsActivity.class);
                 startActivity(settings_intent);
-                overridePendingTransition(R.animator.push_down_fade_in, R.animator.push_down_fade_out);
+                overridePendingTransition(R.animator.push_left_fade_in, R.animator.push_left_fade_out);
                 return true;
 
             case R.id.action_save:

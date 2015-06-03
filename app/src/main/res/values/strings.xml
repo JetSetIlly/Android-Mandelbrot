@@ -11,6 +11,6 @@
     <string name="action_save_fail">Error Saving Image</string>
 
     <string name="colours_all_palettes">All Palettes</string>
-    <string name="colours_favourite_palettes">Favourite Palettes</string>
+    <string name="colours_favourite_palettes">Favourites</string>
     <string name="colours_mixer">Mixer</string>
 </resources>

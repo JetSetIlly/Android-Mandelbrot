@@ -56,6 +56,13 @@ public class PaletteDefinition {
         return (M + m)/(float) 510;
     }
 
+    public final int HUE = 0;
+    public final int SATURATION = 1;
+    public final int VALUE = 2;
+
+    public final int LOWEST_TO_HIGHEST = -1;
+    public final int HIGHEST_TO_LOWEST = 1;
+
     public int rankColor(int rank, final int direction) {
         float[][] lightness = new float[colours.length][2];
 

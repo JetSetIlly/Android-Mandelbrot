@@ -3,20 +3,15 @@ package jetsetilly.mandelbrot;
 public class PaletteSettings {
     /* colours definitions */
     public final int DEF_PALETTE_ID = 0;
-
-    public final int HUE = 0;
-    public final int SATURATION = 1;
-    public final int VALUE = 2;
-
-    public final int LOWEST_TO_HIGHEST = -1;
-    public final int HIGHEST_TO_LOWEST = 1;
+    public final int DEF_NULL_COL = 0;
+    public final int DEF_KEY_COL = 1;
 
     /* first colour is the color used for zero space. it is not used for any other
     iteration. see MandelbrotQueue() for details.
      */
     public PaletteDefinition[] palettes = {
             new PaletteDefinition("Candied Stripes",
-                new int[]{0xFF000000,
+                new int[]{      0xFF000000,
                         0xFF213877, 0xFF0a5bff, 0xFF2d98c2,
                         0xFF99ccff, 0xFF55dddd, 0xFF33eeff,
                         0xFF00ddee, 0xFF67f391, 0xFF38f070,

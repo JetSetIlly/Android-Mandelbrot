@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -18,20 +19,64 @@ public class ColoursActivity extends Activity {
     private final String DBG_TAG = "palette activity";
 
     private PaletteSettings palette_settings = PaletteSettings.getInstance();
-    private ActionBar action_bar;
+
+    private SlidingTabLayout tabs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_colours);
 
-        action_bar = getActionBar();
-
         ViewPager pager = (ViewPager) findViewById(R.id.colours_pager);
         pager.setAdapter(new PalettePager(this));
 
-        SlidingTabLayout tabs = (SlidingTabLayout) findViewById(R.id.colours_tabs);
+        //setupActionBarTabs(pager);
+
+        tabs = (SlidingTabLayout) findViewById(R.id.colours_tabs);
         tabs.setViewPager(pager);
+        setAccentColors();
+    }
+
+    private void setAccentColors() {
+        tabs.setSelectedIndicatorColors(palette_settings.colours[palette_settings.DEF_KEY_COL]);
+        tabs.setDividerColors(palette_settings.colours[palette_settings.DEF_KEY_COL]);
+    }
+
+    private void setupActionBarTabs(final ViewPager pager) {
+        Resources r = getResources();
+
+        final ActionBar action_bar = this.getActionBar();
+        action_bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+        // Create a tab listener that is called when the user changes tabs.
+        ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+                pager.setCurrentItem(tab.getPosition());
+            }
+
+            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+                // hide the given tab
+            }
+
+            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+                // probably ignore this event
+            }
+        };
+
+        // add the tabs
+        action_bar.addTab(action_bar.newTab().setText(r.getString(R.string.colours_all_palettes)).setTabListener(tabListener));
+        action_bar.addTab(action_bar.newTab().setText(r.getString(R.string.colours_favourite_palettes)).setTabListener(tabListener));
+        action_bar.addTab(action_bar.newTab().setText(r.getString(R.string.colours_mixer)).setTabListener(tabListener));
+
+        pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+              @Override
+              public void onPageSelected(int position) {
+                  // When swiping between pages, select the
+                  // corresponding tab.
+                  action_bar.setSelectedNavigationItem(position);
+              }
+          }
+        );
     }
 
     @Override
@@ -120,6 +165,7 @@ public class ColoursActivity extends Activity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     palette_adapter.setPaletteCard(view);
                     palette_settings.setColours(position);
+                    setAccentColors();
                     MainActivity.render_canvas.startRender();
                 }
             });

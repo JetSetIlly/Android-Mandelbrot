@@ -1,12 +1,11 @@
 package jetsetilly.mandelbrot;
 
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,7 @@ import android.widget.ListView;
 import jetsetilly.mandelbrot.view.SlidingTabLayout;
 
 
-public class ColoursActivity extends Activity {
+public class ColoursActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
 
     private PaletteSettings palette_settings = PaletteSettings.getInstance();
@@ -45,21 +44,24 @@ public class ColoursActivity extends Activity {
     private void setupActionBarTabs(final ViewPager pager) {
         Resources r = getResources();
 
-        final ActionBar action_bar = this.getActionBar();
+        final ActionBar action_bar = getSupportActionBar();
         action_bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // Create a tab listener that is called when the user changes tabs.
         ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+            @Override
+            public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
                 pager.setCurrentItem(tab.getPosition());
             }
 
-            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-                // hide the given tab
+            @Override
+            public void onTabUnselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
+
             }
 
-            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-                // probably ignore this event
+            @Override
+            public void onTabReselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
+
             }
         };
 

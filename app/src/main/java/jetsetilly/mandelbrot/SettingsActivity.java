@@ -1,14 +1,13 @@
 package jetsetilly.mandelbrot;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 
-public class SettingsActivity extends Activity implements SeekBar.OnSeekBarChangeListener {
+public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
     private final String DBG_TAG = "settings activity";
 
     private SettingsMandelbrot mandelbrot_settings = SettingsMandelbrot.getInstance();

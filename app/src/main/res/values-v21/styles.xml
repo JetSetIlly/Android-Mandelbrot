@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="MyActionButtonOverflow" parent="android:style/Theme.Material.Light">
+    <style name="MyActionButtonOverflow" parent="@style/Theme.AppCompat.Light">
         <item name="android:src">@drawable/ic_overflow</item>
     </style>
 
-    <style name="AppTheme" parent="android:Theme.Material.Light">
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
         <item name="android:actionOverflowButtonStyle">@style/MyActionButtonOverflow</item>
     </style>
 

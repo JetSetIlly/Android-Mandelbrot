@@ -1,7 +1,5 @@
 package jetsetilly.mandelbrot;
 
-import android.app.Activity;
-import android.app.ActionBar;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -11,6 +9,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private final String DBG_TAG = "main activity";
 
     // allow other classes to access resources (used in PaletteDefinition)
@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // action bar control
-        action_bar = getActionBar();
+        action_bar = getSupportActionBar();
         decoration = getWindow().getDecorView();
         hideActionBar(false);
 

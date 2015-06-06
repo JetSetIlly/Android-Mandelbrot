@@ -111,10 +111,10 @@ public class ColoursActivity extends AppCompatActivity {
     class PalettePager extends PagerAdapter {
         private final String DBG_TAG = "palette pager adapter";
 
-        private ColoursActivity context;
+        private final ThreadLocal<ColoursActivity> context = new ThreadLocal<>();
 
         public PalettePager(ColoursActivity context) {
-            this.context = context;
+            this.context.set(context);
         }
 
         @Override
@@ -148,14 +148,14 @@ public class ColoursActivity extends AppCompatActivity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             // Inflate a new layout from our resources
-            View view = context.getLayoutInflater().inflate(R.layout.activity_colours_page, container, false);
+            View view = context.get().getLayoutInflater().inflate(R.layout.activity_colours_page, container, false);
             // Add the newly created View to the ViewPager
             container.addView(view);
 
             // TODO: implement other pages
             if (position != 0) return view;
 
-            final PaletteAdapter palette_adapter = new PaletteAdapter(context);
+            final PaletteAdapter palette_adapter = new PaletteAdapter(context.get());
 
             // add colours adapter to this list view
             final ListView lv = (ListView) view.findViewById(R.id.palettes_list);

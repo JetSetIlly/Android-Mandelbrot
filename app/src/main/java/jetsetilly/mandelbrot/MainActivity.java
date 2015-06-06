@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStream;
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     static private ActionBar action_bar;
 
     // window manager (for want of a better phrase)
-    private View decoration;
+    static private View decoration;
 
 
     @Override
@@ -48,9 +50,13 @@ public class MainActivity extends AppCompatActivity {
         resources = getResources();
         setContentView(R.layout.activity_main);
 
-        // action bar control
+        // get reference to action bar
         action_bar = getSupportActionBar();
+
+        // get reference to status bar
         decoration = getWindow().getDecorView();
+
+        // set action/status bar initial hidden state
         hideActionBar(false);
 
         // lock orientation to portrait mode

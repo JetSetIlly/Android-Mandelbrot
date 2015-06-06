@@ -1,17 +1,19 @@
 package jetsetilly.mandelbrot;
 
 public class PaletteSettings {
+    private final String DBG_TAG = "palette settings";
+
     /* colours definitions */
     public final int DEF_PALETTE_ID = 0;
-    public final int DEF_NULL_COL = 0;
     public final int DEF_KEY_COL = 1;
+    public final int DEF_NULL_COL = 0;
 
     /* for simplicity, use palettes as defined in PalettePresets
      TODO: store/retrieve definitions on disk */
     public PaletteDefinition[] palettes = PalettePresets.presets;
 
     public int selected_id;
-    public int[] colours; // this is what RenderCanvas uses
+    public PaletteDefinition selected_palette;
 
     /* count the frequency at which each colour is used
      used to change the background colour of the RenderCanvas */
@@ -27,7 +29,7 @@ public class PaletteSettings {
     /* helper functions */
     public void setColours(int id) {
         selected_id = id;
-        colours = palettes[selected_id].colours;
+        selected_palette = palettes[selected_id];
         resetCount();
     }
 
@@ -42,7 +44,7 @@ public class PaletteSettings {
 
     /* colour counting */
     public void resetCount() {
-        colour_cnt = new int[colours.length];
+        colour_cnt = new int[selected_palette.colours.length];
 
         // colour_cnt_highest is used to fill the screen
         // when starting rendering. set it to a random number to begin with
@@ -63,7 +65,7 @@ public class PaletteSettings {
     }
 
     public int mostFrequentColor() {
-        return colours[colour_cnt_highest];
+        return selected_palette.colours[colour_cnt_highest];
     }
     /* colour counting */
 

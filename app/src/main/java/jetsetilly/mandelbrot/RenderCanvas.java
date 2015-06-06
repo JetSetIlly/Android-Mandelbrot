@@ -77,7 +77,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     {
         // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.colours[iteration]);
+        pnt.setColor(palette_settings.selected_palette.colours[iteration]);
         canvas.drawPoint(dx, dy, pnt);
 
         palette_settings.updateCount(iteration);
@@ -87,7 +87,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
     {
         // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.colours[iteration]);
+        pnt.setColor(palette_settings.selected_palette.colours[iteration]);
         canvas.drawPoints(points, 0, points_len, pnt);
 
         palette_settings.updateCount(iteration);

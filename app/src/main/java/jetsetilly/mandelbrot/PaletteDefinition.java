@@ -3,14 +3,23 @@ package jetsetilly.mandelbrot;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.support.v7.graphics.Palette;
+import android.util.Log;
+
 import java.util.Comparator;
 
 public class PaletteDefinition {
+    private final String DBG_TAG = "palette definition";
+
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
     public String   name;
     public int[]  colours;
     public Bitmap preview_bm;
+
+    public int base_color;
+    public int base_title_text_col;
+    public int base_body_text_col;
 
     static int preview_height = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_activity_preview_height);
     static int preview_width = MAX_COLOURS_TO_PREVIEW * 10;
@@ -38,51 +47,20 @@ public class PaletteDefinition {
             pnt.setColor(colours[i]);
             cnv.drawRect(lft, 0, lft + stripe_width, preview_height, pnt);
         }
-    }
 
-    static public float colorLightness(int color) {
-        int R = android.graphics.Color.red(color);
-        int G = android.graphics.Color.green(color);
-        int B = android.graphics.Color.blue(color);
-
-        int M = R;
-        if (G > M) M = G;
-        if(B > M) M = B;
-
-        int m = R;
-        if (G < m) m = G;
-        if (B < m) m = B;
-
-        return (M + m)/(float) 510;
-    }
-
-    public final int HUE = 0;
-    public final int SATURATION = 1;
-    public final int VALUE = 2;
-
-    public final int LOWEST_TO_HIGHEST = -1;
-    public final int HIGHEST_TO_LOWEST = 1;
-
-    public int rankColor(int rank, final int direction) {
-        float[][] lightness = new float[colours.length][2];
-
-        for (int i = 0; i < colours.length; ++ i) {
-            lightness[i][0] = colorLightness(colours[i]);
-            lightness[i][1] = i;
+        Palette p = Palette.from(preview_bm).generate();
+        Palette.Swatch swatch = p.getLightMutedSwatch();
+        if (swatch == null) {
+            swatch = p.getLightVibrantSwatch();
+            if (swatch == null) {
+                Log.d(DBG_TAG, "no swatch");
+            }
         }
 
-        java.util.Arrays.sort(lightness, new Comparator<float[]>() {
-            @Override
-            public int compare(float[] lhs, float[] rhs) {
-                if (lhs[0] < rhs[0])
-                    return direction;
-                else if (lhs[0] > rhs[0])
-                    return -direction;
-                else
-                    return 0;
-            }
-        });
-
-        return colours[(int) lightness[rank][1]];
+        if (swatch != null) {
+            base_color = swatch.getRgb();
+            base_title_text_col = swatch.getTitleTextColor();
+            base_body_text_col = swatch.getBodyTextColor();
+        }
     }
 }

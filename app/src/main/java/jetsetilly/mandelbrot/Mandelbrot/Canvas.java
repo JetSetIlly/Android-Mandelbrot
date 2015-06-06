@@ -1,6 +1,6 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Mandelbrot;
 
-public interface MandelbrotCanvas {
+public interface Canvas {
     void doDraw(float dx, float dy, int iteration);
     void doDraw(float[] points, int points_len, int iteration);
     void update();

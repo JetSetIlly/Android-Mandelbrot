@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Palette;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,7 +8,10 @@ import android.util.Log;
 
 import java.util.Comparator;
 
-public class PaletteDefinition {
+import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.R;
+
+public class Definition {
     private final String DBG_TAG = "palette definition";
 
     final static int MAX_COLOURS_TO_PREVIEW = 128;
@@ -24,7 +27,7 @@ public class PaletteDefinition {
     static int preview_height = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_activity_preview_height);
     static int preview_width = MAX_COLOURS_TO_PREVIEW * 10;
 
-    public PaletteDefinition(String name, int[] colours) {
+    public Definition(String name, int[] colours) {
         this.name = name;
         this.colours = colours;
 

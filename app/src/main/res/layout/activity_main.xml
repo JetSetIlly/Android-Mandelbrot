@@ -12,7 +12,7 @@
     <view
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="jetsetilly.mandelbrot.RenderCanvas"
+        class="jetsetilly.mandelbrot.RenderCanvas.RenderCanvas"
         android:id="@+id/fractalView"
         android:cropToPadding="false" />
 

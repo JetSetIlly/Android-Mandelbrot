@@ -1,8 +1,7 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
@@ -13,19 +12,24 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.OnTouchListener {
+import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+import jetsetilly.mandelbrot.Mandelbrot.Canvas;
+import jetsetilly.mandelbrot.Palette.Settings;
+
+public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListener {
     private final String DBG_TAG = "render canvas";
 
     private final double ZOOM_SATURATION = 0.65; // 0 = gray scale, 1 = identity
 
     private MainActivity context;
-    private RenderCanvasTouch touch;
+    private Touch touch;
 
     private Mandelbrot mandelbrot;
     private Bitmap display_bm, render_bm;
-    private Canvas canvas;
+    private android.graphics.Canvas canvas;
     private Paint pnt;
-    private PaletteSettings palette_settings = PaletteSettings.getInstance();
+    private Settings palette_settings = Settings.getInstance();
 
     public int zoom_amount; // cumulative on touch events. resets to zero on down event
     public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but
@@ -52,7 +56,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
 
     private void init(Context context) {
         this.context = (MainActivity) context;
-        this.touch = new RenderCanvasTouch(this);
+        this.touch = new Touch(this);
 
         pnt = new Paint();
 
@@ -154,7 +158,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         stopRender();
 
         render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(render_bm);
+        canvas = new android.graphics.Canvas(render_bm);
 
         // fill colour to first colour in current colours
         canvas.drawColor(palette_settings.mostFrequentColor());
@@ -193,7 +197,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         Bitmap tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
 
         // using temporary canvas so we don't clobber the real canvas
-        Canvas tmp_canvas = new Canvas(tmp_bm);
+        android.graphics.Canvas tmp_canvas = new android.graphics.Canvas(tmp_bm);
 
         // we're resetting because some palettes don't like it if we don't. no, this doesn't make sense to me either
         // TODO: understand why we need to do this
@@ -235,7 +239,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
 
         /// do offset
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(tmp_bm);
+        canvas = new android.graphics.Canvas(tmp_bm);
 
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
         // without the zoom_factor going crazy or losing definition
@@ -248,7 +252,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas, View.On
         new_bottom = getHeight() - new_top;
 
         display_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(display_bm);
+        canvas = new android.graphics.Canvas(display_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int)new_top, (int)new_right, (int)new_bottom);

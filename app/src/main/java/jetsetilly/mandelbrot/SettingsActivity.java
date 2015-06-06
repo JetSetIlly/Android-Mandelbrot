@@ -6,11 +6,13 @@ import android.view.MenuItem;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import jetsetilly.mandelbrot.Mandelbrot.Settings;
+
 
 public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
     private final String DBG_TAG = "settings activity";
 
-    private SettingsMandelbrot mandelbrot_settings = SettingsMandelbrot.getInstance();
+    private Settings mandelbrot_settings = Settings.getInstance();
     private boolean dirty_settings;
 
     private final int BAILOUT_SCALE = 10;

@@ -1,16 +1,16 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.util.Log;
 
-public class MandelbrotQueue {
+public class Queue {
     final static public String DBG_TAG = "mandelbrot queue";
 
     private final int BUFFER_SIZE = 4096; // this should be an even number
 
-    private MandelbrotCanvas context;
+    private Canvas context;
     private PointQueue[] queues;
 
-    public MandelbrotQueue(MandelbrotCanvas context) {
+    public Queue(Canvas context) {
         this.context = context;
         resetQueues();
     }

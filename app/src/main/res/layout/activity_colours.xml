@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center_vertical|center_horizontal">
 
-    <jetsetilly.mandelbrot.view.SlidingTabLayout
+    <jetsetilly.mandelbrot.Google.SlidingTabLayout
         android:id="@+id/colours_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

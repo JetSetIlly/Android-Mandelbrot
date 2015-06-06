@@ -1,12 +1,12 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Palette;
 
-public class PalettePresets {
+public class Presets {
     /* first colour is the color used for zero space. it is not used for any other
     iteration. see MandelbrotQueue() for details.
      */
 
-    static public PaletteDefinition[] presets = {
-            new PaletteDefinition("Candied Stripes",
+    static public Definition[] presets = {
+            new Definition("Candied Stripes",
                     new int[]{      0xFF000000,
                             0xFF213877, 0xFF0a5bff, 0xFF2d98c2,
                             0xFF99ccff, 0xFF55dddd, 0xFF33eeff,
@@ -17,7 +17,7 @@ public class PalettePresets {
                             0xFFff51c5, 0xFFff0fcf
                     }),
 
-            new PaletteDefinition("Sunnydale",
+            new Definition("Sunnydale",
                     new int[]{       0xFF000000,
                             0xFF660000,    0xFFffaa00,    0xFFfff070,
                             0xFF2d322c,    0xFF221100,    0xFF441100,
@@ -27,7 +27,7 @@ public class PalettePresets {
                             0xFF140f37,    0xFF110022,    0xFF000011
                     }),
 
-            new PaletteDefinition("Juniper",
+            new Definition("Juniper",
                     new int[] {       0xFF000000,
                             0xFF3F4642, 0xFF869BA5, 0xFF09A0FF, 0xFFCDCFDE, 0xFF87CEE8,
                             0xFF2D5643, 0xFF56AE51, 0xFF54A1AD, 0xFFF6D2C6, 0xFF8FCAAE,
@@ -38,7 +38,7 @@ public class PalettePresets {
                             0xFF724045, 0xFFA95A6F, 0xFFBE6C88, 0xFFB98894, 0xFFD69FAE
                     }),
 
-            new PaletteDefinition("Original",
+            new Definition("Original",
                     new int[] {       0xFF000000,
                             0xFF4E474F, 0xFF8E869D,
                             0xFFFF941D, 0xFFFFEE45, 0xFF66B0E2,
@@ -51,7 +51,7 @@ public class PalettePresets {
                             0xFFFFFF00, 0xFF2F53F3
                     }),
 
-            new PaletteDefinition("Green",
+            new Definition("Green",
                     new int[] {       0xFF000000,
                             0xFF254C23, 0xFFA08A7B,
                             0xFF9380FF, 0xFFC2BAFF, 0xFFB299FF,
@@ -64,7 +64,7 @@ public class PalettePresets {
                             0xFF00A5FF, 0xFF01F2FF
                     }),
 
-            new PaletteDefinition("Purple",
+            new Definition("Purple",
                     new int[] {       0xFF000000,
                             0xFF7A6D66, 0xFFFFA50C,
                             0xFF00FFFF, 0xFFFBF5E0, 0xFFB0CEA0,
@@ -77,7 +77,7 @@ public class PalettePresets {
                             0xFFDEE6ED, 0xFF9EB7D4
                     }),
 
-            new PaletteDefinition("Blue",
+            new Definition("Blue",
                     new int[] {       0xFF000000,
                             0xFF007CAC, 0xFFFFEEFF,
                             0xFFFFFFFF, 0xFFD3DCE1, 0xFF00C0FF,
@@ -90,7 +90,7 @@ public class PalettePresets {
                             0xFFC1C1C1, 0xFFFFFF
                     }),
 
-            new PaletteDefinition("Monochrome",
+            new Definition("Monochrome",
                     new int[] {0xFF000000, 0xFFDDDDDD, 0xFFAAAAAA})
     };
 }

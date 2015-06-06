@@ -1,8 +1,6 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Mandelbrot;
 
-import java.lang.reflect.Field;
-
-public class SettingsMandelbrot {
+public class Settings {
     private final double DEF_REAL_LEFT = -2.11;
     private final double DEF_REAL_RIGHT = 1.16;
     private final double DEF_IMAG_UPPER = 2.94;
@@ -19,7 +17,7 @@ public class SettingsMandelbrot {
     public int max_iterations;
     public double bailout_value;
 
-    SettingsMandelbrot () {
+    Settings() {
         resetCoords();
     }
 
@@ -33,8 +31,8 @@ public class SettingsMandelbrot {
     }
 
     /* singleton pattern */
-    private static SettingsMandelbrot singleton = new SettingsMandelbrot();
-    public static SettingsMandelbrot getInstance() {
+    private static Settings singleton = new Settings();
+    public static Settings getInstance() {
         return singleton;
     }
     /* end of singleton pattern */

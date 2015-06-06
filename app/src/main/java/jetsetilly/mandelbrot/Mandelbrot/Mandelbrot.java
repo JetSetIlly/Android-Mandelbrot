@@ -1,21 +1,21 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.nio.charset.MalformedInputException;
+import jetsetilly.mandelbrot.MainActivity;
 
 
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
-    private SettingsMandelbrot mandelbrot_settings = SettingsMandelbrot.getInstance();
+    private Settings mandelbrot_settings = Settings.getInstance();
 
     private MandelbrotThread render_thr;
     public boolean render_completed = false;
 
-    private MandelbrotCanvas context;
+    private Canvas context;
     private int canvas_width;
     private int canvas_height;
     private double canvas_ratio;
@@ -38,10 +38,10 @@ public class Mandelbrot {
     public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
 
     /* render queue */
-    private MandelbrotQueue queue;
+    private Queue queue;
 
 
-    public Mandelbrot(MandelbrotCanvas context) {
+    public Mandelbrot(Canvas context) {
         this.context = context;
         this.render_thr = null;
 
@@ -49,7 +49,7 @@ public class Mandelbrot {
         canvas_height = context.getCanvasHeight();
         canvas_ratio = (double) canvas_width / (double) canvas_height;
 
-        queue = new MandelbrotQueue(context);
+        queue = new Queue(context);
     }
 
     @Override

@@ -4,20 +4,21 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import jetsetilly.mandelbrot.view.SlidingTabLayout;
+import jetsetilly.mandelbrot.Google.SlidingTabLayout;
+import jetsetilly.mandelbrot.Palette.Adapter;
+import jetsetilly.mandelbrot.Palette.Settings;
 
 
 public class ColoursActivity extends AppCompatActivity {
     private final String DBG_TAG = "colours activity";
 
-    private PaletteSettings palette_settings = PaletteSettings.getInstance();
+    private Settings palette_settings = Settings.getInstance();
 
     private SlidingTabLayout tabs;
 
@@ -115,7 +116,7 @@ public class ColoursActivity extends AppCompatActivity {
             // TODO: implement other pages
             if (position != 0) return view;
 
-            final PaletteAdapter palette_adapter = new PaletteAdapter(context.get());
+            final Adapter palette_adapter = new Adapter(context.get());
 
             // add colours adapter to this list view
             final ListView lv = (ListView) view.findViewById(R.id.palettes_list);

@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Palette;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -12,11 +12,14 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-public class PaletteAdapter implements ListAdapter {
+import jetsetilly.mandelbrot.ColoursActivity;
+import jetsetilly.mandelbrot.R;
+
+public class Adapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
-    private PaletteSettings palette_settings = PaletteSettings.getInstance();
+    private Settings palette_settings = Settings.getInstance();
     private ColoursActivity context;
 
     // z heights for selected/unselected cards
@@ -31,7 +34,7 @@ public class PaletteAdapter implements ListAdapter {
     private View selected_row_view = null;
 
 
-    public PaletteAdapter(ColoursActivity context) {
+    public Adapter(ColoursActivity context) {
         super();
 
         this.context = context;

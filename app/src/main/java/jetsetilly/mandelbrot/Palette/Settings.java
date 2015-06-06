@@ -1,6 +1,6 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.Palette;
 
-public class PaletteSettings {
+public class Settings {
     private final String DBG_TAG = "palette settings";
 
     /* colours definitions */
@@ -10,17 +10,17 @@ public class PaletteSettings {
 
     /* for simplicity, use palettes as defined in PalettePresets
      TODO: store/retrieve definitions on disk */
-    public PaletteDefinition[] palettes = PalettePresets.presets;
+    public Definition[] palettes = Presets.presets;
 
     public int selected_id;
-    public PaletteDefinition selected_palette;
+    public Definition selected_palette;
 
     /* count the frequency at which each colour is used
      used to change the background colour of the RenderCanvas */
     private int colour_cnt[];
     private int colour_cnt_highest;
 
-    public PaletteSettings() {
+    public Settings() {
         super();
         setColours(DEF_PALETTE_ID);
         resetCount();
@@ -70,8 +70,8 @@ public class PaletteSettings {
     /* colour counting */
 
     /* singleton pattern */
-    private static PaletteSettings singleton = new PaletteSettings();
-    public static PaletteSettings getInstance() {
+    private static Settings singleton = new Settings();
+    public static Settings getInstance() {
         return singleton;
     }
     /* end of singleton pattern */

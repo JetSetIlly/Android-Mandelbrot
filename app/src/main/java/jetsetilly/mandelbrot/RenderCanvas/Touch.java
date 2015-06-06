@@ -1,11 +1,11 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class RenderCanvasTouch {
+public class Touch {
     private final String DBG_TAG = "render canvas touch";
 
     private final long DOUBLE_TOUCH_TIME = 500000000;
@@ -26,7 +26,7 @@ public class RenderCanvasTouch {
     private TouchState second_touch_state = TouchState.IDLE;
     private float second_touch_x, second_touch_y;
 
-    public RenderCanvasTouch(RenderCanvas canvas)
+    public Touch(RenderCanvas canvas)
     {
         this.canvas = canvas;
     }

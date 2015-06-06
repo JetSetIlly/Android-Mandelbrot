@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package jetsetilly.mandelbrot.view;
+package jetsetilly.mandelbrot.Google;
 
 import android.content.Context;
 import android.graphics.Canvas;

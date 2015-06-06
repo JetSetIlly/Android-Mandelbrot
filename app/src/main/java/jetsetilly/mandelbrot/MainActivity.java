@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,12 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+
+import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
+import jetsetilly.mandelbrot.Mandelbrot.Settings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_reset:
-                SettingsMandelbrot.getInstance().resetCoords();
+                Settings.getInstance().resetCoords();
                 render_canvas.kickStartCanvas();
                 return true;
         }

@@ -36,11 +36,10 @@ public class MyActionBar extends Toolbar {
 
     public void hide(boolean hide) {
         if (hide) {
-            if (getVisibility() != View.INVISIBLE) {
-                status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
+            status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
 
+            if (getVisibility() != View.INVISIBLE) {
                 Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_hide);
-                anim.setDuration(300);
 
                 // set invisibility on animation end
                 anim.setAnimationListener(new Animation.AnimationListener() {
@@ -63,11 +62,10 @@ public class MyActionBar extends Toolbar {
                 startAnimation(anim);
             }
         } else {
-            if (getVisibility() != View.VISIBLE) {
-                status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
+            if (getVisibility() != View.VISIBLE) {
                 Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_show);
-                anim.setDuration(300);
 
                 // set visibility on animation start
                 anim.setAnimationListener(new Animation.AnimationListener() {

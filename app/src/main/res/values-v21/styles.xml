@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="MyActionButtonOverflow" parent="@style/Theme.AppCompat.Light">
+    <style name="MyActionButtonOverflow" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="android:src">@drawable/ic_overflow</item>
     </style>
 
-    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="android:actionOverflowButtonStyle">@style/MyActionButtonOverflow</item>
     </style>
 
     <style name="MainActivityTheme" parent="@style/AppTheme">
-        <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <!-- we want an ordinary actionbar for other activities -->
+
+    <style name="OtherActivityTheme" parent="@style/Theme.AppCompat.Light">
     </style>
 </resources>

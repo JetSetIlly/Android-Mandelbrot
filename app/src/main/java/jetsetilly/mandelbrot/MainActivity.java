@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,12 +40,7 @@ public class MainActivity extends AppCompatActivity {
     static public RenderCanvas render_canvas;
     static public ProgressView progress;
 
-    // this is static too, so that a call to setActionBarColor() can affect it
-    static private ActionBar action_bar;
-
-    // window manager (for want of a better phrase)
-    static private View decoration;
-
+    public MyActionBar action_bar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,17 +48,13 @@ public class MainActivity extends AppCompatActivity {
         resources = getResources();
         setContentView(R.layout.activity_main);
 
-        // get reference to action bar
-        action_bar = getSupportActionBar();
-
-        // get reference to status bar
-        decoration = getWindow().getDecorView();
-
-        // set action/status bar initial hidden state
-        hideActionBar(false);
-
         // lock orientation to portrait mode
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        // set up actionbar
+        action_bar = (MyActionBar) findViewById(R.id.toolbar);
+        action_bar.completeSetup(this);
+        setSupportActionBar(action_bar);
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
@@ -78,13 +71,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         // TODO: universal setting to allow background rendering
-
         super.onPause();
     }
 
     protected void onResume() {
         super.onResume();
-        hideActionBar(false);
     }
 
     @Override
@@ -104,13 +95,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, ColoursActivity.class);
                 startActivity(palette_intent);
-                overridePendingTransition(R.animator.push_right_fade_in, R.animator.push_right_fade_out);
+                overridePendingTransition(R.anim.push_right_fade_in, R.anim.push_right_fade_out);
                 return true;
 
             case R.id.action_settings:
                 Intent settings_intent = new Intent(this, SettingsActivity.class);
                 startActivity(settings_intent);
-                overridePendingTransition(R.animator.push_left_fade_in, R.animator.push_left_fade_out);
+                overridePendingTransition(R.anim.push_left_fade_in, R.anim.push_left_fade_out);
                 return true;
 
             case R.id.action_save:
@@ -130,26 +121,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    /* action bar control */
-    public boolean inActionBar(float y_coordinate) {
-        return y_coordinate <= action_bar.getHeight();
-    }
-
-    public void hideActionBar(boolean hide)
-    {
-        /* this synchronises the show/hide animation of the action bar and the status bar */
-
-        if (hide) {
-            decoration.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_FULLSCREEN);
-            action_bar.hide();
-        } else {
-            decoration.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            action_bar.show();
-        }
-    }
-    /* end of action bar control */
-
 
     public boolean saveImage() {
         long curr_time = System.currentTimeMillis();

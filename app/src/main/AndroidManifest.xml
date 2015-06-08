@@ -23,13 +23,15 @@
         <activity
             android:name=".ColoursActivity"
             android:label="@string/action_colours"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/OtherActivityTheme" >
         </activity>
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/OtherActivityTheme" >
         </activity>
     </application>
 

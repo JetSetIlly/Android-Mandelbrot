@@ -127,12 +127,12 @@ public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListe
 
     public boolean checkActionBar(float x, float y) {
         // returns false if coordinates are in action bar, otherwise true
-        if (context.inActionBar(y)) {
-            context.hideActionBar(false);
+        if (context.action_bar.inActionBar(y)) {
+            context.action_bar.hide(false);
             return false;
         }
 
-        context.hideActionBar(true);
+        context.action_bar.hide(true);
         return true;
     }
     /* end of property functions */

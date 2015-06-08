@@ -54,15 +54,6 @@ public class ProgressView extends ImageView {
         spin_anim.setRepeatCount(Animation.INFINITE);
         spin_anim.setDuration(spin_duration);
 
-        /*
-        spin_anim.setInterpolator(new Interpolator() {
-            @Override
-            public float getInterpolation(float input) {
-                return (float) Math.floor(input * spin_frame_count) / spin_frame_count;
-            }
-        });
-        */
-
         // listener for visibility_on_anim because so that we can string
         // it together with the spin animation
         visibility_on_anim.setAnimationListener(new Animation.AnimationListener() {

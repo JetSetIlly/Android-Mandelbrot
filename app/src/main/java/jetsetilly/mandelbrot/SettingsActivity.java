@@ -109,6 +109,6 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
-        overridePendingTransition(R.animator.push_right_fade_in, R.animator.push_right_fade_out);
+        overridePendingTransition(R.anim.push_right_fade_in, R.anim.push_right_fade_out);
     }
 }

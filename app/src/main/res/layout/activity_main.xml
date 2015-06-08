@@ -14,7 +14,8 @@
         android:layout_height="match_parent"
         class="jetsetilly.mandelbrot.RenderCanvas.RenderCanvas"
         android:id="@+id/fractalView"
-        android:cropToPadding="false" />
+        android:cropToPadding="false"
+        />
 
     <view
         android:layout_width="wrap_content"
@@ -31,7 +32,19 @@
         android:cropToPadding="false"
         android:clickable="false"
         android:baselineAlignBottom="false"
-        android:adjustViewBounds="false" />
+        android:adjustViewBounds="false"
+        />
+
+    <view
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        class="jetsetilly.mandelbrot.MyActionBar"
+        android:id="@+id/toolbar"
+        android:layout_gravity="start|top"
+        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:visibility="invisible" />
+
 </FrameLayout>
 
 

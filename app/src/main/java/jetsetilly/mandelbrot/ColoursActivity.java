@@ -66,7 +66,7 @@ public class ColoursActivity extends AppCompatActivity {
 
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
-        overridePendingTransition(R.animator.push_left_fade_in, R.animator.push_left_fade_out);
+        overridePendingTransition(R.anim.push_left_fade_in, R.anim.push_left_fade_out);
     }
 
     class PalettePager extends PagerAdapter {

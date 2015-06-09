@@ -8,6 +8,8 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 // TODO: it seems wasteful to setup the animations each time but setting them up once doesn't seem to work. there must be a way of recycling the animation
 
 public class ProgressView extends ImageView {
@@ -25,7 +27,7 @@ public class ProgressView extends ImageView {
     // and the point at which we make the view invisible
     // in other words: setting the set_busy flag is near enough atomic
     // TODO: implement a proper atomic latch (semaphore)
-    private boolean set_busy = false;
+    private AtomicBoolean set_busy = new AtomicBoolean(false);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -41,8 +43,7 @@ public class ProgressView extends ImageView {
 
     public void setBusy(int pass, int num_passes) {
         // quick exit if progress is already visible
-        if (set_busy) return;
-        set_busy = true;
+        if (set_busy.get()) return;
 
         // make sure a suitable amount of time has passed before showing progress view
         if (start_time == 0.0) {
@@ -51,6 +52,8 @@ public class ProgressView extends ImageView {
         if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
             return;
         }
+
+        set_busy.set(true);
 
         Animation show_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_show);
 
@@ -83,8 +86,8 @@ public class ProgressView extends ImageView {
         start_time = 0.0;
 
         // quick exit if progress is not visible
-        if (!set_busy) return;
-        set_busy = false;
+        if (!set_busy.get()) return;
+        set_busy.set(false);
 
         final Animation hide_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_hide);
 

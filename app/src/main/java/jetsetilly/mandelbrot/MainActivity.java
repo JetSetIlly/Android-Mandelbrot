@@ -1,6 +1,5 @@
 package jetsetilly.mandelbrot;
 
-import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -92,18 +91,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, ColoursActivity.class);
                 startActivity(palette_intent);
-                overridePendingTransition(R.anim.push_right_fade_in, R.anim.push_right_fade_out);
+                overridePendingTransition(R.anim.from_right_nofade, R.anim.from_right_fade_out);
                 return true;
 
             case R.id.action_settings:
                 IterationsDialog iterations_dialog = new IterationsDialog();
                 iterations_dialog.show(getFragmentManager(), null);
-
-                /* show settings activity -- not currently used */
-                //Intent settings_intent = new Intent(this, SettingsActivity.class);
-                //startActivity(settings_intent);
-                //overridePendingTransition(R.anim.push_left_fade_in, R.anim.push_left_fade_out);
-
                 return true;
 
             case R.id.action_save:

@@ -16,4 +16,16 @@
 
     <style name="OtherActivityTheme" parent="@style/Theme.AppCompat.Light">
     </style>
+
+
+    <!-- theme for iterations dialog -->
+
+    <style name="Iteration_Dialog_Theme" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:windowAnimationStyle">@style/Iteration_Dialog_Theme.Window</item>
+    </style>
+
+    <style name="Iteration_Dialog_Theme.Window" parent="@android:style/Animation.Activity">
+        <item name="android:windowEnterAnimation">@anim/up_quick_nofade</item>
+        <item name="android:windowExitAnimation">@anim/down_quick_nofade</item>
+    </style>
 </resources>

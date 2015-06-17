@@ -25,7 +25,7 @@ public class IterationsDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.Iteration_Dialog_Theme);
         builder.setTitle(R.string.settings_max_iterations_label);
         builder.setView(createView());
 
@@ -44,7 +44,7 @@ public class IterationsDialog extends DialogFragment {
                 settings_intent.putExtra(getString(R.string.settings_intent_rendered_iterations), rendered_iterations);
 
                 startActivity(settings_intent);
-                curr_activity.overridePendingTransition(R.anim.push_left_fade_in, R.anim.push_left_fade_out);
+                curr_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
             }
         }).setNegativeButton(R.string.dialog_max_iter_cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {

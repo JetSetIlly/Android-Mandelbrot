@@ -3,9 +3,10 @@
     <string name="action_colours">Colours</string>
     <string name="action_settings">Settings</string>
     <string name="action_save">Save Image</string>
-    <string name="action_reset">Reset Coordinates</string>
+    <string name="action_reset_coords">Reset Coordinates</string>
     <string name="settings_max_iterations_label">Maximum Iterations</string>
     <string name="settings_bailout_label">Bailout Value</string>
+    <string name="settings_action_reset">Reset</string>
 
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
@@ -13,4 +14,11 @@
     <string name="colours_all_palettes">All Palettes</string>
     <string name="colours_favourite_palettes">Favourites</string>
     <string name="colours_mixer">Mixer</string>
+
+    <string name="dialog_max_iter_ok">Done</string>
+    <string name="dialog_max_iter_more">More Settings</string>
+    <string name="dialog_max_iter_cancel">Cancel</string>
+
+    <string name="settings_intent_dirty_settings">dirty_settings</string>
+    <string name="settings_intent_rendered_iterations">current_iterations</string>
 </resources>

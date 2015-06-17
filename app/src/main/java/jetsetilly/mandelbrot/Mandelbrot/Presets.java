@@ -26,6 +26,6 @@ public class Presets {
 
     static public Preset[] presets = {
             new Preset("All the way out", -2.11, 1.16, 2.94, -2.88, 60, 4.0),
-            new Preset("First test of imagination", -1.8079, -1.7179, 0.0691, -0.0909, 66, 4.0),
+            new Preset("First test of imagination", -1.8036, -1.7256, 0.0692, -0.0694, 67, 4.0)
     };
 }

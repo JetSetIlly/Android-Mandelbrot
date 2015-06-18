@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
+        action_bar.hide(false);
     }
 
     @Override

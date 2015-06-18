@@ -115,10 +115,13 @@ public class Touch {
                         second_touch_state = TouchState.MOVE;
 
                         if (this_touch_id == touch_id) {
-                            zoom_amount = (int) (touch_y - new_y) * 2;
+                            zoom_amount = (int) (touch_y - new_y);
                         } else {
-                            zoom_amount = (int) (second_touch_y - new_y) * 2;
+                            zoom_amount = (int) (second_touch_y - new_y);
                         }
+
+                        // limit zoom amount
+                        zoom_amount = (int) (zoom_amount * 1.5);
 
                         if (touch_y > second_touch_y)
                             zoom_amount = -zoom_amount;

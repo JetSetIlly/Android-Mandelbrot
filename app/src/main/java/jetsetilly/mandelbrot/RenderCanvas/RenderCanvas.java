@@ -234,7 +234,7 @@ public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListe
         stopRender(); // stop render to avoid smearing
 
         // calculate zoom
-        zoom_amount += amount;
+        zoom_amount = amount;
         zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
         Log.d(DBG_TAG, "zf: " + zoom_factor);
 

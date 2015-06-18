@@ -9,6 +9,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.Mandelbrot.Settings;
+import jetsetilly.mandelbrot.Widgets.IterationsSlider;
 
 
 public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
@@ -17,55 +18,39 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
     private Settings mandelbrot_settings = Settings.getInstance();
 
     private boolean dirty_settings;
-    private int rendered_iterations;
     private double rendered_bailout;
-
     private final int BAILOUT_SCALE = 10;
     private final double BAILOUT_MAX = 32.0;
-    private int iteration_min;
-    private int iteration_max;
-
-    private SeekBar iterations;
     private SeekBar bailout;
+
+    private IterationsSlider iterations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        iterations = (IterationsSlider) findViewById(R.id.iterations);
+
         Intent settings_intent = getIntent();
-        dirty_settings = settings_intent.getBooleanExtra(getString(R.string.settings_intent_dirty_settings), false);
-        rendered_iterations = settings_intent.getIntExtra(getString(R.string.settings_intent_rendered_iterations), -1);
+        int iterations_value = settings_intent.getIntExtra(getString(R.string.settings_intent_iteration_value), -1);
+        iterations.set(iterations_value);
+
         rendered_bailout = mandelbrot_settings.bailout_value;
 
-        iterations =  (SeekBar) findViewById(R.id.seek_iterations);
-        bailout =  (SeekBar) findViewById(R.id.seek_bailout);
-
-        iterations.setOnSeekBarChangeListener(this);
+        bailout = (SeekBar) findViewById(R.id.seek_bailout);
         bailout.setOnSeekBarChangeListener(this);
-
-        iteration_min = (int) (mandelbrot_settings.max_iterations * 0.25);
-        iteration_max = (int) (mandelbrot_settings.max_iterations * 1.5);
-
-        iterations.setMax(iteration_max);
-        iterations.setProgress(mandelbrot_settings.max_iterations - iteration_min);
-
         bailout.setMax((int) BAILOUT_MAX * BAILOUT_SCALE);
         bailout.setProgress((int) (mandelbrot_settings.bailout_value * BAILOUT_SCALE));
+
     }
 
     @Override
     public void onProgressChanged(SeekBar seek_bar, int progress, boolean fromUser) {
         switch (seek_bar.getId()) {
-            case R.id.seek_iterations:
-                TextView iterations = (TextView) findViewById(R.id.iterations);
-                iterations.setText("" + (seek_bar.getProgress() + iteration_min));
-                break;
-
             case R.id.seek_bailout:
                 TextView bailout = (TextView) findViewById(R.id.bailout);
                 bailout.setText("" + ((float) seek_bar.getProgress() / BAILOUT_SCALE));
-
                 break;
         }
     }
@@ -77,12 +62,6 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
     @Override
     public void onStopTrackingTouch(SeekBar seek_bar) {
         switch (seek_bar.getId()) {
-            case R.id.seek_iterations:
-                TextView iterations = (TextView) findViewById(R.id.iterations);
-                mandelbrot_settings.max_iterations = Integer.parseInt(iterations.getText().toString());
-                dirty_settings = mandelbrot_settings.max_iterations != rendered_iterations;
-                break;
-
             case R.id.seek_bailout:
                 TextView bailout = (TextView) findViewById(R.id.bailout);
                 mandelbrot_settings.bailout_value = Double.parseDouble(bailout.getText().toString());
@@ -99,7 +78,7 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (dirty_settings) {
+                if (dirty_settings || iterations.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }
 
@@ -108,7 +87,7 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
                 return true;
 
             case R.id.settings_action_reset:
-                iterations.setProgress(rendered_iterations - iteration_min);
+                iterations.reset();
                 bailout.setProgress((int) rendered_bailout * BAILOUT_SCALE);
                 dirty_settings = false;
                 return true;

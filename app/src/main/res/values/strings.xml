@@ -19,6 +19,5 @@
     <string name="dialog_max_iter_more">More Settings</string>
     <string name="dialog_max_iter_cancel">Cancel</string>
 
-    <string name="settings_intent_dirty_settings">dirty_settings</string>
-    <string name="settings_intent_rendered_iterations">current_iterations</string>
+    <string name="settings_intent_iteration_value">iteration_value</string>
 </resources>

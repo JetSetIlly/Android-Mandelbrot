@@ -33,7 +33,7 @@ public class IterationsDialog extends DialogFragment {
                 Activity curr_activity = getActivity();
 
                 Intent settings_intent = new Intent(curr_activity, SettingsActivity.class);
-                settings_intent.putExtra(getString(R.string.settings_intent_iteration_value), iterations.get());
+                settings_intent.putExtra(getString(R.string.settings_intent_iteration_value), iterations.getInteger());
 
                 startActivity(settings_intent);
                 curr_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);

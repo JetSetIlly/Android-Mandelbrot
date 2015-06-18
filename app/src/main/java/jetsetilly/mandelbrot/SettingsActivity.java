@@ -9,21 +9,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.Mandelbrot.Settings;
+import jetsetilly.mandelbrot.Widgets.BailoutSlider;
 import jetsetilly.mandelbrot.Widgets.IterationsSlider;
 
 
-public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
+public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
-    private Settings mandelbrot_settings = Settings.getInstance();
-
-    private boolean dirty_settings;
-    private double rendered_bailout;
-    private final int BAILOUT_SCALE = 10;
-    private final double BAILOUT_MAX = 32.0;
-    private SeekBar bailout;
-
     private IterationsSlider iterations;
+    private BailoutSlider bailout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,43 +25,11 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
         setContentView(R.layout.activity_settings);
 
         iterations = (IterationsSlider) findViewById(R.id.iterations);
+        bailout = (BailoutSlider) findViewById(R.id.bailout);
 
         Intent settings_intent = getIntent();
         int iterations_value = settings_intent.getIntExtra(getString(R.string.settings_intent_iteration_value), -1);
         iterations.set(iterations_value);
-
-        rendered_bailout = mandelbrot_settings.bailout_value;
-
-        bailout = (SeekBar) findViewById(R.id.seek_bailout);
-        bailout.setOnSeekBarChangeListener(this);
-        bailout.setMax((int) BAILOUT_MAX * BAILOUT_SCALE);
-        bailout.setProgress((int) (mandelbrot_settings.bailout_value * BAILOUT_SCALE));
-
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seek_bar, int progress, boolean fromUser) {
-        switch (seek_bar.getId()) {
-            case R.id.seek_bailout:
-                TextView bailout = (TextView) findViewById(R.id.bailout);
-                bailout.setText("" + ((float) seek_bar.getProgress() / BAILOUT_SCALE));
-                break;
-        }
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seek_bar) {
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seek_bar) {
-        switch (seek_bar.getId()) {
-            case R.id.seek_bailout:
-                TextView bailout = (TextView) findViewById(R.id.bailout);
-                mandelbrot_settings.bailout_value = Double.parseDouble(bailout.getText().toString());
-                dirty_settings = mandelbrot_settings.bailout_value != rendered_bailout;
-                break;
-        }
     }
 
     @Override
@@ -78,7 +40,7 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (dirty_settings || iterations.fixate()) {
+                if (iterations.fixate() || bailout.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }
 
@@ -88,8 +50,7 @@ public class SettingsActivity extends AppCompatActivity implements SeekBar.OnSee
 
             case R.id.settings_action_reset:
                 iterations.reset();
-                bailout.setProgress((int) rendered_bailout * BAILOUT_SCALE);
-                dirty_settings = false;
+                bailout.reset();
                 return true;
         }
 

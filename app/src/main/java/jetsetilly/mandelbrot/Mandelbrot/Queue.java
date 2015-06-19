@@ -7,10 +7,10 @@ public class Queue {
 
     private final int BUFFER_SIZE = 4096; // this should be an even number
 
-    private Canvas context;
+    private MandelbrotCanvas context;
     private PointQueue[] queues;
 
-    public Queue(Canvas context) {
+    public Queue(MandelbrotCanvas context) {
         this.context = context;
         resetQueues();
     }

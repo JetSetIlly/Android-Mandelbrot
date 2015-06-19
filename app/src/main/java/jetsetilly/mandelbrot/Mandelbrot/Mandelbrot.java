@@ -15,7 +15,7 @@ public class Mandelbrot {
     private MandelbrotThread render_thr;
     public boolean render_completed = false;
 
-    private Canvas context;
+    private MandelbrotCanvas context;
     private int canvas_width;
     private int canvas_height;
     private double canvas_ratio;
@@ -41,7 +41,7 @@ public class Mandelbrot {
     private Queue queue;
 
 
-    public Mandelbrot(Canvas context) {
+    public Mandelbrot(MandelbrotCanvas context) {
         this.context = context;
         this.render_thr = null;
 

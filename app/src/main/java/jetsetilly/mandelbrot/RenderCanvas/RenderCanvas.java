@@ -8,23 +8,21 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Mandelbrot.Canvas;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.Palette.Settings;
 
-public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListener {
+public class RenderCanvas extends ImageView implements MandelbrotCanvas
+{
     private final String DBG_TAG = "render canvas";
 
     private final double ZOOM_SATURATION = 0.65; // 0 = gray scale, 1 = identity
 
     private MainActivity context;
-    private Touch touch;
+    private Gestures gestures;
 
     private Mandelbrot mandelbrot;
     private Bitmap display_bm, render_bm;
@@ -57,15 +55,13 @@ public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListe
 
     private void init(Context context) {
         this.context = (MainActivity) context;
-        this.touch = new Touch(this);
+        this.gestures = new Gestures(context, this);
 
         pnt = new Paint();
 
         zoom_color_matrix = new ColorMatrix();
         zoom_color_matrix.setSaturation((float) ZOOM_SATURATION);
         zoom_color_filter = new ColorMatrixColorFilter(zoom_color_matrix);
-
-        this.setOnTouchListener(this);
     }
 
     public void kickStartCanvas() {
@@ -263,10 +259,5 @@ public class RenderCanvas extends ImageView implements Canvas, View.OnTouchListe
         if (!deferred_display) {
             setImageBitmap(display_bm);
         }
-    }
-
-    // implements View.OnTouchListener
-    public boolean onTouch(View view, MotionEvent event) {
-        return touch.onTouch(view, event);
     }
 }

@@ -240,6 +240,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
         // without the zoom_factor going crazy or losing definition
+        canvas.drawColor(palette_settings.mostFrequentColor());
         canvas.drawBitmap(render_bm, (int) (-offset_x * zoom_factor * 2), (int) (-offset_y * zoom_factor * 2), null);
 
         // do zoom
@@ -254,7 +255,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int)new_top, (int)new_right, (int)new_bottom);
 
-        canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
+        canvas.drawColor(palette_settings.mostFrequentColor());
+        canvas.drawBitmap(tmp_bm, blit_from, blit_to, pnt);
 
         if (!deferred_display) {
             setImageBitmap(display_bm);

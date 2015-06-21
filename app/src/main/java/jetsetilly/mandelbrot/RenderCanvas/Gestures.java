@@ -17,7 +17,6 @@ public class Gestures implements
     private static final String DEBUG_TAG = "touch canvas";
 
     private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
-    private float scale_initial_span;
 
     private RenderCanvas canvas;
     private boolean dirty_canvas;
@@ -137,7 +136,7 @@ public class Gestures implements
         Log.d(DEBUG_TAG, "onScale: " + detector.toString());
         Log.d(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
 
-        canvas.zoomBy((int) ((detector.getCurrentSpan()-scale_initial_span) / 2));
+        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan())) / 2);
 
         return true;
     }
@@ -145,7 +144,6 @@ public class Gestures implements
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         Log.d(DEBUG_TAG, "onScaleBegin: " + detector.toString());
-        scale_initial_span = detector.getCurrentSpan();
         return true;
     }
 

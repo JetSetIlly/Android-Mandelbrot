@@ -230,8 +230,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender(); // stop render to avoid smearing
 
         // calculate zoom
-        zoom_amount = amount;
+        zoom_amount += amount;
         zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
+        Log.d(DBG_TAG, "za: " + zoom_amount);
         Log.d(DBG_TAG, "zf: " + zoom_factor);
 
         /// do offset
@@ -241,7 +242,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
         // without the zoom_factor going crazy or losing definition
         canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(render_bm, (int) (-offset_x * zoom_factor * 2), (int) (-offset_y * zoom_factor * 2), null);
+        canvas.drawBitmap(render_bm,
+                (int) (-offset_x * zoom_factor * 2),
+                (int) (-offset_y * zoom_factor * 2),
+                null);
 
         // do zoom
         new_left = zoom_factor * getWidth();

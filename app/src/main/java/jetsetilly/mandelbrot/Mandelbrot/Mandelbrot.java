@@ -68,7 +68,7 @@ public class Mandelbrot {
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
     }
 
-    public void scrollBy(int pixel_x, int pixel_y) {
+    private void scrollBy(int pixel_x, int pixel_y) {
         mandelbrot_settings.real_left += pixel_x * pixel_scale;
         mandelbrot_settings.real_right += pixel_x * pixel_scale;
         mandelbrot_settings.imaginary_upper += pixel_y * pixel_scale;

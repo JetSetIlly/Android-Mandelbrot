@@ -122,8 +122,8 @@ public class Gestures implements
         int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
-        canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
         canvas.scrollBy(offset_x, offset_y);
+        canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
         canvas.startRender();
 
         return true;

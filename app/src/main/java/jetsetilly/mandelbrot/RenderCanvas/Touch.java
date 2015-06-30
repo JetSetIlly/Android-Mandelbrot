@@ -51,8 +51,9 @@ public class Touch {
 
                 if (new_time - touch_time < DOUBLE_TOUCH_TIME && touchSensitivity(new_x, touch_x) && touchSensitivity(new_y, touch_y)) {
                     touch_state = TouchState.DOUBLE_TOUCH;
-                    canvas.offset_x = (int) (new_x - canvas.getCanvasMidX());
-                    canvas.offset_y = (int) (new_y - canvas.getCanvasMidY());
+                    int offset_x = (int) (new_x - canvas.getCanvasMidX());
+                    int offset_y = (int) (new_y - canvas.getCanvasMidY());
+                    canvas.scrollBy(offset_x, offset_y);
 
                     canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
@@ -65,9 +66,7 @@ public class Touch {
                 } else {
                     if (canvas.checkActionBar(new_x, new_y)) {
                         touch_state = TouchState.TOUCH;
-                        canvas.zoom_amount = 0;
-                        canvas.offset_x = 0;
-                        canvas.offset_y = 0;
+                        //canvas.zoom_amount = 0;
                     }
                 }
 

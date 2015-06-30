@@ -66,26 +66,30 @@ public class Mandelbrot {
     private void calculatePixelScale() {
         pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas_width;
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
+
+        Log.d(DBG_TAG, this.toString());
     }
 
-    private void scrollBy(int pixel_x, int pixel_y) {
+    private void scrollAndZoom(int pixel_x, int pixel_y, int zoom_amount)
+    {
+        double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
+        double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
+        double zoom_factor = zoom_amount / Math.hypot(canvas_height, canvas_width);
+
+        if (zoom_amount != 0) {
+            mandelbrot_settings.real_left += zoom_factor * fractal_width;
+            mandelbrot_settings.real_right -= zoom_factor * fractal_width;
+            mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
+            mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
+            mandelbrot_settings.max_iterations += mandelbrot_settings.max_iterations * (zoom_factor / 2);
+        }
+
         mandelbrot_settings.real_left += pixel_x * pixel_scale;
         mandelbrot_settings.real_right += pixel_x * pixel_scale;
         mandelbrot_settings.imaginary_upper += pixel_y * pixel_scale;
         mandelbrot_settings.imaginary_lower += pixel_y * pixel_scale;
-    }
 
-    private void zoomByPixels(int pixels) {
-        double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
-        double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
-        double zoom_factor = pixels / Math.hypot(canvas_height, canvas_width);
-
-        mandelbrot_settings.real_left += zoom_factor * fractal_width;
-        mandelbrot_settings.real_right -= zoom_factor * fractal_width;
-        mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
-        mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-
-        mandelbrot_settings.max_iterations += mandelbrot_settings.max_iterations * zoom_factor / 3;
+        correctMandelbrotRange();
     }
 
     public void correctMandelbrotRange()
@@ -132,19 +136,14 @@ public class Mandelbrot {
         // initialise no_render_area
         no_render_area = new Rect(0, 0, canvas_width, canvas_height);
 
-        // we do this every time in case settings have changed
-        correctMandelbrotRange();
-
         // make sure render mode etc. is set correctly
         render_mode = RenderMode.CENTRE;
         num_passes = DEF_NUM_PASSES;
         canvas_update_frequency = DEF_UPDATE_FREQ;
 
-        scrollBy(offset_x, offset_y);
+        scrollAndZoom(offset_x, offset_y, zoom);
 
-        if (zoom != 0) {
-            zoomByPixels(zoom);
-        } else if (render_completed) {
+        if (zoom == 0 && render_completed) {
             /* define no_render_area more accurately */
             if (offset_x < 0) {
                 no_render_area.right = -offset_x;
@@ -160,7 +159,6 @@ public class Mandelbrot {
         }
 
         calculatePixelScale();
-        Log.d(DBG_TAG, this.toString());
 
         render_thr = new MandelbrotThread();
         render_thr.execute();

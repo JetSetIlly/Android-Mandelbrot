@@ -16,7 +16,10 @@ public class Gestures implements
 {
     private static final String DEBUG_TAG = "touch canvas";
 
-    private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 500;
+    private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 750;
+
+    private enum TouchState {IDLE, TOUCH, SCALE}
+    private TouchState touch_state = TouchState.IDLE;
 
     private RenderCanvas canvas;
     private boolean dirty_canvas;
@@ -28,6 +31,7 @@ public class Gestures implements
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
+        scale_detector.setQuickScaleEnabled(false);
 
         gestures_detector.setOnDoubleTapListener(this);
 
@@ -51,6 +55,7 @@ public class Gestures implements
                     if (dirty_canvas) {
                         canvas.startRender();
                         dirty_canvas = false;
+                        touch_state = TouchState.IDLE;
                     }
                 }
 
@@ -64,6 +69,7 @@ public class Gestures implements
     public boolean onDown(MotionEvent event) {
         Log.d(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY());
+        touch_state = TouchState.TOUCH;
         return true;
     }
 
@@ -80,6 +86,9 @@ public class Gestures implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        if (touch_state != TouchState.TOUCH)
+            return true;
+
         Log.d(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
         dirty_canvas = true;
@@ -101,9 +110,6 @@ public class Gestures implements
     public boolean onDoubleTap(MotionEvent event) {
         Log.d(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
-        canvas.offset_x = (int) (event.getX() - canvas.getCanvasMidX());
-        canvas.offset_y = (int) (event.getY() - canvas.getCanvasMidY());
-
         canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
         // defer displaying of zoomed image - this means that there
@@ -113,7 +119,11 @@ public class Gestures implements
         // will be scrolled and then displayed.
         //
         // TODO: a better way of doing that.
+        int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
+        int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
+
         canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
+        canvas.scrollBy(offset_x, offset_y);
         canvas.startRender();
 
         return true;
@@ -144,12 +154,14 @@ public class Gestures implements
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         Log.d(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+        touch_state = TouchState.SCALE;
         return true;
     }
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         Log.d(DEBUG_TAG, "onScaleEnd: " + detector.toString());
+        touch_state = TouchState.TOUCH;
         dirty_canvas = true;
     }
 }

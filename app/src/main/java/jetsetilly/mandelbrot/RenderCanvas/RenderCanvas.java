@@ -30,9 +30,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Paint pnt;
     private Settings palette_settings = Settings.getInstance();
 
-    public int zoom_amount; // cumulative on touch events. resets to zero on down event
-    public int offset_x; // offset_x and offset_y could be attained by calling getScrollX but
-    public int offset_y; // I think keeping our own books makes the intention clearer
+    private int zoom_amount;
+    private double zoom_factor;
+    private int offset_x;
+    private int offset_y;
 
     /* filter to apply to zoomed images */
     ColorMatrixColorFilter zoom_color_filter;
@@ -183,9 +184,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // offset and zoom amount is now meaningless
         // although these values are reset when we resume touch events later
         // we're taking a belt and braces approach to avoid accidents
+        zoom_amount = 0;
+        zoom_factor = 0;
         offset_x = 0;
         offset_y = 0;
-        zoom_amount = 0;
     }
     /* end of render control */
 
@@ -211,10 +213,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     @Override
     public void scrollBy(int x, int y) {
         stopRender(); // stop render to avoid smearing
-
         super.scrollBy(x, y);
-        this.offset_x += x;
-        this.offset_y += y;
+        offset_y += y;
+        offset_x += x;
     }
 
     public void zoomBy(int amount) {
@@ -223,7 +224,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void zoomBy(int amount, boolean deferred_display) {
         double new_left, new_right, new_top, new_bottom;
-        double zoom_factor;
         Bitmap tmp_bm;
         Rect blit_to, blit_from;
 
@@ -232,8 +232,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // calculate zoom
         zoom_amount += amount;
         zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
-        Log.d(DBG_TAG, "za: " + zoom_amount);
-        Log.d(DBG_TAG, "zf: " + zoom_factor);
 
         /// do offset
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
@@ -264,6 +262,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         if (!deferred_display) {
             setImageBitmap(display_bm);
+            scrollTo(0, 0);
         }
     }
 }

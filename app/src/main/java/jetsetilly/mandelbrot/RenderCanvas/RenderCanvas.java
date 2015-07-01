@@ -233,12 +233,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         zoom_amount += amount;
         zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
 
+        // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
+        // without the zoom_factor going crazy or losing definition
+
         /// do offset
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new android.graphics.Canvas(tmp_bm);
-
-        // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
-        // without the zoom_factor going crazy or losing definition
         canvas.drawColor(palette_settings.mostFrequentColor());
         canvas.drawBitmap(render_bm,
                 (int) (-offset_x * zoom_factor * 2),

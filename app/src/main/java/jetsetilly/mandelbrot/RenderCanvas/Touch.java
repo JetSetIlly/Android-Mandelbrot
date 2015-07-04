@@ -62,7 +62,7 @@ public class Touch {
                     // which hasn't been "attached" to the ImageView
                     // later in the startRender() method, this display_bm
                     // will be scrolled and then displayed.
-                    canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
+                    canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT);
                 } else {
                     if (canvas.checkActionBar(new_x, new_y)) {
                         touch_state = TouchState.TOUCH;

@@ -19,8 +19,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
     private final String DBG_TAG = "render canvas";
 
-    private final double ZOOM_SATURATION = 0.65; // 0 = gray scale, 1 = identity
-
     private MainActivity context;
     private Gestures gestures;
 
@@ -30,10 +28,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Paint pnt;
     private Settings palette_settings = Settings.getInstance();
 
-    private int zoom_amount;
     private double zoom_factor;
-    private int offset_x;
-    private int offset_y;
+
+    // the amount of deviation (offset) from the current render_bm
+    // used when chaining scroll and zoom events
+    // reset when new render_bm is created;
+    // use getScrollX() and getScrollY() to retrieve current scroll values
+    private double render_offset_x;
+    private double render_offset_y;
 
     /* filter to apply to zoomed images */
     ColorMatrixColorFilter zoom_color_filter;
@@ -57,12 +59,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void init(Context context) {
         this.context = (MainActivity) context;
         this.gestures = new Gestures(context, this);
-
         pnt = new Paint();
-
-        zoom_color_matrix = new ColorMatrix();
-        zoom_color_matrix.setSaturation((float) ZOOM_SATURATION);
-        zoom_color_filter = new ColorMatrixColorFilter(zoom_color_matrix);
     }
 
     public void kickStartCanvas() {
@@ -106,6 +103,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public int getCanvasHeight() {
         return getHeight();
     }
+
+    public double getCanvasHypotenuse() { return Math.hypot(getHeight(), getWidth()); }
+
+    public double getCanvasRatio() { return (double) getWidth() / (double) getHeight(); }
 
     public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
@@ -162,13 +163,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
-            if (zoom_amount != 0) {
-                fadeDisplayBitmap();
+            if (gestures.last_touch_state == Gestures.TouchState.SCALE) {
+                canvas.drawBitmap(display_bm, 0, 0, null);
+            } else {
+                canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
+                scrollTo(0, 0);
             }
-
-            // move bitmap
-            canvas.drawBitmap(display_bm, -offset_x, -offset_y, null);
-            scrollTo(0, 0); // reset scroll of image view
         }
 
         // lose reference to old bitmap(s)
@@ -179,59 +179,33 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         palette_settings.resetCount();
 
         // start render thread
-        mandelbrot.startRender(offset_x, offset_y, zoom_amount);
+        mandelbrot.startRender(render_offset_x, render_offset_y, zoom_factor);
 
-        // offset and zoom amount is now meaningless
-        // although these values are reset when we resume touch events later
-        // we're taking a belt and braces approach to avoid accidents
-        zoom_amount = 0;
         zoom_factor = 0;
-        offset_x = 0;
-        offset_y = 0;
+        render_offset_x = 0;
+        render_offset_y = 0;
     }
     /* end of render control */
-
-    private void fadeDisplayBitmap() {
-        Rect blit = new Rect(0, 0, getWidth(), getHeight());
-        Bitmap tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-
-        // using temporary canvas so we don't clobber the real canvas
-        android.graphics.Canvas tmp_canvas = new android.graphics.Canvas(tmp_bm);
-
-        // we're resetting because some palettes don't like it if we don't. no, this doesn't make sense to me either
-        // TODO: understand why we need to do this
-        pnt.reset();
-
-        pnt.setColorFilter(zoom_color_filter);
-        tmp_canvas.drawBitmap(display_bm, blit, blit, pnt);
-        pnt.setColorFilter(null);
-
-        display_bm = tmp_bm;
-        setImageBitmap(display_bm);
-    }
 
     @Override
     public void scrollBy(int x, int y) {
         stopRender(); // stop render to avoid smearing
         super.scrollBy(x, y);
-        offset_y += y;
-        offset_x += x;
+        render_offset_x += x;
+        render_offset_y += y;
     }
 
     public void zoomBy(int amount) {
-        zoomBy(amount, false);
-    }
-
-    public void zoomBy(int amount, boolean deferred_display) {
         double new_left, new_right, new_top, new_bottom;
         Bitmap tmp_bm;
         Rect blit_to, blit_from;
 
         stopRender(); // stop render to avoid smearing
 
+        Log.d(DBG_TAG, "zoom_amount: " + amount);
+
         // calculate zoom
-        zoom_amount += amount;
-        zoom_factor = zoom_amount / Math.hypot(getHeight(), getWidth());
+        zoom_factor += amount / getCanvasHypotenuse();
 
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
         // without the zoom_factor going crazy or losing definition
@@ -240,10 +214,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new android.graphics.Canvas(tmp_bm);
         canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(render_bm,
-                (int) (-offset_x * zoom_factor * 2),
-                (int) (-offset_y * zoom_factor * 2),
-                null);
+        canvas.drawBitmap(render_bm, (int) -render_offset_x, (int) -render_offset_y, null);
+        scrollTo(0, 0);
 
         // do zoom
         new_left = zoom_factor * getWidth();
@@ -258,11 +230,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         blit_from = new Rect((int)new_left, (int)new_top, (int)new_right, (int)new_bottom);
 
         canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(tmp_bm, blit_from, blit_to, pnt);
+        canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
 
-        if (!deferred_display) {
-            setImageBitmap(display_bm);
-            scrollTo(0, 0);
-        }
+        setImageBitmap(display_bm);
     }
 }

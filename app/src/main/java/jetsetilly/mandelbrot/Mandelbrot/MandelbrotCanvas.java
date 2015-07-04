@@ -6,5 +6,7 @@ public interface MandelbrotCanvas {
     void update();
     int getCanvasWidth();
     int getCanvasHeight();
+    double getCanvasHypotenuse();
+    double getCanvasRatio();
     int getPaletteSize();
 }

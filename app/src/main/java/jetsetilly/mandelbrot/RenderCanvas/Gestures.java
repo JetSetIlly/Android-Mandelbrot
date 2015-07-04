@@ -18,8 +18,9 @@ public class Gestures implements
 
     private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 750;
 
-    private enum TouchState {IDLE, TOUCH, SCALE}
-    private TouchState touch_state = TouchState.IDLE;
+    public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, MOVE, SCALE}
+    public TouchState touch_state = TouchState.IDLE;
+    public TouchState last_touch_state;
 
     private RenderCanvas canvas;
     private boolean dirty_canvas;
@@ -55,6 +56,7 @@ public class Gestures implements
                     if (dirty_canvas) {
                         canvas.startRender();
                         dirty_canvas = false;
+                        last_touch_state = touch_state;
                         touch_state = TouchState.IDLE;
                     }
                 }
@@ -86,12 +88,13 @@ public class Gestures implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (touch_state != TouchState.TOUCH)
+        if (touch_state != TouchState.TOUCH && touch_state != TouchState.MOVE)
             return true;
 
         Log.d(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
         dirty_canvas = true;
+        touch_state = TouchState.MOVE;
         return true;
     }
 
@@ -123,9 +126,10 @@ public class Gestures implements
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
         canvas.scrollBy(offset_x, offset_y);
-        canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT, true);
+        canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT);
         canvas.startRender();
 
+        touch_state = TouchState.DOUBLE_TOUCH;
         return true;
     }
 

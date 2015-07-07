@@ -92,12 +92,6 @@ public class Mandelbrot {
         double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
         double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
 
-        // scroll
-        mandelbrot_settings.real_left += offset_x * pixel_scale;
-        mandelbrot_settings.real_right += offset_x * pixel_scale;
-        mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
-        mandelbrot_settings.imaginary_lower += offset_y * pixel_scale;
-
         // zoom
         if (zoom_factor != 0) {
             mandelbrot_settings.real_left += zoom_factor * fractal_width;
@@ -106,6 +100,12 @@ public class Mandelbrot {
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
             mandelbrot_settings.max_iterations += mandelbrot_settings.max_iterations * (zoom_factor / 2);
         }
+
+        // scroll
+        mandelbrot_settings.real_left += offset_x * pixel_scale;
+        mandelbrot_settings.real_right += offset_x * pixel_scale;
+        mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
+        mandelbrot_settings.imaginary_lower += offset_y * pixel_scale;
 
         correctMandelbrotRange();
     }

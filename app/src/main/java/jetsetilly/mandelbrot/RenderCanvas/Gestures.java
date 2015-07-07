@@ -25,6 +25,8 @@ public class Gestures implements
     private RenderCanvas canvas;
     private boolean dirty_canvas;
 
+    private boolean has_scaled;
+
     /* initialisation */
     public Gestures(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
@@ -65,6 +67,12 @@ public class Gestures implements
                 return gestures_detector.onTouchEvent(event) || ret_val;
             }
         });
+
+        resetGestureState();
+    }
+
+    private void resetGestureState() {
+        has_scaled = false;
     }
 
     @Override
@@ -72,6 +80,7 @@ public class Gestures implements
         Log.d(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY());
         touch_state = TouchState.TOUCH;
+        resetGestureState();
         return true;
     }
 
@@ -126,7 +135,7 @@ public class Gestures implements
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
         canvas.scrollBy(offset_x, offset_y);
-        canvas.zoomBy(DOUBLE_TOUCH_ZOOM_AMOUNT);
+        canvas.animatedZoom(DOUBLE_TOUCH_ZOOM_AMOUNT);
         canvas.startRender();
 
         touch_state = TouchState.DOUBLE_TOUCH;
@@ -149,6 +158,7 @@ public class Gestures implements
     public boolean onScale(ScaleGestureDetector detector) {
         Log.d(DEBUG_TAG, "onScale: " + detector.toString());
         Log.d(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
+        Log.d(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
 
         canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan())) / 2);
 
@@ -158,6 +168,15 @@ public class Gestures implements
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         Log.d(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+
+        /* don't allow scaling to happen twice without a call to
+        resetGestureState(). This is to prevent awkwardness in RenderCanvas.
+        I'm sure it's fixable but this is simple fix without much imapact on usability
+         */
+        if (has_scaled) {
+            return false;
+        }
+
         touch_state = TouchState.SCALE;
         return true;
     }
@@ -167,5 +186,6 @@ public class Gestures implements
         Log.d(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
         dirty_canvas = true;
+        has_scaled = true;
     }
 }

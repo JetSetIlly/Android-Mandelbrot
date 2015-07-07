@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -34,8 +36,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // used when chaining scroll and zoom events
     // reset when new render_bm is created;
     // use getScrollX() and getScrollY() to retrieve current scroll values
-    private double render_offset_x;
-    private double render_offset_y;
+    private int rendered_offset_x;
+    private int rendered_offset_y;
+
+    // mandelbrot movement depends on current zoom level
+    // scroll_scale is used to add the correct weight to the scroll amount
+    // value of scroll_scale is altered in zoomBy() function
+    private double mandelbrot_offset_x;
+    private double mandelbrot_offset_y;
+    private double scroll_scale;
 
     /* filter to apply to zoomed images */
     ColorMatrixColorFilter zoom_color_filter;
@@ -179,11 +188,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         palette_settings.resetCount();
 
         // start render thread
-        mandelbrot.startRender(render_offset_x, render_offset_y, zoom_factor);
+        mandelbrot.startRender(mandelbrot_offset_x, mandelbrot_offset_y, zoom_factor);
 
         zoom_factor = 0;
-        render_offset_x = 0;
-        render_offset_y = 0;
+        rendered_offset_x = 0;
+        rendered_offset_y = 0;
+        mandelbrot_offset_x = 0;
+        mandelbrot_offset_y = 0;
+        scroll_scale = 1;
     }
     /* end of render control */
 
@@ -191,11 +203,32 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void scrollBy(int x, int y) {
         stopRender(); // stop render to avoid smearing
         super.scrollBy(x, y);
-        render_offset_x += x;
-        render_offset_y += y;
+        rendered_offset_x += x;
+        rendered_offset_y += y;
+        mandelbrot_offset_x += x * scroll_scale;
+        mandelbrot_offset_y += y * scroll_scale;
+    }
+
+    public void animatedZoom(int amount) {
+        /*
+        stopRender();
+
+        ViewPropertyAnimator anim = animate();
+
+        anim.scaleX(2f);
+        anim.scaleY(2f);
+        anim.setDuration(1000);
+        anim.start();
+        */
+
+        zoomBy(amount, true);
     }
 
     public void zoomBy(int amount) {
+        zoomBy(amount, false);
+    }
+
+    public void zoomBy(int amount, boolean animated) {
         double new_left, new_right, new_top, new_bottom;
         Bitmap tmp_bm;
         Rect blit_to, blit_from;
@@ -214,7 +247,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
         canvas = new android.graphics.Canvas(tmp_bm);
         canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(render_bm, (int) -render_offset_x, (int) -render_offset_y, null);
+        canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
         scrollTo(0, 0);
 
         // do zoom
@@ -227,11 +260,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         canvas = new android.graphics.Canvas(display_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());
-        blit_from = new Rect((int)new_left, (int)new_top, (int)new_right, (int)new_bottom);
+        blit_from = new Rect((int)new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
         canvas.drawColor(palette_settings.mostFrequentColor());
         canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
 
+        setScaleX(1f);
+        setScaleY(1f);
         setImageBitmap(display_bm);
+
+        // image zoomed so scrolling needs a new scroll_scale
+        scroll_scale = (new_right - new_left) / getWidth();
     }
 }

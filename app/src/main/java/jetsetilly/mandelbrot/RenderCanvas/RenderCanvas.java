@@ -203,39 +203,57 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void scrollBy(int x, int y) {
         stopRender(); // stop render to avoid smearing
         super.scrollBy(x, y);
-        rendered_offset_x += x;
-        rendered_offset_y += y;
-        mandelbrot_offset_x += x * scroll_scale;
-        mandelbrot_offset_y += y * scroll_scale;
+        updateOffsets(x, y);
     }
 
-    public void animatedZoom(int amount) {
-        /*
-        stopRender();
+    private void updateOffsets(int offset_x, int offset_y) {
+        rendered_offset_x += offset_x;
+        rendered_offset_y += offset_y;
+        mandelbrot_offset_x += offset_x * scroll_scale;
+        mandelbrot_offset_y += offset_y * scroll_scale;
+    }
+
+    public void animatedZoom(int amount, int offset_x, int offset_y) {
+        stopRender(); // stop render to avoid smearing
+
+        updateOffsets(offset_x, offset_y);
+        final Bitmap zoomed_bm = zoomImage(amount, true);
 
         ViewPropertyAnimator anim = animate();
 
-        anim.scaleX(2f);
-        anim.scaleY(2f);
-        anim.setDuration(1000);
-        anim.start();
-        */
+        float scale = 1 / (float) (amount / getCanvasHypotenuse());
 
-        zoomBy(amount, true);
+        anim.x(-offset_x * scale);
+        anim.y(-offset_y * scale);
+        anim.scaleX(scale);
+        anim.scaleY(scale);
+        anim.setDuration(1000);
+
+        anim.withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                setScaleX(1f);
+                setScaleY(1f);
+                setX(0f);
+                setY(0f);
+                setImageBitmap(display_bm = zoomed_bm);
+                postInvalidate();
+                startRender();
+            }
+        });
+
+        anim.start();
     }
 
     public void zoomBy(int amount) {
-        zoomBy(amount, false);
+        stopRender(); // stop render to avoid smearing
+        zoomImage(amount, false);
     }
 
-    public void zoomBy(int amount, boolean animated) {
+    private Bitmap zoomImage(int amount, boolean defer) {
         double new_left, new_right, new_top, new_bottom;
-        Bitmap tmp_bm;
+        Bitmap offset_bm, zoomed_bm;
         Rect blit_to, blit_from;
-
-        stopRender(); // stop render to avoid smearing
-
-        Log.d(DBG_TAG, "zoom_amount: " + amount);
 
         // calculate zoom
         zoom_factor += amount / getCanvasHypotenuse();
@@ -244,8 +262,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // without the zoom_factor going crazy or losing definition
 
         /// do offset
-        tmp_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new android.graphics.Canvas(tmp_bm);
+        offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        canvas = new android.graphics.Canvas(offset_bm);
         canvas.drawColor(palette_settings.mostFrequentColor());
         canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
         scrollTo(0, 0);
@@ -256,20 +274,22 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         new_top = zoom_factor * getHeight();
         new_bottom = getHeight() - new_top;
 
-        display_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new android.graphics.Canvas(display_bm);
+        zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        canvas = new android.graphics.Canvas(zoomed_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
         canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(tmp_bm, blit_from, blit_to, null);
-
-        setScaleX(1f);
-        setScaleY(1f);
-        setImageBitmap(display_bm);
+        canvas.drawBitmap(offset_bm, blit_from, blit_to, null);
 
         // image zoomed so scrolling needs a new scroll_scale
         scroll_scale = (new_right - new_left) / getWidth();
+
+        if (!defer) {
+            setImageBitmap(display_bm = zoomed_bm);
+        }
+
+        return zoomed_bm;
     }
 }

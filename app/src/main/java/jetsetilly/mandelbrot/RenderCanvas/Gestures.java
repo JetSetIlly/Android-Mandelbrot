@@ -124,21 +124,14 @@ public class Gestures implements
 
         canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
-        // defer displaying of zoomed image - this means that there
-        // will be a zoomed image pointed to by display_bm but
-        // which hasn't been "attached" to the ImageView
-        // later in the startRender() method, this display_bm
-        // will be scrolled and then displayed.
-        //
-        // TODO: a better way of doing that.
         int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
-        canvas.scrollBy(offset_x, offset_y);
-        canvas.animatedZoom(DOUBLE_TOUCH_ZOOM_AMOUNT);
-        canvas.startRender();
-
+        canvas.animatedZoom(DOUBLE_TOUCH_ZOOM_AMOUNT, offset_x, offset_y);
         touch_state = TouchState.DOUBLE_TOUCH;
+
+        // not dirtying canvas -- we'll restart the render in the canvas.animatedZoom method
+
         return true;
     }
 

@@ -2,9 +2,7 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Matrix;
+import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -26,7 +24,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private Mandelbrot mandelbrot;
     private Bitmap display_bm, render_bm;
-    private android.graphics.Canvas canvas;
+    private Canvas canvas;
     private Paint pnt;
     private Settings palette_settings = Settings.getInstance();
 
@@ -45,10 +43,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private double mandelbrot_offset_x;
     private double mandelbrot_offset_y;
     private double scroll_scale;
-
-    /* filter to apply to zoomed images */
-    ColorMatrixColorFilter zoom_color_filter;
-    ColorMatrix zoom_color_matrix;
 
     /* initialisation */
     public RenderCanvas(Context context) {
@@ -166,7 +160,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new android.graphics.Canvas(render_bm);
+        canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
         canvas.drawColor(palette_settings.mostFrequentColor());
@@ -216,12 +210,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void animatedZoom(int amount, int offset_x, int offset_y) {
         stopRender(); // stop render to avoid smearing
 
+        float scale = (float) (getCanvasHypotenuse() / amount);
+        scale *= 1.064;
+
         updateOffsets(offset_x, offset_y);
         final Bitmap zoomed_bm = zoomImage(amount, true);
 
+        // do animation
         ViewPropertyAnimator anim = animate();
-
-        float scale = 1 / (float) (amount / getCanvasHypotenuse());
 
         anim.x(-offset_x * scale);
         anim.y(-offset_y * scale);
@@ -263,7 +259,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         /// do offset
         offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new android.graphics.Canvas(offset_bm);
+        canvas = new Canvas(offset_bm);
         canvas.drawColor(palette_settings.mostFrequentColor());
         canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
         scrollTo(0, 0);
@@ -273,9 +269,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         new_right = getWidth() - new_left;
         new_top = zoom_factor * getHeight();
         new_bottom = getHeight() - new_top;
-
         zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new android.graphics.Canvas(zoomed_bm);
+        canvas = new Canvas(zoomed_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int) new_top, (int) new_right, (int) new_bottom);

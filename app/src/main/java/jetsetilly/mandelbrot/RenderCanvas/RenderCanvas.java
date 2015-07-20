@@ -210,8 +210,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void animatedZoom(int amount, int offset_x, int offset_y) {
         stopRender(); // stop render to avoid smearing
 
-        float scale = (float) (getCanvasHypotenuse() / amount);
-        scale *= 1.064;
+        float scale = (float) 1.064 / (float) (amount / getCanvasHypotenuse());
 
         updateOffsets(offset_x, offset_y);
         final Bitmap zoomed_bm = zoomImage(amount, true);
@@ -219,11 +218,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // do animation
         ViewPropertyAnimator anim = animate();
 
+        anim.withLayer();
+        anim.setDuration(1000);
         anim.x(-offset_x * scale);
         anim.y(-offset_y * scale);
         anim.scaleX(scale);
         anim.scaleY(scale);
-        anim.setDuration(1000);
 
         anim.withEndAction(new Runnable() {
             @Override

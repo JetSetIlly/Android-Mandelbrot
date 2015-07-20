@@ -1,6 +1,6 @@
 package jetsetilly.mandelbrot.Palette;
 
-public class Settings {
+public class PaletteSettings {
     private final String DBG_TAG = "palette settings";
 
     /* colours definitions */
@@ -20,7 +20,7 @@ public class Settings {
     private int colour_cnt[];
     private int colour_cnt_highest;
 
-    public Settings() {
+    public PaletteSettings() {
         super();
         setColours(DEF_PALETTE_ID);
         resetCount();
@@ -70,8 +70,8 @@ public class Settings {
     /* colour counting */
 
     /* singleton pattern */
-    private static Settings singleton = new Settings();
-    public static Settings getInstance() {
+    private static PaletteSettings singleton = new PaletteSettings();
+    public static PaletteSettings getInstance() {
         return singleton;
     }
     /* end of singleton pattern */

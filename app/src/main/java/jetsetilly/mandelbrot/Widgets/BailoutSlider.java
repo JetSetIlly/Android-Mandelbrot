@@ -4,10 +4,10 @@ package jetsetilly.mandelbrot.Widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import jetsetilly.mandelbrot.Mandelbrot.Settings;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 
 public class BailoutSlider extends ReportingSeekBar {
-    private Settings mandelbrot_settings = Settings.getInstance();
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private final int BAILOUT_SCALE = 10;
     private final double BAILOUT_MAX = 32.0;

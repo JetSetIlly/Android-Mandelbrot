@@ -16,8 +16,6 @@ public class Gestures implements
 {
     private static final String DEBUG_TAG = "touch canvas";
 
-    private final int DOUBLE_TOUCH_ZOOM_AMOUNT = 750;
-
     public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, MOVE, SCALE}
     public TouchState touch_state = TouchState.IDLE;
     public TouchState last_touch_state;
@@ -127,7 +125,7 @@ public class Gestures implements
         int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
-        canvas.animatedZoom(DOUBLE_TOUCH_ZOOM_AMOUNT, offset_x, offset_y);
+        canvas.doubleTouchZoom(offset_x, offset_y);
         touch_state = TouchState.DOUBLE_TOUCH;
 
         // not dirtying canvas -- we'll restart the render in the canvas.animatedZoom method

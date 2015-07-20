@@ -5,11 +5,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
-import jetsetilly.mandelbrot.Mandelbrot.Settings;
 import jetsetilly.mandelbrot.Widgets.BailoutSlider;
+import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;
 import jetsetilly.mandelbrot.Widgets.IterationsSlider;
 
 
@@ -18,6 +16,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private IterationsSlider iterations;
     private BailoutSlider bailout;
+    private DoubleTapScaleSlider doubletap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +25,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         iterations = (IterationsSlider) findViewById(R.id.iterations);
         bailout = (BailoutSlider) findViewById(R.id.bailout);
+        doubletap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
 
+        /* get the values that wer set on the previous screen
+        they've not been committed yet so we've passed them by intent */
         Intent settings_intent = getIntent();
         int iterations_value = settings_intent.getIntExtra(getString(R.string.settings_intent_iteration_value), -1);
         iterations.set(iterations_value);
@@ -40,7 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (iterations.fixate() || bailout.fixate()) {
+                if (iterations.fixate() || bailout.fixate() || doubletap.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }
 
@@ -51,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
             case R.id.settings_action_reset:
                 iterations.reset();
                 bailout.reset();
+                doubletap.reset();
                 return true;
         }
 

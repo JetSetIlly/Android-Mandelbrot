@@ -1,6 +1,6 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
-public class Settings {
+public class MandelbrotSettings {
     public double real_left;
     public double real_right;
     public double imaginary_upper;
@@ -9,7 +9,7 @@ public class Settings {
     public int max_iterations;
     public double bailout_value;
 
-    Settings() {
+    MandelbrotSettings() {
         resetCoords();
     }
 
@@ -23,8 +23,8 @@ public class Settings {
     }
 
     /* singleton pattern */
-    private static Settings singleton = new Settings();
-    public static Settings getInstance() {
+    private static MandelbrotSettings singleton = new MandelbrotSettings();
+    public static MandelbrotSettings getInstance() {
         return singleton;
     }
     /* end of singleton pattern */

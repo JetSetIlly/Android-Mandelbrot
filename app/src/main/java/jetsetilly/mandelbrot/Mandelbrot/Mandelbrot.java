@@ -10,7 +10,7 @@ import jetsetilly.mandelbrot.MainActivity;
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
-    private Settings mandelbrot_settings = Settings.getInstance();
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
     public boolean render_completed = false;

@@ -6,14 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
-import jetsetilly.mandelbrot.Palette.Settings;
+import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
@@ -26,7 +25,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Bitmap display_bm, render_bm;
     private Canvas canvas;
     private Paint pnt;
-    private Settings palette_settings = Settings.getInstance();
+    private PaletteSettings palette_settings = PaletteSettings.getInstance();
+    private GestureSettings gesture_settings = GestureSettings.getInstance();
 
     private double zoom_factor;
 
@@ -207,13 +207,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         mandelbrot_offset_y += offset_y * scroll_scale;
     }
 
-    public void animatedZoom(int amount, int offset_x, int offset_y) {
+    public void doubleTouchZoom(int offset_x, int offset_y) {
+        animatedZoom(gesture_settings.double_tap_scale, offset_x, offset_y);
+    }
+
+    public void animatedZoom(float scale, int offset_x, int offset_y) {
         stopRender(); // stop render to avoid smearing
 
-        float scale = (float) 1.064 / (float) (amount / getCanvasHypotenuse());
-
         updateOffsets(offset_x, offset_y);
-        final Bitmap zoomed_bm = zoomImage(amount, true);
+        final Bitmap zoomed_bm = zoomImage(scale, true);
 
         // do animation
         ViewPropertyAnimator anim = animate();
@@ -241,18 +243,18 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.start();
     }
 
-    public void zoomBy(int amount) {
+    public void zoomBy(int pixels) {
         stopRender(); // stop render to avoid smearing
-        zoomImage(amount, false);
+        zoomImage(scaleFromPixels(pixels), false);
     }
 
-    private Bitmap zoomImage(int amount, boolean defer) {
+    private Bitmap zoomImage(float scale, boolean defer) {
         double new_left, new_right, new_top, new_bottom;
         Bitmap offset_bm, zoomed_bm;
         Rect blit_to, blit_from;
 
         // calculate zoom
-        zoom_factor += amount / getCanvasHypotenuse();
+        zoom_factor += zoomFactorFromScale(scale);
 
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
         // without the zoom_factor going crazy or losing definition
@@ -287,4 +289,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         return zoomed_bm;
     }
+
+
+    private double factorFromPixels(int pixels) {
+        return pixels / getCanvasHypotenuse();
+    }
+
+    private float scaleFromPixels(int pixels) {
+        return (float) getWidth() / (float) ( (getWidth() - 2 * factorFromPixels(pixels) * getWidth()) );
+    }
+
+    private float zoomFactorFromScale(float scale) {
+        return - (getWidth() - (scale * getWidth())) / (2 * scale * getWidth());
+    }
 }
+
+

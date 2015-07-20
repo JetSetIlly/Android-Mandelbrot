@@ -19,7 +19,7 @@ public class Adapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
-    private Settings palette_settings = Settings.getInstance();
+    private PaletteSettings palette_settings = PaletteSettings.getInstance();
     private ColoursActivity context;
 
     // z heights for selected/unselected cards

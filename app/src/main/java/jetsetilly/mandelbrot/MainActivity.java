@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
-import jetsetilly.mandelbrot.Mandelbrot.Settings;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_reset:
-                Settings.getInstance().resetCoords();
+                MandelbrotSettings.getInstance().resetCoords();
                 render_canvas.kickStartCanvas();
                 return true;
         }

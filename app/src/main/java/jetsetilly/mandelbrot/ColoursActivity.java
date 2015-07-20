@@ -12,13 +12,13 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import jetsetilly.mandelbrot.Google.SlidingTabLayout;
 import jetsetilly.mandelbrot.Palette.Adapter;
-import jetsetilly.mandelbrot.Palette.Settings;
+import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 
 public class ColoursActivity extends AppCompatActivity {
     private final String DBG_TAG = "colours activity";
 
-    private Settings palette_settings = Settings.getInstance();
+    private PaletteSettings palette_settings = PaletteSettings.getInstance();
 
     private SlidingTabLayout tabs;
 

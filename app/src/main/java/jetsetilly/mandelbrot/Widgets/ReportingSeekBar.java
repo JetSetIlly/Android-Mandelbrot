@@ -7,8 +7,6 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import jetsetilly.mandelbrot.Mandelbrot.Settings;
-
 public class ReportingSeekBar extends LinearLayout {
     private TextView value;
     private SeekBar slider;
@@ -67,7 +65,7 @@ public class ReportingSeekBar extends LinearLayout {
         this.scale = scale;
         start_value = (int) (val * scale);
         base_value = (int) (min * scale);
-        slider.setMax((int) (max * scale));
+        slider.setMax((int) (max * scale) - base_value);
         this.set(start_value);
         }
 

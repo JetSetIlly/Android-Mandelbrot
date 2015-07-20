@@ -6,6 +6,7 @@
     <string name="action_reset_coords">Reset Coordinates</string>
     <string name="settings_max_iterations_label">Maximum Iterations</string>
     <string name="settings_bailout_label">Bailout Value</string>
+    <string name="settings_doubletap_label">Double-Tap Scale</string>
     <string name="settings_action_reset">Reset</string>
 
     <string name="action_save_success">Image Saved</string>

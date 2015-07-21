@@ -22,9 +22,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Gestures gestures;
 
     private Mandelbrot mandelbrot;
-    private Bitmap display_bm, render_bm;
-    private Canvas canvas;
-    private Paint pnt;
+
+    private Bitmap render_bm;
+    private Canvas render_canvas;
+    private Paint render_paint;
+
+    // the display_bm is a pointer to whatever bitmap is currently displayed
+    // whenever setImageBitmap() is called we should set display_bm to equal
+    // whatever the Bitmap is being sent
+    // the idiosyncratic ways to do this is setImageBitmap(display_bm = bm)
+    // I considered overloading the setImageBitmap() method but that's too clumsy
+    // a solution IMO
+    private Bitmap display_bm;
+
     private PaletteSettings palette_settings = PaletteSettings.getInstance();
     private GestureSettings gesture_settings = GestureSettings.getInstance();
 
@@ -62,7 +72,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void init(Context context) {
         this.context = (MainActivity) context;
         this.gestures = new Gestures(context, this);
-        pnt = new Paint();
+        render_paint = new Paint();
     }
 
     public void kickStartCanvas() {
@@ -79,8 +89,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     {
         // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.selected_palette.colours[iteration]);
-        canvas.drawPoint(dx, dy, pnt);
+        render_paint.setColor(palette_settings.selected_palette.colours[iteration]);
+        render_canvas.drawPoint(dx, dy, render_paint);
 
         palette_settings.updateCount(iteration);
     }
@@ -89,8 +99,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     {
         // iteration has already been limited to the colours size in MandelbrotQueue
 
-        pnt.setColor(palette_settings.selected_palette.colours[iteration]);
-        canvas.drawPoints(points, 0, points_len, pnt);
+        render_paint.setColor(palette_settings.selected_palette.colours[iteration]);
+        render_canvas.drawPoints(points, 0, points_len, render_paint);
 
         palette_settings.updateCount(iteration);
     }
@@ -160,23 +170,22 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(render_bm);
+        render_canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
-        canvas.drawColor(palette_settings.mostFrequentColor());
+        render_canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
             if (gestures.last_touch_state == Gestures.TouchState.SCALE) {
-                canvas.drawBitmap(display_bm, 0, 0, null);
+                render_canvas.drawBitmap(display_bm, 0, 0, null);
             } else {
-                canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
+                render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
                 scrollTo(0, 0);
             }
         }
 
         // lose reference to old bitmap(s)
-        display_bm = render_bm;
-        setImageBitmap(display_bm);
+        setImageBitmap(display_bm = render_bm);
 
         // reset colours count
         palette_settings.resetCount();
@@ -250,6 +259,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private Bitmap zoomImage(float scale, boolean defer) {
         double new_left, new_right, new_top, new_bottom;
+        Canvas zoom_canvas;
         Bitmap offset_bm, zoomed_bm;
         Rect blit_to, blit_from;
 
@@ -261,9 +271,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         /// do offset
         offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(offset_bm);
-        canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
+        zoom_canvas = new Canvas(offset_bm);
+        zoom_canvas.drawColor(palette_settings.mostFrequentColor());
+        zoom_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
         scrollTo(0, 0);
 
         // do zoom
@@ -272,13 +282,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         new_top = zoom_factor * getHeight();
         new_bottom = getHeight() - new_top;
         zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-        canvas = new Canvas(zoomed_bm);
+        zoom_canvas = new Canvas(zoomed_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());
         blit_from = new Rect((int)new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
-        canvas.drawColor(palette_settings.mostFrequentColor());
-        canvas.drawBitmap(offset_bm, blit_from, blit_to, null);
+        zoom_canvas.drawColor(palette_settings.mostFrequentColor());
+        zoom_canvas.drawBitmap(offset_bm, blit_from, blit_to, null);
 
         // image zoomed so scrolling needs a new scroll_scale
         scroll_scale = (new_right - new_left) / getWidth();

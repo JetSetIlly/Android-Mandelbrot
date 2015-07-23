@@ -261,34 +261,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         });
 
         anim.start();
-
-        /*
-        AnimatorSet set = new AnimatorSet();
-        set.setDuration(1000);
-
-        set.playTogether(
-                ObjectAnimator.ofFloat(this, "translationX", 0, -offset_x * scale),
-                ObjectAnimator.ofFloat(this, "translationY", 0, -offset_y * scale),
-                ObjectAnimator.ofFloat(this, "scaleX", 1, scale),
-                ObjectAnimator.ofFloat(this, "scaleY", 1, scale)
-                );
-
-        set.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                setScaleX(1f);
-                setScaleY(1f);
-                setX(0f);
-                setY(0f);
-                setImageBitmap(display_bm = zoomed_bm);
-                postInvalidate();
-                startRender();
-            }
-        });
-
-        set.start();
-        */
     }
 
     public void zoomBy(int pixels) {

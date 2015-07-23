@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.widget.ImageView;
 
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     static public ProgressView progress;
 
     public MyActionBar action_bar;
+    public ImageView background_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
                 render_canvas.kickStartCanvas();
             }
         });
+
+        // get reference to background view
+        background_view = (ImageView) findViewById(R.id.background);
     }
 
     @Override

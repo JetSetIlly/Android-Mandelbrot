@@ -57,6 +57,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
+        init(context);
     }
 
     public RenderCanvas(Context context, AttributeSet attrs) {
@@ -226,6 +227,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         updateOffsets(offset_x, offset_y);
         final Bitmap zoomed_bm = zoomImage(scale, true);
 
+        // we're going to animate the image view not the bitmap itself
+        // in other words, the image view is going to change size and show whatever
+        // is behind the image view in the layout. in our case the thing that is behind the
+        // image view is another image view. we use this background_view to keep the illusion
+        // that the bitmap is scaling. to do this we set the background color of background_view
+        // to palette_settings.mostFrequentColor()
+        //
+        // we'll remove this when we introduce tessellated bitmaps
+        context.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
+
         // do animation
         ViewPropertyAnimator anim = animate();
 
@@ -250,6 +261,34 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         });
 
         anim.start();
+
+        /*
+        AnimatorSet set = new AnimatorSet();
+        set.setDuration(1000);
+
+        set.playTogether(
+                ObjectAnimator.ofFloat(this, "translationX", 0, -offset_x * scale),
+                ObjectAnimator.ofFloat(this, "translationY", 0, -offset_y * scale),
+                ObjectAnimator.ofFloat(this, "scaleX", 1, scale),
+                ObjectAnimator.ofFloat(this, "scaleY", 1, scale)
+                );
+
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                setScaleX(1f);
+                setScaleY(1f);
+                setX(0f);
+                setY(0f);
+                setImageBitmap(display_bm = zoomed_bm);
+                postInvalidate();
+                startRender();
+            }
+        });
+
+        set.start();
+        */
     }
 
     public void zoomBy(int pixels) {

@@ -98,7 +98,7 @@ public class Mandelbrot {
             mandelbrot_settings.real_right -= zoom_factor * fractal_width;
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-            mandelbrot_settings.max_iterations += mandelbrot_settings.max_iterations * (zoom_factor / 2);
+            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 2);
         }
 
         // scroll
@@ -133,7 +133,12 @@ public class Mandelbrot {
         no_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
         // make sure render mode etc. is set correctly
-        render_mode = RenderMode.CENTRE;
+        if (zoom_factor == 0) {
+            render_mode = RenderMode.CENTRE;
+        } else {
+            render_mode = RenderMode.TOP_DOWN;
+        }
+
         num_passes = DEF_NUM_PASSES;
         canvas_update_frequency = DEF_UPDATE_FREQ;
 

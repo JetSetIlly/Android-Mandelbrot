@@ -41,16 +41,19 @@ public class ProgressView extends ImageView {
         super(context);
     }
 
-    public void setBusy(int pass, int num_passes) {
+    public void setBusy(int pass, int num_passes, boolean show_immediately) {
         // quick exit if progress is already visible
         if (set_busy.get()) return;
 
+        // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
-        if (start_time == 0.0) {
-            start_time = System.nanoTime();
-        }
-        if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
-            return;
+        if (!show_immediately) {
+            if (start_time == 0.0) {
+                start_time = System.nanoTime();
+            }
+            if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
+                return;
+            }
         }
 
         set_busy.set(true);

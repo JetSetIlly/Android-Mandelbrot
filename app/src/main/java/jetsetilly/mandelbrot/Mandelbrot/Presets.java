@@ -22,7 +22,7 @@ public class Presets {
     }
 
     /* default values -- these are approximately square. Mandelbrot.correctMandelbrotRange() will correct squishiness */
-    static final int DEFAULT_SETTINGS = 1;
+    static final int DEFAULT_SETTINGS = 0;
 
     static public Preset[] presets = {
             new Preset("All the way out", -2.11, 1.16, 2.94, -2.88, 60, 4.0),

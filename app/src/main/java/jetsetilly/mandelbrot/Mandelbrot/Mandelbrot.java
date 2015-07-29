@@ -34,6 +34,10 @@ public class Mandelbrot {
     public int num_passes = DEF_NUM_PASSES; // in lines
     public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
 
+    // is this render a rescaling render (ie. has the zoom level changed)
+    // we use this so that progress view is shown immediately
+    private boolean rescaling;
+
     /* render queue */
     private Queue queue;
 
@@ -134,8 +138,10 @@ public class Mandelbrot {
 
         // make sure render mode etc. is set correctly
         if (zoom_factor == 0) {
+            rescaling = false;
             render_mode = RenderMode.CENTRE;
         } else {
+            rescaling = true;
             render_mode = RenderMode.TOP_DOWN;
         }
 
@@ -290,7 +296,7 @@ public class Mandelbrot {
 
         @Override
         protected void onProgressUpdate(Integer... pass) {
-            MainActivity.progress.setBusy(pass[0], num_passes);
+            MainActivity.progress.setBusy(pass[0], num_passes, rescaling);
             canvas.update();
         }
 

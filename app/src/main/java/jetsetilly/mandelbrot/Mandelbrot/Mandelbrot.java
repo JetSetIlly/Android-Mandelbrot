@@ -39,14 +39,14 @@ public class Mandelbrot {
     private boolean rescaling;
 
     /* render queue */
-    private Queue queue;
+    private Buffer buffer;
 
 
     public Mandelbrot(MandelbrotCanvas canvas) {
         this.canvas = canvas;
         this.render_thr = null;
 
-        queue = new Queue(canvas);
+        buffer = new Buffer(canvas, mandelbrot_settings);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class Mandelbrot {
             double x, y, yb;
 
             render_completed = false;
-            queue.resetQueues();
+            buffer.restart();
 
             switch (render_mode) {
                 case TOP_DOWN:
@@ -224,7 +224,7 @@ public class Mandelbrot {
 
                             x = mandelbrot_settings.real_left;
                             for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, x += pixel_scale) {
-                                queue.pushDraw(cx, cy, doIterations(x, y));
+                                buffer.pushDraw(cx, cy, doIterations(x, y));
                             }
 
                             // exit early if necessary
@@ -260,7 +260,7 @@ public class Mandelbrot {
                             }
 
                             for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                queue.pushDraw(cx, y_line, doIterations(x, y));
+                                buffer.pushDraw(cx, y_line, doIterations(x, y));
                             }
 
                             // top half of image
@@ -276,7 +276,7 @@ public class Mandelbrot {
                             }
 
                             for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                queue.pushDraw(cx, y_line, doIterations(x, yb));
+                                buffer.pushDraw(cx, y_line, doIterations(x, yb));
                             }
 
                             // exit early if necessary
@@ -289,7 +289,7 @@ public class Mandelbrot {
                     break;
             }
 
-            queue.finaliseDraw();
+            buffer.finalise();
 
             return 0;
         }

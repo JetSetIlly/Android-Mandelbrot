@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
+import jetsetilly.mandelbrot.Mandelbrot.Buffer;
 import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -86,24 +87,44 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* end of initialisation */
 
     /* MandelbrotCanvas implementation */
+    public void startDrawSequence() {
+    }
+
     public void doDraw(float dx, float dy, int iteration)
     {
-        // iteration has already been limited to the colours size in MandelbrotQueue
+        int palette_entry = iteration;
 
-        render_paint.setColor(palette_settings.selected_palette.colours[iteration]);
+        // map iteration to palette entry
+        if (iteration >= getPaletteSize()) {
+            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
+        }
+
+        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
         render_canvas.drawPoint(dx, dy, render_paint);
 
-        palette_settings.updateCount(iteration);
+        palette_settings.updateCount(palette_entry);
     }
 
     public void doDraw(float[] points, int points_len, int iteration)
     {
-        // iteration has already been limited to the colours size in MandelbrotQueue
+        int palette_entry = iteration;
 
-        render_paint.setColor(palette_settings.selected_palette.colours[iteration]);
+        // map iteration to palette entry
+        if (iteration >= getPaletteSize()) {
+            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
+        }
+
+        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
         render_canvas.drawPoints(points, 0, points_len, render_paint);
 
-        palette_settings.updateCount(iteration);
+        palette_settings.updateCount(palette_entry);
+    }
+
+    public void notifyDraw(Buffer buffer, int iteration) {
+        buffer.bundlePoints(iteration, getPaletteSize());
+    }
+
+    public void endDrawSequence() {
     }
 
     public void update() {

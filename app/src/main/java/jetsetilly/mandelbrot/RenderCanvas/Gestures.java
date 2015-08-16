@@ -25,10 +25,14 @@ public class Gestures implements
 
     private boolean has_scaled;
 
+    // gestures will be ignored so long as blocked == true
+    private boolean blocked;
+
     /* initialisation */
     public Gestures(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
         this.dirty_canvas = false;
+        this.blocked = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
@@ -39,7 +43,6 @@ public class Gestures implements
         canvas.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
                 /* gestures_detector doesn't handle or expose ACTION_UP events!!
                 this is necessary because we need to detect when a ACTION_MOVE event so
                 that we can kick-start canvas rendering.
@@ -69,12 +72,22 @@ public class Gestures implements
         resetGestureState();
     }
 
+    public void blockGestures() {
+        blocked = true;
+    }
+
+    public void unblockGestures() {
+        blocked = false;
+    }
+
     private void resetGestureState() {
         has_scaled = false;
     }
 
     @Override
     public boolean onDown(MotionEvent event) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY());
         touch_state = TouchState.TOUCH;
@@ -84,17 +97,23 @@ public class Gestures implements
 
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onFling: " + event1.toString()+event2.toString());
         return true;
     }
 
     @Override
     public void onLongPress(MotionEvent event) {
+        if (blocked) return;
+
         Log.d(DEBUG_TAG, "onLongPress: " + event.toString());
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        if (blocked) return false;
+
         if (touch_state != TouchState.TOUCH && touch_state != TouchState.MOVE)
             return true;
 
@@ -107,17 +126,23 @@ public class Gestures implements
 
     @Override
     public void onShowPress(MotionEvent event) {
+        if (blocked) return;
+
         Log.d(DEBUG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onSingleTapUp: " + event.toString());
         return true;
     }
 
     @Override
     public boolean onDoubleTap(MotionEvent event) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
         canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
@@ -135,18 +160,24 @@ public class Gestures implements
 
     @Override
     public boolean onDoubleTapEvent(MotionEvent event) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
         return true;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onScale: " + detector.toString());
         Log.d(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
         Log.d(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
@@ -158,6 +189,8 @@ public class Gestures implements
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
+        if (blocked) return false;
+
         Log.d(DEBUG_TAG, "onScaleBegin: " + detector.toString());
 
         /* don't allow scaling to happen twice without a call to
@@ -174,6 +207,8 @@ public class Gestures implements
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
+        if (blocked) return;
+
         Log.d(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
         dirty_canvas = true;

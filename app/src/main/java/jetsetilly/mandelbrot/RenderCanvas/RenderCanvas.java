@@ -243,6 +243,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void animatedZoom(float scale, int offset_x, int offset_y) {
+        // animation can take a while -- we don't gestures to be honoured
+        // while the animation is taking place. call blockGestures() here
+        // and unblockGestures() in the animation's endAction
+        gestures.blockGestures();
+
         stopRender(); // stop render to avoid smearing
 
         updateOffsets(offset_x, offset_y);
@@ -278,6 +283,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 setImageBitmap(display_bm = zoomed_bm);
                 postInvalidate();
                 startRender();
+                gestures.unblockGestures();
             }
         });
 

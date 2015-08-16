@@ -102,7 +102,7 @@ public class Mandelbrot {
             mandelbrot_settings.real_right -= zoom_factor * fractal_width;
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 2);
+            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 4);
         }
 
         // scroll

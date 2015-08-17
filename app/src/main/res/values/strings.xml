@@ -4,6 +4,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_save">Save Image</string>
     <string name="action_reset_coords">Reset Coordinates</string>
+    <string name="action_redraw">Redraw</string>
     <string name="settings_max_iterations_label">Maximum Iterations</string>
     <string name="settings_bailout_label">Bailout Value</string>
     <string name="settings_doubletap_label">Double-Tap Scale</string>

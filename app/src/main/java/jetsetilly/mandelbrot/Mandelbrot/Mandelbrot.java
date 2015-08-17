@@ -1,5 +1,6 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -10,6 +11,7 @@ import jetsetilly.mandelbrot.MainActivity;
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
+    private Context context;
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
@@ -42,7 +44,8 @@ public class Mandelbrot {
     private Buffer buffer;
 
 
-    public Mandelbrot(MandelbrotCanvas canvas) {
+    public Mandelbrot(Context context, MandelbrotCanvas canvas) {
+        this.context = context;
         this.canvas = canvas;
         this.render_thr = null;
 
@@ -87,6 +90,8 @@ public class Mandelbrot {
         }
 
         calculatePixelScale();
+
+        mandelbrot_settings.save(context);
 
         Log.d(DBG_TAG, this.toString());
     }

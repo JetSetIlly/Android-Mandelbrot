@@ -28,5 +28,12 @@
         android:title="@string/action_reset_coords"
         app:showAsAction="never"
     />
+
+    <item
+        android:id="@+id/action_redraw"
+        android:title="@string/action_redraw"
+        app:showAsAction="never"
+    />
+
 </menu>
 

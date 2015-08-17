@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
@@ -81,28 +82,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // set background color
         setBackgroundColor(palette_settings.mostFrequentColor());
 
-        mandelbrot = new Mandelbrot(this);
+        mandelbrot = new Mandelbrot(context, this);
         startRender();
     }
     /* end of initialisation */
 
     /* MandelbrotCanvas implementation */
-    public void startDrawSequence() {
-    }
-
     public void doDraw(float dx, float dy, int iteration)
     {
-        int palette_entry = iteration;
+        float[] points = new float[2];
 
-        // map iteration to palette entry
-        if (iteration >= getPaletteSize()) {
-            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
-        }
-
-        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
-        render_canvas.drawPoint(dx, dy, render_paint);
-
-        palette_settings.updateCount(palette_entry);
+        points[0] = dx;
+        points[1] = dy;
+        doDraw(points, points.length, iteration);
     }
 
     public void doDraw(float[] points, int points_len, int iteration)
@@ -122,9 +114,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void notifyDraw(Buffer buffer, int iteration) {
         buffer.bundlePoints(iteration, getPaletteSize());
-    }
-
-    public void endDrawSequence() {
+        //buffer.bundlePoints(iteration, -1);
     }
 
     public void update() {

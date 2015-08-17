@@ -54,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
         action_bar.completeSetup(this);
         setSupportActionBar(action_bar);
 
+        // restore mandelbrot settings
+        MandelbrotSettings.getInstance().restore(this);
+
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
 
@@ -116,6 +119,10 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_reset:
                 MandelbrotSettings.getInstance().resetCoords();
+                render_canvas.kickStartCanvas();
+                return true;
+
+            case R.id.action_redraw:
                 render_canvas.kickStartCanvas();
                 return true;
         }

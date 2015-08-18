@@ -40,16 +40,10 @@ public class Mandelbrot {
     // we use this so that progress view is shown immediately
     private boolean rescaling;
 
-    /* render queue */
-    private Buffer buffer;
-
-
     public Mandelbrot(Context context, MandelbrotCanvas canvas) {
         this.context = context;
         this.canvas = canvas;
         this.render_thr = null;
-
-        buffer = new Buffer(canvas, mandelbrot_settings);
     }
 
     @Override
@@ -218,7 +212,7 @@ public class Mandelbrot {
             double x, y, yb;
 
             render_completed = false;
-            buffer.restart();
+            canvas.startDraw();
 
             switch (render_mode) {
                 case TOP_DOWN:
@@ -229,7 +223,7 @@ public class Mandelbrot {
 
                             x = mandelbrot_settings.real_left;
                             for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, x += pixel_scale) {
-                                buffer.pushDraw(cx, cy, doIterations(x, y));
+                                canvas.drawPoint(cx, cy, doIterations(x, y));
                             }
 
                             // exit early if necessary
@@ -265,7 +259,7 @@ public class Mandelbrot {
                             }
 
                             for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                buffer.pushDraw(cx, y_line, doIterations(x, y));
+                                canvas.drawPoint(cx, y_line, doIterations(x, y));
                             }
 
                             // top half of image
@@ -281,7 +275,7 @@ public class Mandelbrot {
                             }
 
                             for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                buffer.pushDraw(cx, y_line, doIterations(x, yb));
+                                canvas.drawPoint(cx, y_line, doIterations(x, yb));
                             }
 
                             // exit early if necessary
@@ -294,7 +288,7 @@ public class Mandelbrot {
                     break;
             }
 
-            buffer.finalise();
+            canvas.endDraw();
 
             return 0;
         }

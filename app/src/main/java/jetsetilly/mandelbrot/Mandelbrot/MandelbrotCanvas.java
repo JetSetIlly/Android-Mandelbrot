@@ -1,10 +1,11 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 public interface MandelbrotCanvas {
-    void doDraw(float dx, float dy, int iteration);
-    void doDraw(float[] points, int points_len, int iteration);
-    void notifyDraw(Buffer buffer, int iteration);
+    void startDraw();
+    void drawPoint(float dx, float dy, int iteration);
+    void endDraw();
     void update();
+
     int getCanvasWidth();
     int getCanvasHeight();
     double getCanvasHypotenuse();

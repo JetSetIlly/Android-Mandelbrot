@@ -6,14 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
-import jetsetilly.mandelbrot.Mandelbrot.Buffer;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -28,6 +27,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Bitmap render_bm;
     private Canvas render_canvas;
     private Paint render_paint;
+    private Buffer buffer;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
     // whenever setImageBitmap() is called we should set display_bm to equal
@@ -39,6 +39,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private PaletteSettings palette_settings = PaletteSettings.getInstance();
     private GestureSettings gesture_settings = GestureSettings.getInstance();
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private double zoom_factor;
 
@@ -88,33 +89,17 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* end of initialisation */
 
     /* MandelbrotCanvas implementation */
-    public void doDraw(float dx, float dy, int iteration)
-    {
-        float[] points = new float[2];
-
-        points[0] = dx;
-        points[1] = dy;
-        doDraw(points, points.length, iteration);
+    public void startDraw() {
+        buffer = new Buffer(this, mandelbrot_settings);
     }
 
-    public void doDraw(float[] points, int points_len, int iteration)
+    public void drawPoint(float dx, float dy, int iteration)
     {
-        int palette_entry = iteration;
-
-        // map iteration to palette entry
-        if (iteration >= getPaletteSize()) {
-            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
-        }
-
-        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
-        render_canvas.drawPoints(points, 0, points_len, render_paint);
-
-        palette_settings.updateCount(palette_entry);
+        buffer.pushDraw(dx, dy, iteration);
     }
 
-    public void notifyDraw(Buffer buffer, int iteration) {
-        buffer.bundlePoints(iteration, getPaletteSize());
-        //buffer.bundlePoints(iteration, -1);
+    public void endDraw() {
+        buffer.finalise();
     }
 
     public void update() {
@@ -135,6 +120,22 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
+
+    /* drawBufferedPoints() - method to plot lots of points at once */
+    public void drawBufferedPoints(float[] points, int points_len, int iteration) {
+        int palette_entry = iteration;
+
+        // map iteration to palette entry
+        if (iteration >= getPaletteSize()) {
+            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
+        }
+
+        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
+        render_canvas.drawPoints(points, 0, points_len, render_paint);
+
+        palette_settings.updateCount(palette_entry);
+    }
+    /* end of drawBufferedPoints() method */
 
     /* property functions */
     public double getCanvasMidX() {

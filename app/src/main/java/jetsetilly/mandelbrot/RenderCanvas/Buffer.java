@@ -1,5 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
+import android.util.Log;
+
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 
 public class Buffer {
@@ -47,13 +49,27 @@ public class Buffer {
     public void popDraw(int iteration) {
         int cycle = canvas.getPaletteSize();
 
-        bundled_points_len = 0;
+        if (iteration == 0) {
+            System.arraycopy(queues[0].points, 0, bundled_points, 0, queues[0].points_len);
+            bundled_points_len = queues[0].points_len;
+            queues[0].resetQueue();
+        } else {
+            bundled_points_len = 0;
 
-        // bundle iterations with the same cycle
-        for (int i = iteration; i < queues.length; i += cycle) {
-            System.arraycopy(queues[i].points, 0, bundled_points, bundled_points_len, queues[i].points_len);
-            bundled_points_len += queues[i].points_len;
-            queues[i].resetQueue();
+            // bundle iterations with the same cycle
+            // note that we only bundle iterations that come after
+            // the iteration that we are working with
+            //
+            // i = iteration % cycle you would imagine would work but it
+            // has weird side effects that frankly, is just baffling to me
+            // and i've spent far too long trying to figure it out. baffling
+            for (int i = iteration; i < queues.length; i += cycle) {
+                if (i != 0) {
+                    System.arraycopy(queues[i].points, 0, bundled_points, bundled_points_len, queues[i].points_len);
+                    bundled_points_len += queues[i].points_len;
+                    queues[i].resetQueue();
+                }
+            }
         }
 
         canvas.drawBufferedPoints(bundled_points, bundled_points_len, iteration);

@@ -7,78 +7,87 @@ public class Buffer {
 
     private final int BUFFER_SIZE = 4096; // this should be an even number
 
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+
     private RenderCanvas canvas;
-    private MandelbrotSettings mandelbrot_settings;
     private IterationQueue[] queues;
 
-    private float[] bundle;
-    private int bundle_ct;
+    // bundled_points is used in popDraw(). we don't want to keep reinitialising
+    // memory every time popDraw() is called so we're declaring it here
+    private float[] bundled_points;
+    private int bundled_points_len;
 
-    public Buffer(RenderCanvas canvas, MandelbrotSettings settings) {
+    public Buffer(RenderCanvas canvas) {
         this.canvas = canvas;
-        this.mandelbrot_settings = settings;
-        restart();
-    }
 
-    public void restart() {
         queues = new IterationQueue[mandelbrot_settings.max_iterations];
         for (int i = 0; i < queues.length; ++i) {
-            queues[i] = new IterationQueue(i);
+            queues[i] = new IterationQueue();
         }
 
-        bundle = new float[queues.length * BUFFER_SIZE];
-        bundle_ct = 0;
+        bundled_points = new float[queues.length * BUFFER_SIZE];
+        bundled_points_len = 0;
     }
 
-    public void finalise() {
+    public void flush() {
         for (int i = 0; i < queues.length; ++ i) {
             if (!queues[i].isEmpty()) {
-                canvas.drawBufferedPoints(queues[i].points, queues[i].points_ct, i);
+                canvas.drawBufferedPoints(queues[i].points, queues[i].points_len, i);
                 queues[i].resetQueue();
             }
         }
     }
 
     public void pushDraw(float cx, float cy, int iteration) {
-        queues[iteration].pushDraw(cx, cy);
+        if (queues[iteration].push(cx, cy)) {
+            popDraw(iteration);
+        }
+    }
+
+    public void popDraw(int iteration) {
+        int cycle = canvas.getPaletteSize();
+
+        bundled_points_len = 0;
+
+        // bundle iterations with the same cycle
+        for (int i = iteration; i < queues.length; i += cycle) {
+            System.arraycopy(queues[i].points, 0, bundled_points, bundled_points_len, queues[i].points_len);
+            bundled_points_len += queues[i].points_len;
+            queues[i].resetQueue();
+        }
+
+        canvas.drawBufferedPoints(bundled_points, bundled_points_len, iteration);
+
+        //canvas.drawBufferedPoints(queues[iteration].points, queues[iteration].points_len, iteration);
+        //queues[iteration].resetQueue();
     }
 
     class IterationQueue {
-        private int iteration;
-
         public float[] points;
-        public int points_ct;
+        public int points_len;
 
-        public IterationQueue(int iteration)
+        public IterationQueue()
         {
-            this.iteration = iteration;
             points = new float[BUFFER_SIZE];
-            points_ct = 0;
+            points_len = 0;
         }
 
-        public void pushDraw(float cx, float cy) {
-            points[points_ct++] = cx;
-            points[points_ct++] = cy;
+        public boolean push(float cx, float cy) {
+            // returns true when queue is full
+            // false otherwise
 
-            if (points_ct >= points.length) {
-                popDraw();
-            }
-        }
+            points[points_len++] = cx;
+            points[points_len++] = cy;
 
-        public void popDraw() {
-            if (points_ct > 0) {
-                canvas.drawBufferedPoints(points, points_ct, iteration);
-                resetQueue();
-            }
+            return points_len >= points.length;
         }
 
         public void resetQueue() {
-            points_ct = 0;
+            points_len = 0;
         }
 
         public boolean isEmpty() {
-            return points_ct == 0;
+            return points_len == 0;
         }
     }
-
 }

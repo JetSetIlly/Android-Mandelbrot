@@ -16,7 +16,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private IterationsSlider iterations;
     private BailoutSlider bailout;
-    private DoubleTapScaleSlider doubletap;
+    private DoubleTapScaleSlider double_tap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         iterations = (IterationsSlider) findViewById(R.id.iterations);
         bailout = (BailoutSlider) findViewById(R.id.bailout);
-        doubletap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
+        double_tap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
 
         /* get the values that wer set on the previous screen
         they've not been committed yet so we've passed them by intent */
@@ -42,7 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (iterations.fixate() || bailout.fixate() || doubletap.fixate()) {
+                if (iterations.fixate() || bailout.fixate() || double_tap.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }
 
@@ -53,7 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
             case R.id.settings_action_reset:
                 iterations.reset();
                 bailout.reset();
-                doubletap.reset();
+                double_tap.reset();
                 return true;
         }
 

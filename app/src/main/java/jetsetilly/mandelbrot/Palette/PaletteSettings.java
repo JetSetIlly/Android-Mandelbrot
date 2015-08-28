@@ -9,7 +9,6 @@ public class PaletteSettings {
     /* colours definitions */
     public final int DEF_PALETTE_ID = 0;
     public final int DEF_KEY_COL = 1;   // base color - used to colourise tabs in ColoursActivity
-    public final int DEF_NULL_COL = 0;
 
     /* for simplicity, use palettes as defined in PalettePresets
      TODO: store/retrieve definitions on disk */
@@ -27,6 +26,12 @@ public class PaletteSettings {
         setColours(DEF_PALETTE_ID);
         resetCount();
     }
+
+    /* TODO:
+    saving palette_id is not very robust - if the position in the preset list
+    changes then the saved palette_id will be wrong. we should save the palette
+    name and search for it in the list.
+     */
 
     public void save(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);

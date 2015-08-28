@@ -15,7 +15,7 @@ import android.widget.TextView;
 import jetsetilly.mandelbrot.ColoursActivity;
 import jetsetilly.mandelbrot.R;
 
-public class Adapter implements ListAdapter {
+public class PaletteListAdapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";
     final static int MAX_COLOURS_TO_PREVIEW = 128;
 
@@ -34,7 +34,7 @@ public class Adapter implements ListAdapter {
     private View selected_row_view = null;
 
 
-    public Adapter(ColoursActivity context) {
+    public PaletteListAdapter(ColoursActivity context) {
         super();
 
         this.context = context;

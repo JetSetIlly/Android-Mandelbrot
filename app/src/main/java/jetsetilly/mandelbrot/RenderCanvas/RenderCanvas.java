@@ -13,6 +13,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -123,11 +124,24 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     /* drawBufferedPoints() - method to plot lots of points at once */
     public void drawBufferedPoints(float[] points, int points_len, int iteration) {
-        int palette_entry = iteration;
+        int palette_entry;
 
         // map iteration to palette entry
-        if (iteration >= getPaletteSize()) {
-            palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
+        if (palette_settings.selected_palette.palette_mode == PaletteDefinition.PaletteMode.WEIGHTED_INDEX) {
+            int iterations_step = mandelbrot_settings.max_iterations / palette_settings.selected_palette.num_colours;
+
+            if (iteration == 0) {
+                palette_entry = 0;
+            } else {
+                palette_entry = (iteration / iterations_step) + 1;
+                palette_entry = Math.min(palette_entry, palette_settings.selected_palette.num_colours);
+            }
+        } else {
+            palette_entry = iteration;
+
+            if (iteration >= getPaletteSize()) {
+                palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
+            }
         }
 
         render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);

@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import jetsetilly.mandelbrot.Palette.PaletteSettings;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
         // restore mandelbrot settings
         MandelbrotSettings.getInstance().restore(this);
+
+        // restore mandelbrot settings
+        PaletteSettings.getInstance().restore(this);
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);

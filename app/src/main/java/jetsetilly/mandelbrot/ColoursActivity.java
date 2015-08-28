@@ -1,5 +1,6 @@
 package jetsetilly.mandelbrot;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -11,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import jetsetilly.mandelbrot.Google.SlidingTabLayout;
-import jetsetilly.mandelbrot.Palette.Adapter;
+import jetsetilly.mandelbrot.Palette.PaletteListAdapter;
 import jetsetilly.mandelbrot.Palette.PaletteSettings;
 
 
@@ -72,10 +73,12 @@ public class ColoursActivity extends AppCompatActivity {
     class PalettePager extends PagerAdapter {
         private final String DBG_TAG = "palette pager adapter";
 
-        private final ThreadLocal<ColoursActivity> context = new ThreadLocal<>();
+        private Context context;
+        private final ThreadLocal<ColoursActivity> thread_local = new ThreadLocal<>();
 
         public PalettePager(ColoursActivity context) {
-            this.context.set(context);
+            this.context = context;
+            this.thread_local.set(context);
         }
 
         @Override
@@ -109,14 +112,14 @@ public class ColoursActivity extends AppCompatActivity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             // Inflate a new layout from our resources
-            View view = context.get().getLayoutInflater().inflate(R.layout.activity_colours_page, container, false);
+            View view = thread_local.get().getLayoutInflater().inflate(R.layout.activity_colours_page, container, false);
             // Add the newly created View to the ViewPager
             container.addView(view);
 
             // TODO: implement other pages
             if (position != 0) return view;
 
-            final Adapter palette_adapter = new Adapter(context.get());
+            final PaletteListAdapter palette_adapter = new PaletteListAdapter(thread_local.get());
 
             // add colours adapter to this list view
             final ListView lv = (ListView) view.findViewById(R.id.palettes_list);
@@ -129,6 +132,7 @@ public class ColoursActivity extends AppCompatActivity {
                     palette_adapter.setPaletteCard(view);
                     palette_settings.setColours(position);
                     setAccentColor();
+                    palette_settings.save(context);
                     MainActivity.render_canvas.startRender();
                 }
             });

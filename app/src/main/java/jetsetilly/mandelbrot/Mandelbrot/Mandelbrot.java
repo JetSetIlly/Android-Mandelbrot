@@ -28,7 +28,7 @@ public class Mandelbrot {
     private Rect no_render_area;
 
     /* ui related stuff */
-    private final int DEF_NUM_PASSES = 4;
+    private final int DEF_NUM_PASSES = 1;
     private final int DEF_UPDATE_FREQ = 1;
 
     private enum RenderMode {TOP_DOWN, CENTRE}
@@ -38,7 +38,7 @@ public class Mandelbrot {
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
-    private boolean rescaling;
+    private boolean rescaling_render;
 
     public Mandelbrot(Context context, MandelbrotCanvas canvas) {
         this.context = context;
@@ -101,7 +101,7 @@ public class Mandelbrot {
             mandelbrot_settings.real_right -= zoom_factor * fractal_width;
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 4);
+            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 2);
         }
 
         // scroll
@@ -137,11 +137,11 @@ public class Mandelbrot {
 
         // make sure render mode etc. is set correctly
         if (zoom_factor == 0) {
-            rescaling = false;
+            rescaling_render = false;
             render_mode = RenderMode.CENTRE;
         } else {
-            rescaling = true;
-            render_mode = RenderMode.TOP_DOWN;
+            rescaling_render = true;
+            render_mode = RenderMode.CENTRE;
         }
 
         num_passes = DEF_NUM_PASSES;
@@ -179,6 +179,8 @@ public class Mandelbrot {
 
         final static public String DBG_TAG = "render thread";
 
+        int actual_max_iteration = 0;
+
         private int doIterations(double x, double y) {
             double A, B, U, V;
             int iteration;
@@ -193,6 +195,7 @@ public class Mandelbrot {
                 V = B * B;
 
                 if (U + V > mandelbrot_settings.bailout_value) {
+                    actual_max_iteration = iteration > actual_max_iteration ? iteration : actual_max_iteration;
                     return iteration;
                 }
             }
@@ -295,12 +298,13 @@ public class Mandelbrot {
 
         @Override
         protected void onProgressUpdate(Integer... pass) {
-            MainActivity.progress.setBusy(pass[0], num_passes, rescaling);
+            MainActivity.progress.setBusy(pass[0], num_passes, rescaling_render);
             canvas.update();
         }
 
         @Override
         protected void onPostExecute(Integer result) {
+            Log.d(DBG_TAG, "actual max iteration: " + actual_max_iteration + "{" + mandelbrot_settings.max_iterations + "}");
             canvas.update();
             render_completed = true;
             MainActivity.progress.unsetBusy();

@@ -47,6 +47,7 @@ public class Buffer {
     }
 
     public void popDraw(int iteration) {
+        /*
         int cycle = canvas.getPaletteSize();
 
         if (iteration == 0) {
@@ -73,9 +74,10 @@ public class Buffer {
         }
 
         canvas.drawBufferedPoints(bundled_points, bundled_points_len, iteration);
+        */
 
-        //canvas.drawBufferedPoints(queues[iteration].points, queues[iteration].points_len, iteration);
-        //queues[iteration].resetQueue();
+        canvas.drawBufferedPoints(queues[iteration].points, queues[iteration].points_len, iteration);
+        queues[iteration].resetQueue();
     }
 
     class IterationQueue {

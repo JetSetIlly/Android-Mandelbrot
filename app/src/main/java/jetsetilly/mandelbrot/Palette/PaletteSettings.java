@@ -1,19 +1,22 @@
 package jetsetilly.mandelbrot.Palette;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 public class PaletteSettings {
     private final String DBG_TAG = "palette settings";
 
     /* colours definitions */
     public final int DEF_PALETTE_ID = 0;
-    public final int DEF_KEY_COL = 1;
+    public final int DEF_KEY_COL = 1;   // base color - used to colourise tabs in ColoursActivity
     public final int DEF_NULL_COL = 0;
 
     /* for simplicity, use palettes as defined in PalettePresets
      TODO: store/retrieve definitions on disk */
-    public Definition[] palettes = Presets.presets;
+    public PaletteDefinition[] palettes = Presets.presets;
 
     public int selected_id;
-    public Definition selected_palette;
+    public PaletteDefinition selected_palette;
 
     /* count the frequency at which each colour is used
      used to change the background colour of the RenderCanvas */
@@ -21,9 +24,20 @@ public class PaletteSettings {
     private int colour_cnt_highest;
 
     public PaletteSettings() {
-        super();
         setColours(DEF_PALETTE_ID);
         resetCount();
+    }
+
+    public void save(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefs_editor = prefs.edit();
+        prefs_editor.putInt("palette_id", selected_id);
+        prefs_editor.apply();
+    }
+
+    public void restore(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+        setColours(prefs.getInt("palette_id", DEF_PALETTE_ID));
     }
 
     /* helper functions */

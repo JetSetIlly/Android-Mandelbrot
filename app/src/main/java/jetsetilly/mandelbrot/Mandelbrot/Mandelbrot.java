@@ -7,7 +7,6 @@ import android.util.Log;
 
 import jetsetilly.mandelbrot.MainActivity;
 
-
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
@@ -31,7 +30,7 @@ public class Mandelbrot {
     private final int DEF_NUM_PASSES = 1;
     private final int DEF_UPDATE_FREQ = 1;
 
-    private enum RenderMode {TOP_DOWN, CENTRE}
+    private enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
     private RenderMode render_mode;
     public int num_passes = DEF_NUM_PASSES; // in lines
     public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
@@ -138,10 +137,10 @@ public class Mandelbrot {
         // make sure render mode etc. is set correctly
         if (zoom_factor == 0) {
             rescaling_render = false;
-            render_mode = RenderMode.CENTRE;
+            render_mode = RenderMode.MIN_TO_MAX;
         } else {
             rescaling_render = true;
-            render_mode = RenderMode.CENTRE;
+            render_mode = RenderMode.MIN_TO_MAX;
         }
 
         num_passes = DEF_NUM_PASSES;
@@ -179,26 +178,35 @@ public class Mandelbrot {
 
         final static public String DBG_TAG = "render thread";
 
+        int[][] cache;
         int actual_max_iteration = 0;
 
         private int doIterations(double x, double y) {
-            double A, B, U, V;
-            int iteration;
+            return doIterations(x, y, mandelbrot_settings.max_iterations);
+        }
+
+        private int doIterations(double x, double y, int max_iterations) {
+            double U, V, A, B;
 
             U = (A = x) * A;
             V = (B = y) * B;
 
-            for (iteration = 1; iteration < mandelbrot_settings.max_iterations; ++ iteration) {
+            int i;
+
+            for (i = 1; i <= max_iterations; ++ i) {
                 B = 2.0 * A * B + y;
                 A = U - V + x;
                 U = A * A;
                 V = B * B;
 
                 if (U + V > mandelbrot_settings.bailout_value) {
-                    actual_max_iteration = iteration > actual_max_iteration ? iteration : actual_max_iteration;
-                    return iteration;
+                    actual_max_iteration = i > actual_max_iteration ? i : actual_max_iteration;
+                    return i;
                 }
             }
+
+            if (i < mandelbrot_settings.max_iterations)
+                return -1;
 
             return 0;
         }
@@ -218,6 +226,39 @@ public class Mandelbrot {
             canvas.startDraw();
 
             switch (render_mode) {
+                case MIN_TO_MAX:
+                    cache = new int[canvas.getCanvasHeight()][canvas.getCanvasWidth()];
+
+                    for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy) {
+                        for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx) {
+                            cache[cy][cx] = -1;
+                        }
+                    }
+
+                    for (int i = 1; i < mandelbrot_settings.max_iterations; ++ i) {
+                        y = mandelbrot_settings.imaginary_lower;
+                        for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy, y += pixel_scale) {
+                            x = mandelbrot_settings.real_left;
+                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, x += pixel_scale) {
+                                if (cache[cy][cx] == -1) {
+                                    int j = doIterations(x, y, i);
+                                    if (j != -1) {
+                                        cache[cy][cx] = j;
+                                        canvas.drawPoint(cx, cy, cache[cy][cx]);
+                                    }
+                                }
+                            }
+
+                            // exit early if necessary
+                            if (isCancelled()) return cy;
+                        }
+
+                        // update if necessary
+                        checkUpdate(i, cy);
+                    }
+
+                    break;
+
                 case TOP_DOWN:
                     /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                     for (int pass = 0; pass < num_passes; ++ pass) {

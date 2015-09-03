@@ -22,7 +22,7 @@ public class BufferParallel implements Buffer {
     public BufferParallel(RenderCanvas canvas) {
         this.canvas = canvas;
 
-        queues = new IterationQueue[mandelbrot_settings.max_iterations];
+        queues = new IterationQueue[mandelbrot_settings.max_iterations+1];
         for (int i = 0; i < queues.length; ++i) {
             queues[i] = new IterationQueue();
         }

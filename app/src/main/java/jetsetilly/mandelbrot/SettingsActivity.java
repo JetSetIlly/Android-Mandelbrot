@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RadioGroup;
 
+import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 import jetsetilly.mandelbrot.Widgets.BailoutSlider;
 import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;
 import jetsetilly.mandelbrot.Widgets.IterationsSlider;
@@ -17,6 +20,9 @@ public class SettingsActivity extends AppCompatActivity {
     private IterationsSlider iterations;
     private BailoutSlider bailout;
     private DoubleTapScaleSlider double_tap;
+    private RadioGroup render_mode;
+
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,12 +32,22 @@ public class SettingsActivity extends AppCompatActivity {
         iterations = (IterationsSlider) findViewById(R.id.iterations);
         bailout = (BailoutSlider) findViewById(R.id.bailout);
         double_tap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
+        render_mode = (RadioGroup) findViewById(R.id.rendermode);
 
         /* get the values that wer set on the previous screen
         they've not been committed yet so we've passed them by intent */
         Intent settings_intent = getIntent();
         int iterations_value = settings_intent.getIntExtra(getString(R.string.settings_intent_iteration_value), -1);
         iterations.set(iterations_value);
+
+        // set render mode radio button
+        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.TOP_DOWN) {
+            render_mode.check(R.id.rendermode_topdown);
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.CENTRE) {
+            render_mode.check(R.id.rendermode_centre);
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
+            render_mode.check(R.id.rendermode_minmax);
+        }
     }
 
     @Override
@@ -42,6 +58,20 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                // get render mode - note that changing render mode
+                // doesn't automatically restart the render process
+                switch (render_mode.getCheckedRadioButtonId()) {
+                    case R.id.rendermode_topdown:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
+                        break;
+                    case R.id.rendermode_centre:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
+                        break;
+                    case R.id.rendermode_minmax:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.MIN_TO_MAX;
+                        break;
+                }
+
                 if (iterations.fixate() || bailout.fixate() || double_tap.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }

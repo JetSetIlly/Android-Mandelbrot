@@ -10,6 +10,8 @@ import jetsetilly.mandelbrot.MainActivity;
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
+    public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
+
     private Context context;
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
@@ -27,11 +29,9 @@ public class Mandelbrot {
     private Rect no_render_area;
 
     /* ui related stuff */
-    private final int DEF_NUM_PASSES = 1;
+    private final int DEF_NUM_PASSES = 2;
     private final int DEF_UPDATE_FREQ = 1;
 
-    private enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
-    private RenderMode render_mode;
     public int num_passes = DEF_NUM_PASSES; // in lines
     public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
 
@@ -137,10 +137,8 @@ public class Mandelbrot {
         // make sure render mode etc. is set correctly
         if (zoom_factor == 0) {
             rescaling_render = false;
-            render_mode = RenderMode.MIN_TO_MAX;
         } else {
             rescaling_render = true;
-            render_mode = RenderMode.MIN_TO_MAX;
         }
 
         num_passes = DEF_NUM_PASSES;
@@ -178,11 +176,31 @@ public class Mandelbrot {
 
         final static public String DBG_TAG = "render thread";
 
-        int[][] cache;
         int actual_max_iteration = 0;
 
         private int doIterations(double x, double y) {
             return doIterations(x, y, mandelbrot_settings.max_iterations);
+        }
+
+        private int doIterations(MandelbrotPoint p, int max_iterations) {
+            int i;
+
+            for (i = Math.abs(p.iteration); i <= max_iterations; ++ i) {
+                p.B = 2.0 * p.A * p.B + p.y;
+                p.A = p.U - p.V + p.x;
+                p.U = p.A * p.A;
+                p.V = p.B * p.B;
+
+                if (p.U + p.V > mandelbrot_settings.bailout_value) {
+                    actual_max_iteration = i > actual_max_iteration ? i : actual_max_iteration;
+                    return p.iteration = i;
+                }
+            }
+
+            if (i < mandelbrot_settings.max_iterations)
+                return p.iteration = -i;
+
+            return p.iteration = 0;
         }
 
         private int doIterations(double x, double y, int max_iterations) {
@@ -220,31 +238,31 @@ public class Mandelbrot {
         @Override
         protected Integer doInBackground(Void... v) {
             int cx, cy, cyb;
-            double x, y, yb;
+            double mx, my, myb;
 
             render_completed = false;
-            canvas.startDraw();
+            canvas.startDraw(mandelbrot_settings.render_mode);
 
-            switch (render_mode) {
+            switch (mandelbrot_settings.render_mode) {
                 case MIN_TO_MAX:
-                    cache = new int[canvas.getCanvasHeight()][canvas.getCanvasWidth()];
+                    int[][] cache = new int[canvas.getCanvasHeight()][canvas.getCanvasWidth()];
 
-                    for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy) {
-                        for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx) {
+                    my = mandelbrot_settings.imaginary_lower;
+                    for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy, my += pixel_scale) {
+                        mx = mandelbrot_settings.real_left;
+                        for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, mx += pixel_scale) {
                             cache[cy][cx] = -1;
                         }
                     }
 
                     for (int i = 1; i < mandelbrot_settings.max_iterations; ++ i) {
-                        y = mandelbrot_settings.imaginary_lower;
-                        for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy, y += pixel_scale) {
-                            x = mandelbrot_settings.real_left;
-                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, x += pixel_scale) {
-                                if (cache[cy][cx] == -1) {
-                                    int j = doIterations(x, y, i);
+                        for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy) {
+                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx) {
+                                if (cache[cy][cx] < 0) {
+                                    int j = doIterations(cache[cy][cx], i);
                                     if (j != -1) {
                                         cache[cy][cx] = j;
-                                        canvas.drawPoint(cx, cy, cache[cy][cx]);
+                                        canvas.drawPoint(cx, cy, j);
                                     }
                                 }
                             }
@@ -253,8 +271,8 @@ public class Mandelbrot {
                             if (isCancelled()) return cy;
                         }
 
-                        // update if necessary
-                        checkUpdate(i, cy);
+                        // update canvas
+                        publishProgress(1);
                     }
 
                     break;
@@ -262,12 +280,12 @@ public class Mandelbrot {
                 case TOP_DOWN:
                     /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                     for (int pass = 0; pass < num_passes; ++ pass) {
-                        y = mandelbrot_settings.imaginary_lower + (pixel_scale * pass);
-                        for (cy = pass; cy < canvas.getCanvasHeight(); cy += num_passes, y += (pixel_scale * num_passes)) {
+                        my = mandelbrot_settings.imaginary_lower + (pixel_scale * pass);
+                        for (cy = pass; cy < canvas.getCanvasHeight(); cy += num_passes, my += (pixel_scale * num_passes)) {
 
-                            x = mandelbrot_settings.real_left;
-                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, x += pixel_scale) {
-                                canvas.drawPoint(cx, cy, doIterations(x, y));
+                            mx = mandelbrot_settings.real_left;
+                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, mx += pixel_scale) {
+                                canvas.drawPoint(cx, cy, doIterations(mx, my));
                             }
 
                             // exit early if necessary
@@ -283,18 +301,18 @@ public class Mandelbrot {
                     int half_height = canvas.getCanvasHeight() / 2;
 
                     for (int pass = 0; pass < num_passes; ++ pass) {
-                        y = mandelbrot_settings.imaginary_lower + ((half_height + pass) * pixel_scale);
-                        yb = mandelbrot_settings.imaginary_lower + ((half_height - num_passes + pass) * pixel_scale);
-                        for (cy = pass, cyb = num_passes - pass; cy < half_height; cy += num_passes, cyb += num_passes, y += (pixel_scale * num_passes), yb -= (pixel_scale * num_passes)) {
+                        my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * pixel_scale);
+                        myb = mandelbrot_settings.imaginary_lower + ((half_height - num_passes + pass) * pixel_scale);
+                        for (cy = pass, cyb = num_passes - pass; cy < half_height; cy += num_passes, cyb += num_passes, my += (pixel_scale * num_passes), myb -= (pixel_scale * num_passes)) {
                             int this_line_start;
                             int this_line_end;
                             int y_line;
 
                             // bottom half of image
                             y_line = half_height + cy;
-                            x = mandelbrot_settings.real_left;
+                            mx = mandelbrot_settings.real_left;
                             if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
-                                x += (pixel_scale * no_render_area.left);
+                                mx += (pixel_scale * no_render_area.left);
                                 this_line_start = no_render_area.left;
                                 this_line_end = no_render_area.right;
                             } else {
@@ -302,15 +320,15 @@ public class Mandelbrot {
                                 this_line_end = canvas.getCanvasWidth();
                             }
 
-                            for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                canvas.drawPoint(cx, y_line, doIterations(x, y));
+                            for (cx = this_line_start; cx < this_line_end; ++ cx, mx += pixel_scale) {
+                                canvas.drawPoint(cx, y_line, doIterations(mx, my));
                             }
 
                             // top half of image
                             y_line = half_height - cyb;
-                            x = mandelbrot_settings.real_left;
+                            mx = mandelbrot_settings.real_left;
                             if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
-                                x += (pixel_scale * no_render_area.left);
+                                mx += (pixel_scale * no_render_area.left);
                                 this_line_start = no_render_area.left;
                                 this_line_end = no_render_area.right;
                             } else {
@@ -318,8 +336,8 @@ public class Mandelbrot {
                                 this_line_end = canvas.getCanvasWidth();
                             }
 
-                            for (cx = this_line_start; cx < this_line_end; ++ cx, x += pixel_scale) {
-                                canvas.drawPoint(cx, y_line, doIterations(x, yb));
+                            for (cx = this_line_start; cx < this_line_end; ++ cx, mx += pixel_scale) {
+                                canvas.drawPoint(cx, y_line, doIterations(mx, myb));
                             }
 
                             // exit early if necessary

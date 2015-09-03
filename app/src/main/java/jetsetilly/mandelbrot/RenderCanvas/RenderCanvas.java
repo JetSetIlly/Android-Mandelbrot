@@ -90,8 +90,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* end of initialisation */
 
     /* MandelbrotCanvas implementation */
-    public void startDraw() {
-        buffer = new BufferSingle(this);
+    public void startDraw(Mandelbrot.RenderMode render_mode) {
+        if (render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
+            buffer = new BufferSingle(this);
+        } else {
+            buffer = new BufferParallel(this);
+        }
     }
 
     public void drawPoint(float dx, float dy, int iteration)

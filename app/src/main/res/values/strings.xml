@@ -11,7 +11,7 @@
     <string name="settings_rendermode_label">Render Mode</string>
     <string name="settings_rendermode_topdown">Top/Down</string>
     <string name="settings_rendermode_centre">Centre/Out</string>
-    <string name="settings_rendermode_minmax">Min/Max</string>
+    <string name="settings_rendermode_minmax">Min/Max (experimental)</string>
     <string name="settings_action_reset">Reset</string>
 
     <string name="action_save_success">Image Saved</string>

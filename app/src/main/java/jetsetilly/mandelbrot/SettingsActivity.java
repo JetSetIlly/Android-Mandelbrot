@@ -21,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     private BailoutSlider bailout;
     private DoubleTapScaleSlider double_tap;
     private RadioGroup render_mode;
+    private int current_render_mode;
 
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
@@ -48,6 +49,10 @@ public class SettingsActivity extends AppCompatActivity {
         } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
             render_mode.check(R.id.rendermode_minmax);
         }
+
+        // render mode selected at start of activity -- if this changes then
+        // we'll stop the current rendering process
+        current_render_mode = render_mode.getCheckedRadioButtonId();
     }
 
     @Override
@@ -58,18 +63,22 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                // get render mode - note that changing render mode
-                // doesn't automatically restart the render process
-                switch (render_mode.getCheckedRadioButtonId()) {
-                    case R.id.rendermode_topdown:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
-                        break;
-                    case R.id.rendermode_centre:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
-                        break;
-                    case R.id.rendermode_minmax:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.MIN_TO_MAX;
-                        break;
+                int new_render_mode = render_mode.getCheckedRadioButtonId();
+
+                if (new_render_mode != current_render_mode) {
+                    MainActivity.render_canvas.stopRender();
+
+                    switch (new_render_mode) {
+                        case R.id.rendermode_topdown:
+                            mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
+                            break;
+                        case R.id.rendermode_centre:
+                            mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
+                            break;
+                        case R.id.rendermode_minmax:
+                            mandelbrot_settings.render_mode = Mandelbrot.RenderMode.MIN_TO_MAX;
+                            break;
+                    }
                 }
 
                 if (iterations.fixate() || bailout.fixate() || double_tap.fixate()) {

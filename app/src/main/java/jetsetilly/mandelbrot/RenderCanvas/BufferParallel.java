@@ -19,6 +19,8 @@ public class BufferParallel implements Buffer {
     private float[] bundled_points;
     private int bundled_points_len;
 
+    private long number_of_pushes;
+
     public BufferParallel(RenderCanvas canvas) {
         this.canvas = canvas;
 
@@ -29,6 +31,8 @@ public class BufferParallel implements Buffer {
 
         bundled_points = new float[queues.length * BUFFER_SIZE];
         bundled_points_len = 0;
+
+        number_of_pushes = 0;
     }
 
     public void flush() {
@@ -36,6 +40,7 @@ public class BufferParallel implements Buffer {
             if (!queues[i].isEmpty()) {
                 canvas.drawBufferedPoints(queues[i].points, queues[i].points_len, i);
                 queues[i].resetQueue();
+                number_of_pushes = 0;
             }
         }
     }
@@ -46,36 +51,7 @@ public class BufferParallel implements Buffer {
         }
     }
 
-    public void popDraw(int iteration) {
-        /*
-        int cycle = canvas.getPaletteSize();
-
-        if (iteration == 0) {
-            System.arraycopy(queues[0].points, 0, bundled_points, 0, queues[0].points_len);
-            bundled_points_len = queues[0].points_len;
-            queues[0].resetQueue();
-        } else {
-            bundled_points_len = 0;
-
-            // bundle iterations with the same cycle
-            // note that we only bundle iterations that come after
-            // the iteration that we are working with
-            //
-            // i = iteration % cycle you would imagine would work but it
-            // has weird side effects that frankly, is just baffling to me
-            // and i've spent far too long trying to figure it out. baffling
-            for (int i = iteration; i < queues.length; i += cycle) {
-                if (i != 0) {
-                    System.arraycopy(queues[i].points, 0, bundled_points, bundled_points_len, queues[i].points_len);
-                    bundled_points_len += queues[i].points_len;
-                    queues[i].resetQueue();
-                }
-            }
-        }
-
-        canvas.drawBufferedPoints(bundled_points, bundled_points_len, iteration);
-        */
-
+    private void popDraw(int iteration) {
         canvas.drawBufferedPoints(queues[iteration].points, queues[iteration].points_len, iteration);
         queues[iteration].resetQueue();
     }

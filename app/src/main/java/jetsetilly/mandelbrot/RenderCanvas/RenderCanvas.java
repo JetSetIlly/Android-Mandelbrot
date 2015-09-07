@@ -58,6 +58,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private double mandelbrot_offset_y;
     private double scroll_scale;
 
+    // number of pixels drawn since last update()
+    private long draw_ct = 0;
+
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
@@ -96,6 +99,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         } else {
             buffer = new BufferParallel(this);
         }
+
+        draw_ct = 0;
     }
 
     public void drawPoint(float dx, float dy, int iteration)
@@ -108,7 +113,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void update() {
-        invalidate();
+        if (draw_ct > 100000 ) {
+            draw_ct = 0;
+            invalidate();
+        }
     }
 
     public int getCanvasWidth() {
@@ -152,6 +160,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_canvas.drawPoints(points, 0, points_len, render_paint);
 
         palette_settings.updateCount(palette_entry);
+
+        draw_ct += points_len /2;
     }
     /* end of drawBufferedPoints() method */
 

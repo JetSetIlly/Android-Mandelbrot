@@ -240,6 +240,7 @@ public class Mandelbrot {
                         }
                     }
 
+                    // TODO: take into account no_render_area instead of working with entire canvas height and width
                     for (int max_iteration = 1; max_iteration <= mandelbrot_settings.max_iterations; ++ max_iteration) {
                         my = mandelbrot_settings.imaginary_lower;
                         for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy, my += pixel_scale) {

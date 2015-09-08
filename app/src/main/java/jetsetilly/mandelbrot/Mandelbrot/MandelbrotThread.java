@@ -5,13 +5,13 @@ import android.os.AsyncTask;
 import jetsetilly.mandelbrot.MainActivity;
 
 class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
-        /* from the android documentation:
+    /* from the android documentation:
 
-        AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
-        need to keep threads running for long periods of time, it is highly recommended you use the
-        various APIs provided by the java.util.concurrent package such as Executor,
-        ThreadPoolExecutor and FutureTask.
-         */
+    AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
+    need to keep threads running for long periods of time, it is highly recommended you use the
+    various APIs provided by the java.util.concurrent package such as Executor,
+    ThreadPoolExecutor and FutureTask.
+     */
 
     final static public String DBG_TAG = "render thread";
 

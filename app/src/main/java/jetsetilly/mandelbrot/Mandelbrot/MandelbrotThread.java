@@ -148,8 +148,6 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
                 break;
         }
 
-        m.canvas.endDraw();
-
         return 0;
     }
 
@@ -161,7 +159,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
     @Override
     protected void onPostExecute(Integer result) {
-        m.canvas.update();
+        m.canvas.endDraw();
         MainActivity.progress.unsetBusy();
         MainActivity.render_canvas.completeRender();
 

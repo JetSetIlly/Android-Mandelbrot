@@ -15,6 +15,7 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Palette.PaletteSettings;
+import jetsetilly.mandelbrot.R;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
@@ -83,7 +84,17 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_paint = new Paint();
     }
 
+    private void clearImage() {
+        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.RGB_565);
+        Canvas clear_canvas = new Canvas(clear_bm);
+        clear_canvas.drawColor(palette_settings.mostFrequentColor());
+        setImageBitmap(display_bm = clear_bm);
+    }
+
     public void kickStartCanvas() {
+        // kill any existing image
+        clearImage();
+
         // set background color
         setBackgroundColor(palette_settings.mostFrequentColor());
 
@@ -110,6 +121,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void endDraw() {
         buffer.flush();
+        invalidate();
     }
 
     public void update() {

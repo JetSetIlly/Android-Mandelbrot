@@ -2,10 +2,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.util.Log;
-
-import jetsetilly.mandelbrot.MainActivity;
 
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
@@ -16,17 +13,17 @@ public class Mandelbrot {
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
-    public boolean render_completed = false;
+    protected boolean render_completed = false;
 
-    private MandelbrotCanvas canvas;
-    private double pixel_scale;
+    protected MandelbrotCanvas canvas;
+    protected double pixel_scale;
     private double fractal_ratio;
 
     /* no_render_area is used to define that area of the canvas
     that do not need to be rendered again because those pixels (hopefully)
     already appear on the canvas
      */
-    private Rect no_render_area;
+    protected Rect no_render_area;
 
     /* ui related stuff */
     private final int DEF_NUM_PASSES = 2;
@@ -37,7 +34,7 @@ public class Mandelbrot {
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
-    private boolean rescaling_render;
+    protected boolean rescaling_render;
 
     public Mandelbrot(Context context, MandelbrotCanvas canvas) {
         this.context = context;
@@ -113,11 +110,7 @@ public class Mandelbrot {
     }
 
     /* threading */
-
     public void stopRender() {
-        // we do not call ProgressView.unsetBusy() here because it plays havoc
-        // with the way we handle the invisibility setting of the ProgressView
-
         if ( render_thr == null ) {
             return;
         }
@@ -161,204 +154,8 @@ public class Mandelbrot {
 
         calculatePixelScale();
 
-        render_thr = new MandelbrotThread();
+        render_thr = new MandelbrotThread(this);
         render_thr.execute();
     }
-
-    class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
-        /* from the android documentation:
-
-        AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
-        need to keep threads running for long periods of time, it is highly recommended you use the
-        various APIs provided by the java.util.concurrent package such as Executor,
-        ThreadPoolExecutor and FutureTask.
-         */
-
-        final static public String DBG_TAG = "render thread";
-
-        private int doIterations(MandelbrotPoint p, int max_iterations) {
-            int i;
-
-            for (i = Math.abs(p.iteration); i <= max_iterations; ++ i) {
-                p.B = 2.0 * p.A * p.B + p.y;
-                p.A = p.U - p.V + p.x;
-                p.U = p.A * p.A;
-                p.V = p.B * p.B;
-
-                if (p.U + p.V > mandelbrot_settings.bailout_value) {
-                    return p.iteration = i;
-                }
-            }
-
-            if (i < mandelbrot_settings.max_iterations)
-                return p.iteration = -i;
-
-            return p.iteration = 0;
-        }
-
-        private int doIterations(double x, double y) {
-            return doIterations(x, y, mandelbrot_settings.max_iterations);
-        }
-
-        private int doIterations(double x, double y, int max_iterations) {
-            double U, V, A, B;
-
-            U = (A = x) * A;
-            V = (B = y) * B;
-
-            int i;
-
-            for (i = 1; i <= max_iterations; ++ i) {
-                B = 2.0 * A * B + y;
-                A = U - V + x;
-                U = A * A;
-                V = B * B;
-
-                if (U + V > mandelbrot_settings.bailout_value) {
-                    return i;
-                }
-            }
-
-            return 0;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... v) {
-            int cx, cy, cyb;
-            double mx, my, myb;
-
-            render_completed = false;
-            canvas.startDraw(mandelbrot_settings.render_mode);
-
-            switch (mandelbrot_settings.render_mode) {
-                case MIN_TO_MAX:
-                    int[][] cache = new int[canvas.getCanvasHeight()][canvas.getCanvasWidth()];
-
-                    for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy) {
-                        for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx) {
-                            cache[cy][cx] = 0;
-                        }
-                    }
-
-                    // TODO: take into account no_render_area instead of working with entire canvas height and width
-                    for (int max_iteration = 1; max_iteration <= mandelbrot_settings.max_iterations; ++ max_iteration) {
-                        my = mandelbrot_settings.imaginary_lower;
-                        for (cy = 0; cy < canvas.getCanvasHeight(); ++ cy, my += pixel_scale) {
-                            mx = mandelbrot_settings.real_left;
-                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, mx += pixel_scale) {
-                                if (cache[cy][cx] == 0) {
-                                    cache[cy][cx] = doIterations(mx, my, max_iteration);
-                                    if (cache[cy][cx] != 0 || max_iteration == mandelbrot_settings.max_iterations) {
-                                        canvas.drawPoint(cx, cy, cache[cy][cx]);
-                                    }
-                                }
-                            }
-
-                            // exit early if necessary
-                            if (isCancelled()) return cy;
-
-                            publishProgress(1);
-                        }
-                    }
-
-                    break;
-
-                case TOP_DOWN:
-                    /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
-                    for (int pass = 0; pass < num_passes; ++ pass) {
-                        my = mandelbrot_settings.imaginary_lower + (pixel_scale * pass);
-                        for (cy = pass; cy < canvas.getCanvasHeight(); cy += num_passes, my += (pixel_scale * num_passes)) {
-
-                            mx = mandelbrot_settings.real_left;
-                            for (cx = 0; cx < canvas.getCanvasWidth(); ++ cx, mx += pixel_scale) {
-                                canvas.drawPoint(cx, cy, doIterations(mx, my));
-                            }
-
-                            // exit early if necessary
-                            if (isCancelled()) return cy;
-
-                            publishProgress(pass);
-                        }
-                    }
-                    break;
-
-                case CENTRE:
-                    int half_height = canvas.getCanvasHeight() / 2;
-
-                    for (int pass = 0; pass < num_passes; ++ pass) {
-                        my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * pixel_scale);
-                        myb = mandelbrot_settings.imaginary_lower + ((half_height - num_passes + pass) * pixel_scale);
-                        for (cy = pass, cyb = num_passes - pass; cy < half_height; cy += num_passes, cyb += num_passes, my += (pixel_scale * num_passes), myb -= (pixel_scale * num_passes)) {
-                            int this_line_start;
-                            int this_line_end;
-                            int y_line;
-
-                            // bottom half of image
-                            y_line = half_height + cy;
-                            mx = mandelbrot_settings.real_left;
-                            if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
-                                mx += (pixel_scale * no_render_area.left);
-                                this_line_start = no_render_area.left;
-                                this_line_end = no_render_area.right;
-                            } else {
-                                this_line_start = 0;
-                                this_line_end = canvas.getCanvasWidth();
-                            }
-
-                            for (cx = this_line_start; cx < this_line_end; ++ cx, mx += pixel_scale) {
-                                canvas.drawPoint(cx, y_line, doIterations(mx, my));
-                            }
-
-                            // top half of image
-                            y_line = half_height - cyb;
-                            mx = mandelbrot_settings.real_left;
-                            if (y_line > no_render_area.top && y_line < no_render_area.bottom) {
-                                mx += (pixel_scale * no_render_area.left);
-                                this_line_start = no_render_area.left;
-                                this_line_end = no_render_area.right;
-                            } else {
-                                this_line_start = 0;
-                                this_line_end = canvas.getCanvasWidth();
-                            }
-
-                            for (cx = this_line_start; cx < this_line_end; ++ cx, mx += pixel_scale) {
-                                canvas.drawPoint(cx, y_line, doIterations(mx, myb));
-                            }
-
-                            // exit early if necessary
-                            if (isCancelled()) return cy;
-
-                            publishProgress(pass);
-                        }
-                    }
-                    break;
-            }
-
-            canvas.endDraw();
-
-            return 0;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... pass) {
-            MainActivity.progress.setBusy(pass[0], num_passes, rescaling_render);
-            canvas.update();
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            canvas.update();
-            MainActivity.progress.unsetBusy();
-            MainActivity.render_canvas.completeRender();
-
-            render_completed = result >= 0;
-        }
-
-        @Override
-        protected void onCancelled() {
-            onPostExecute(-1);
-        }
-    }
-
     /* end of threading */
 }

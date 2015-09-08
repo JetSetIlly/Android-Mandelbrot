@@ -77,38 +77,6 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
         m.canvas.startDraw(mandelbrot_settings.render_mode);
 
         switch (mandelbrot_settings.render_mode) {
-            case MIN_TO_MAX:
-                int[][] cache = new int[m.canvas.getCanvasHeight()][m.canvas.getCanvasWidth()];
-
-                for (cy = 0; cy < m.canvas.getCanvasHeight(); ++ cy) {
-                    for (cx = 0; cx < m.canvas.getCanvasWidth(); ++ cx) {
-                        cache[cy][cx] = 0;
-                    }
-                }
-
-                // TODO: take into account no_render_area instead of working with entire canvas height and width
-                for (int max_iteration = 1; max_iteration <= mandelbrot_settings.max_iterations; ++ max_iteration) {
-                    my = mandelbrot_settings.imaginary_lower;
-                    for (cy = 0; cy < m.canvas.getCanvasHeight(); ++ cy, my += m.pixel_scale) {
-                        mx = mandelbrot_settings.real_left;
-                        for (cx = 0; cx < m.canvas.getCanvasWidth(); ++ cx, mx += m.pixel_scale) {
-                            if (cache[cy][cx] == 0) {
-                                cache[cy][cx] = doIterations(mx, my, max_iteration);
-                                if (cache[cy][cx] != 0 || max_iteration == mandelbrot_settings.max_iterations) {
-                                    m.canvas.drawPoint(cx, cy, cache[cy][cx]);
-                                }
-                            }
-                        }
-
-                        // exit early if necessary
-                        if (isCancelled()) return cy;
-
-                        publishProgress(1);
-                    }
-                }
-
-                break;
-
             case TOP_DOWN:
                     /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                 for (int pass = 0; pass < m. num_passes; ++ pass) {

@@ -1,6 +1,5 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -14,6 +13,7 @@ public class MandelbrotSettings {
     public double bailout_value;
 
     public Mandelbrot.RenderMode render_mode;
+    public boolean progressive_render;
 
     MandelbrotSettings() {
         resetCoords();
@@ -41,6 +41,7 @@ public class MandelbrotSettings {
         prefs_editor.putInt("max_iterations", max_iterations);
         prefs_editor.putFloat("bailout_value", (float) bailout_value);
         prefs_editor.putInt("render_mode", render_mode.ordinal());
+        prefs_editor.putBoolean("progressive_render", progressive_render);
 
         // Commit the edits!
         prefs_editor.apply();
@@ -56,6 +57,7 @@ public class MandelbrotSettings {
         max_iterations = prefs.getInt("max_iterations", Presets.presets[Presets.DEFAULT_SETTINGS].max_iterations);
         bailout_value = prefs.getFloat("bailout_value", (float) Presets.presets[Presets.DEFAULT_SETTINGS].bailout_value);
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.TOP_DOWN.ordinal())];
+        progressive_render = prefs.getBoolean("progressive_render", false);
     }
 
     /* singleton pattern */

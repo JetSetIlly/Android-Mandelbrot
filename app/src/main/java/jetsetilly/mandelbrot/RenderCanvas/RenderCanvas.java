@@ -203,12 +203,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* end of property functions */
 
     /* render control */
-    public void completeRender() {
-        // change background colour - also done in stopRender() because this function
-        // won't be called if the render is interrupted
-        setBackgroundColor(palette_settings.mostFrequentColor());
-    }
-
     public void stopRender() {
         // change background colour - we do it here so that we perform the change
         // it in all instances. when the render is interrupted by a touch event

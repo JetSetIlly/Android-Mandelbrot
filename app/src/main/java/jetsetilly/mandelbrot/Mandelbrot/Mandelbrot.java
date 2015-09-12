@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.util.Log;
 
+import jetsetilly.mandelbrot.MainActivity;
+
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
@@ -12,7 +14,7 @@ public class Mandelbrot {
     private Context context;
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
-    private MandelbrotThread render_thr;
+    private MandelbrotThread render_thr[];
     protected boolean render_completed = false;
 
     protected MandelbrotCanvas canvas;
@@ -115,8 +117,12 @@ public class Mandelbrot {
             return;
         }
 
-        render_thr.cancel(true);
-        render_thr = null;
+        for (int i = 0; i < render_thr.length; ++ i) {
+            if (render_thr[i] != null) {
+                render_thr[i].cancel(true);
+                render_thr[i] = null;
+            }
+        }
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
@@ -154,8 +160,19 @@ public class Mandelbrot {
 
         calculatePixelScale();
 
-        render_thr = new MandelbrotThread(this);
-        render_thr.execute();
+        MainActivity.progress.startSession();
+
+        if (mandelbrot_settings.parallel_render) {
+            render_thr = new MandelbrotThread[mandelbrot_settings.max_iterations];
+            for (int i = 0; i < mandelbrot_settings.max_iterations; ++ i){
+                render_thr[i] = new MandelbrotThread(this, i+1);
+                render_thr[i].execute();
+            }
+        } else {
+            render_thr = new MandelbrotThread[1];
+            render_thr[0] = new MandelbrotThread(this, -1);
+            render_thr[0].execute();
+        }
     }
     /* end of threading */
 }

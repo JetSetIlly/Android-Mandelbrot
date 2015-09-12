@@ -9,6 +9,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // TODO: it seems wasteful to setup the animations each time but setting them up once doesn't seem to work. there must be a way of recycling the animation
 
@@ -21,13 +22,8 @@ public class ProgressView extends ImageView {
     private final int SPIN_DURATION = 1000;
     private double start_time = 0.0;
 
-    // set_busy keeps track of where in the setBusy/unsetBusy sequence we are
-    // this is more reliable that checking for visibility because it is possible
-    // that a second call to unsetBusy will sneak in between the visibility check
-    // and the point at which we make the view invisible
-    // in other words: setting the set_busy flag is near enough atomic
-    // TODO: implement a proper atomic latch (semaphore)
     private AtomicBoolean set_busy = new AtomicBoolean(false);
+    private AtomicInteger busy_ct = new AtomicInteger(0);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -41,16 +37,25 @@ public class ProgressView extends ImageView {
         super(context);
     }
 
-    public void setBusy(int pass, int num_passes, boolean show_immediately) {
+    public void startSession() {
+        start_time = System.nanoTime();
+        set_busy.set(false);
+        busy_ct.set(0);
+    }
+
+    public void register() {
+        busy_ct.incrementAndGet();
+    }
+
+    public void kick(int pass, int num_passes, boolean show_immediately) {
+        assert busy_ct.get() > 0;
+
         // quick exit if progress is already visible
         if (set_busy.get()) return;
 
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
-            if (start_time == 0.0) {
-                start_time = System.nanoTime();
-            }
             if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
                 return;
             }
@@ -84,13 +89,17 @@ public class ProgressView extends ImageView {
         startAnimation(show_anim);
     }
 
-    public void unsetBusy() {
-        // reset start_time before checking isShown() below
-        start_time = 0.0;
+    public void unregister() {
+        // quick exit if this isn't the last thread to unregister
+        if ( busy_ct.decrementAndGet() > 0 ) {
+            return;
+        }
+        assert busy_ct.get() == 0;
 
         // quick exit if progress is not visible
-        if (!set_busy.get()) return;
-        set_busy.set(false);
+        if (!set_busy.getAndSet(false)) {
+            return;
+        }
 
         final Animation hide_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_hide);
 

@@ -56,7 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
         reference_render_mode = render_mode.getCheckedRadioButtonId();
 
         // set progressive render
-        progressive_render.setChecked(mandelbrot_settings.progressive_render);
+        progressive_render.setChecked(mandelbrot_settings.parallel_render);
     }
 
     @Override
@@ -84,9 +84,9 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 // check for new progressive render setting
-                if (mandelbrot_settings.progressive_render != progressive_render.isChecked()) {
+                if (mandelbrot_settings.parallel_render != progressive_render.isChecked()) {
                     MainActivity.render_canvas.stopRender();
-                    mandelbrot_settings.progressive_render = progressive_render.isChecked();
+                    mandelbrot_settings.parallel_render = progressive_render.isChecked();
                 }
 
                 // change mandelbrot parameters as appropriate

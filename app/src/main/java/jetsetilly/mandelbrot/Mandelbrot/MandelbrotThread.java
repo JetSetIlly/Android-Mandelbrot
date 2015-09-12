@@ -17,9 +17,13 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     private Mandelbrot m;
+    private int target_iteration;
 
-    public MandelbrotThread(Mandelbrot context) {
+    /* target_iterations of > 0 will result in a one shot thread for one iteration value */
+
+    public MandelbrotThread(Mandelbrot context, int target_iteration) {
         this.m = context;
+        this.target_iteration = target_iteration;
     }
 
     private int doIterations(MandelbrotPoint p, int max_iterations) {
@@ -42,11 +46,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
         return p.iteration = 0;
     }
 
-    private int doIterations(double x, double y) {
-        return doIterations(x, y, mandelbrot_settings.max_iterations);
-    }
-
-    private int doIterations(double x, double y, int max_iterations) {
+    private int doIterations(double x, double y, int target_iteration) {
         double U, V, A, B;
 
         U = (A = x) * A;
@@ -54,7 +54,50 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
         int i;
 
-        for (i = 1; i <= max_iterations; ++ i) {
+        for (i = 1; i < target_iteration; ++ i) {
+            B = 2.0 * A * B + y;
+            A = U - V + x;
+            U = A * A;
+            V = B * B;
+
+            if (U + V > mandelbrot_settings.bailout_value) {
+                // we've not reached the target iteration so return a negative
+                // number to indicate that
+                return -1;
+            }
+        }
+
+        // i is now equal to target_iteration
+
+        B = 2.0 * A * B + y;
+        A = U - V + x;
+        U = A * A;
+        V = B * B;
+
+        if (U + V > mandelbrot_settings.bailout_value) {
+            return i;
+        }
+
+        if (i == mandelbrot_settings.max_iterations) {
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
+    private int doIterations(double x, double y) {
+        if (target_iteration > 0) {
+            return doIterations(x, y, target_iteration);
+        }
+
+        double U, V, A, B;
+
+        U = (A = x) * A;
+        V = (B = y) * B;
+
+        int i;
+
+        for (i = 1; i <= mandelbrot_settings.max_iterations; ++ i) {
             B = 2.0 * A * B + y;
             A = U - V + x;
             U = A * A;
@@ -120,7 +163,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
                         }
 
                         for (cx = this_line_start; cx < this_line_end; ++ cx, mx += m.pixel_scale) {
-                            m.canvas.drawPoint(cx, y_line, doIterations(mx, my));
+                            int i = doIterations(mx, my);
+                            if (i >= 0) {
+                                m.canvas.drawPoint(cx, y_line, i);
+                            }
                         }
 
                         // top half of image
@@ -136,7 +182,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
                         }
 
                         for (cx = this_line_start; cx < this_line_end; ++ cx, mx += m.pixel_scale) {
-                            m.canvas.drawPoint(cx, y_line, doIterations(mx, myb));
+                            int i = doIterations(mx, myb);
+                            if (i >= 0) {
+                                m.canvas.drawPoint(cx, y_line, i);
+                            }
                         }
 
                         // exit early if necessary
@@ -153,14 +202,18 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
     @Override
     protected void onProgressUpdate(Integer... pass) {
-        MainActivity.progress.setBusy(pass[0], m.num_passes, m.rescaling_render);
+        MainActivity.progress.kick(pass[0], m.num_passes, m.rescaling_render);
         m.canvas.update();
+    }
+
+    protected void onPreExecute() {
+        MainActivity.progress.register();
     }
 
     @Override
     protected void onPostExecute(Integer result) {
         m.canvas.endDraw();
-        MainActivity.progress.unsetBusy();
+        MainActivity.progress.unregister();
 
         m.render_completed = result >= 0;
     }

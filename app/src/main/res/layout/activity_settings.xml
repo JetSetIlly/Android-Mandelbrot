@@ -106,7 +106,7 @@
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_progressive_render"
+                android:text="@string/settings_parallel_render"
                 android:id="@+id/progressive_render" />
 
         </LinearLayout>

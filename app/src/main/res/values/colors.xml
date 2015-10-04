@@ -2,4 +2,5 @@
 <resources>
     <color name="palette_activity_selected_card">#71C3DE</color>
     <color name="palette_activity_unselected_card">#FFFFFF</color>
+    <color name="primary_material_light">#efefef</color>
 </resources>

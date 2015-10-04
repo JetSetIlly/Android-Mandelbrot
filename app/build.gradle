@@ -1,12 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    buildToolsVersion "21.1.2"
-
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
     defaultConfig {
         applicationId "jetsetilly.mandelbrot"
         versionCode 1
         versionName "1.0"
+        minSdkVersion 22
+        targetSdkVersion 22
     }
     buildTypes {
         release {
@@ -14,30 +16,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    productFlavors {
-        /*
-        flavor1 {
-            compileSdkVersion 19
-            versionName "1.0-kitkat"
-            minSdkVersion 19
-            targetSdkVersion 19
-        }
-        */
-
-        flavor2 {
-            compileSdkVersion 21
-            versionName "1.0-lollipop"
-            minSdkVersion 21
-            targetSdkVersion 21
-        }
-    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:cardview-v7:+'
-    compile 'com.android.support:recyclerview-v7:+'
-    compile 'com.android.support:appcompat-v7:+'
-    compile 'com.android.support:palette-v7:+'
+    compile 'com.android.support:cardview-v7:23.0.1'
+    compile 'com.android.support:recyclerview-v7:22.1.1'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:palette-v7:22.1.1'
 }

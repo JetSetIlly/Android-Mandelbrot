@@ -22,7 +22,6 @@ public class ProgressView extends ImageView {
     private final int SPIN_DURATION = 1000;
     private double start_time = 0.0;
 
-    private AtomicBoolean set_busy = new AtomicBoolean(false);
     private AtomicInteger busy_ct = new AtomicInteger(0);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
@@ -39,7 +38,6 @@ public class ProgressView extends ImageView {
 
     public void startSession() {
         start_time = System.nanoTime();
-        set_busy.set(false);
         busy_ct.set(0);
     }
 
@@ -48,10 +46,8 @@ public class ProgressView extends ImageView {
     }
 
     public void kick(int pass, int num_passes, boolean show_immediately) {
-        assert busy_ct.get() > 0;
-
         // quick exit if progress is already visible
-        if (set_busy.get()) return;
+        if (getVisibility() == VISIBLE) return;
 
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
@@ -60,8 +56,6 @@ public class ProgressView extends ImageView {
                 return;
             }
         }
-
-        set_busy.set(true);
 
         Animation show_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_show);
 
@@ -94,10 +88,9 @@ public class ProgressView extends ImageView {
         if ( busy_ct.decrementAndGet() > 0 ) {
             return;
         }
-        assert busy_ct.get() == 0;
 
         // quick exit if progress is not visible
-        if (!set_busy.getAndSet(false)) {
+        if (getVisibility() == INVISIBLE) {
             return;
         }
 

@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_reset:
+                render_canvas.stopRender();
                 MandelbrotSettings.getInstance().resetCoords();
                 render_canvas.kickStartCanvas();
                 return true;

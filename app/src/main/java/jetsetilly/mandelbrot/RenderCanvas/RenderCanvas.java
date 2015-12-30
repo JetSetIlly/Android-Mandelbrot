@@ -85,10 +85,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private void clearImage() {
-        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.RGB_565);
-        Canvas clear_canvas = new Canvas(clear_bm);
-        clear_canvas.drawColor(palette_settings.mostFrequentColor());
-        setImageBitmap(display_bm = clear_bm);
+            Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.RGB_565);
+            Canvas clear_canvas = new Canvas(clear_bm);
+            clear_canvas.drawColor(palette_settings.mostFrequentColor());
+            setImageBitmap(display_bm = clear_bm);
     }
 
     public void kickStartCanvas() {

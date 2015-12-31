@@ -1,7 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
 public class BufferSingle implements Buffer {
-    final static public String DBG_TAG = "buffer parallel";
+    final static public String DBG_TAG = "buffer single";
 
     private RenderCanvas canvas;
 

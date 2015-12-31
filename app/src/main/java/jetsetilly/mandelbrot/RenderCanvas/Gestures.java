@@ -182,7 +182,7 @@ public class Gestures implements
         Log.d(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
         Log.d(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
 
-        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan())) / 2);
+        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan()) / 1.25));
 
         return true;
     }

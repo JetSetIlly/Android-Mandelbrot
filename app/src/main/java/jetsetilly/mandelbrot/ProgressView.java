@@ -23,6 +23,7 @@ public class ProgressView extends ImageView {
     private double start_time = 0.0;
 
     private AtomicInteger busy_ct = new AtomicInteger(0);
+    private AtomicBoolean busy_sustain = new AtomicBoolean(false);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -37,8 +38,13 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
+        if (getVisibility() == VISIBLE) {
+            // progress view is already visible so set busy_sustain to true. busy_sustain
+            // is checked during the postDelayed() runnable launched in the unregister() method.
+            busy_sustain.set(true);
+        }
+
         start_time = System.nanoTime();
-        busy_ct.set(0);
     }
 
     public void register() {
@@ -59,17 +65,11 @@ public class ProgressView extends ImageView {
 
         Animation show_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_show);
 
-        // building spin animation by hand because of android bug in how repeatcount is set
-        // in animation xml files
-        final Animation spin_anim = new RotateAnimation(0, SPIN_FRAME_COUNT, getMeasuredWidth()/2, getMeasuredHeight()/2);
-        spin_anim.setRepeatCount(Animation.INFINITE);
-        spin_anim.setDuration(SPIN_DURATION);
-
         // set visibility on animation start
         // and begin spin on animation end
         show_anim.setAnimationListener(new Animation.AnimationListener() {
             public void onAnimationEnd(Animation a) {
-                startAnimation(spin_anim);
+                startAnimation(getSpinAnimation());
             }
 
             public void onAnimationRepeat(Animation a) {
@@ -88,6 +88,10 @@ public class ProgressView extends ImageView {
         if ( busy_ct.decrementAndGet() > 0 ) {
             return;
         }
+
+        // set count to zero in case decrement took it below zero
+        // shouldn't happen really
+        busy_ct.set(0);
 
         // quick exit if progress is not visible
         if (getVisibility() == INVISIBLE) {
@@ -109,6 +113,13 @@ public class ProgressView extends ImageView {
         // wait until spinner has finished
         postDelayed(new Runnable() {
             public void run() {
+                if (busy_sustain.get()) {
+                    // busy_sustain is set so kick the spin animation to continue the progress view
+                    startAnimation(getSpinAnimation());
+                    busy_sustain.set(false);
+                    return;
+                }
+
                 startAnimation(hide_anim);
 
                 // inelegant way of handling invisibility
@@ -119,9 +130,24 @@ public class ProgressView extends ImageView {
                     public void run() {
                         clearAnimation();
                         setVisibility(INVISIBLE);
+
+                        // set sustain to false. eve though this may be redundant it catches those
+                        // instances where it is set to true (in startSession()) somewhere between
+                        // the check above and the point it would be made invisible
+                        // if we don't do this then busy_sustain may be set to true forever.
+                        busy_sustain.set(false);
                     }
                 }, hide_anim.getDuration());
             }
         }, delay);
+    }
+
+    private Animation getSpinAnimation() {
+        // building spin animation by hand because of android bug in how repeat count is set
+        // in animation xml files
+        Animation spin_anim = new RotateAnimation(0, SPIN_FRAME_COUNT, getMeasuredWidth()/2, getMeasuredHeight()/2);
+        spin_anim.setRepeatCount(Animation.INFINITE);
+        spin_anim.setDuration(SPIN_DURATION);
+        return spin_anim;
     }
 }

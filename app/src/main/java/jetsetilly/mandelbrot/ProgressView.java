@@ -55,6 +55,12 @@ public class ProgressView extends ImageView {
         // quick exit if progress is already visible
         if (getVisibility() == VISIBLE) return;
 
+        // KLUDGE
+        // end sustain -- we don't the variable getting stuck at true - this may happen if it is
+        // set in between the postDelayed() check and the resetting back to false that occurs as a result
+        // of the check
+        busy_sustain.set(false);
+
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
@@ -130,12 +136,6 @@ public class ProgressView extends ImageView {
                     public void run() {
                         clearAnimation();
                         setVisibility(INVISIBLE);
-
-                        // set sustain to false. eve though this may be redundant it catches those
-                        // instances where it is set to true (in startSession()) somewhere between
-                        // the check above and the point it would be made invisible
-                        // if we don't do this then busy_sustain may be set to true forever.
-                        busy_sustain.set(false);
                     }
                 }, hide_anim.getDuration());
             }

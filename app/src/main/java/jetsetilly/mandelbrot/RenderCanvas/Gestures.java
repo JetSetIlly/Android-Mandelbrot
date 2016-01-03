@@ -16,14 +16,11 @@ public class Gestures implements
 {
     private static final String DEBUG_TAG = "touch canvas";
 
-    public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, MOVE, SCALE}
+    public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, SCROLL, SCALE}
     public TouchState touch_state = TouchState.IDLE;
-    public TouchState last_touch_state;
 
     private RenderCanvas canvas;
-    private boolean dirty_canvas;
-
-    private boolean has_scaled;
+    public boolean has_scaled;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
@@ -31,7 +28,6 @@ public class Gestures implements
     /* initialisation */
     public Gestures(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
-        this.dirty_canvas = false;
         this.blocked = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
@@ -43,9 +39,9 @@ public class Gestures implements
         canvas.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                /* gestures_detector doesn't handle or expose ACTION_UP events!!
-                this is necessary because we need to detect when a ACTION_MOVE event so
-                that we can kick-start canvas rendering.
+                /* onGestureListener doesn't handle or expose ACTION_UP events!!
+                this is necessary because we need to detect when a TouchState.SCROLL event ends
+                so that we can kick-start canvas rendering.
 
                 note that onSingleTapUp() is not the same thing because it is not
                 called after a ACTION_MOVE
@@ -54,14 +50,10 @@ public class Gestures implements
                 rendering in the onScaleEnd callback but instead we set the dirty_canvas flag to
                 keep things consistent.
                 */
-                if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    Log.d(DEBUG_TAG, "onUp: " + event.toString());
-                    if (dirty_canvas) {
-                        canvas.startRender();
-                        dirty_canvas = false;
-                        last_touch_state = touch_state;
-                        touch_state = TouchState.IDLE;
-                    }
+                if (event.getActionMasked() == MotionEvent.ACTION_UP && touch_state == TouchState.SCROLL) {
+                    Log.d(DEBUG_TAG, "onUp (after move): " + event.toString());
+                    touch_state = TouchState.IDLE;
+                    canvas.startRender();
                 }
 
                 boolean ret_val = scale_detector.onTouchEvent(event);
@@ -84,6 +76,7 @@ public class Gestures implements
         has_scaled = false;
     }
 
+    /* implementation of onGesturesListener */
     @Override
     public boolean onDown(MotionEvent event) {
         if (blocked) return false;
@@ -96,49 +89,21 @@ public class Gestures implements
     }
 
     @Override
-    public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-        if (blocked) return false;
-
-        Log.d(DEBUG_TAG, "onFling: " + event1.toString()+event2.toString());
-        return true;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent event) {
-        if (blocked) return;
-
-        Log.d(DEBUG_TAG, "onLongPress: " + event.toString());
-    }
-
-    @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (blocked) return false;
 
-        if (touch_state != TouchState.TOUCH && touch_state != TouchState.MOVE)
+        if (touch_state != TouchState.TOUCH && touch_state != TouchState.SCROLL)
             return true;
 
         Log.d(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
-        dirty_canvas = true;
-        touch_state = TouchState.MOVE;
+        touch_state = TouchState.SCROLL;
         return true;
     }
+    /* END OF implementation of onGesturesListener */
 
-    @Override
-    public void onShowPress(MotionEvent event) {
-        if (blocked) return;
 
-        Log.d(DEBUG_TAG, "onShowPress: " + event.toString());
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent event) {
-        if (blocked) return false;
-
-        Log.d(DEBUG_TAG, "onSingleTapUp: " + event.toString());
-        return true;
-    }
-
+    /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
         if (blocked) return false;
@@ -157,23 +122,10 @@ public class Gestures implements
 
         return true;
     }
+    /* END OF implementation of onDoubleTapListener interface */
 
-    @Override
-    public boolean onDoubleTapEvent(MotionEvent event) {
-        if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
-        return true;
-    }
-
-    @Override
-    public boolean onSingleTapConfirmed(MotionEvent event) {
-        if (blocked) return false;
-
-        Log.d(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
-        return true;
-    }
-
+    /* implementation of OnScaleGestureListener interface */
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         if (blocked) return false;
@@ -211,7 +163,63 @@ public class Gestures implements
 
         Log.d(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
-        dirty_canvas = true;
         has_scaled = true;
+
+        canvas.startRender();
+    }
+    /* END OF implementation of OnScaleGesture interface */
+
+
+    /* following methods are not really used */
+    @Override
+    public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+        /* implementation of onGesturesListener */
+        if (blocked) return false;
+
+        Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+        return true;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent event) {
+        /* implementation of onGesturesListener */
+        if (blocked) return;
+
+        Log.d(DEBUG_TAG, "onLongPress: " + event.toString());
+    }
+
+    @Override
+    public void onShowPress(MotionEvent event) {
+        /* implementation of onGesturesListener */
+        if (blocked) return;
+
+        Log.d(DEBUG_TAG, "onShowPress: " + event.toString());
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent event) {
+        /* implementation of onGesturesListener */
+        if (blocked) return false;
+
+        Log.d(DEBUG_TAG, "onSingleTapUp: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent event) {
+        /* implementation of onDoubleTapListener interface */
+        if (blocked) return false;
+
+        Log.d(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
+        /* implementation of onDoubleTapListener interface */
+        if (blocked) return false;
+
+        Log.d(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
+        return true;
     }
 }

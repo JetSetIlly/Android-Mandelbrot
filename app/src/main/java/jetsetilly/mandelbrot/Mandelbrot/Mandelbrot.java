@@ -126,6 +126,7 @@ public class Mandelbrot {
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
+        MainActivity.progress.startSession();
         stopRender();
 
         scrollAndZoom(offset_x, offset_y, zoom_factor);
@@ -159,8 +160,6 @@ public class Mandelbrot {
         }
 
         calculatePixelScale();
-
-        MainActivity.progress.startSession();
 
         if (mandelbrot_settings.parallel_render) {
             render_thr = new MandelbrotThread[mandelbrot_settings.max_iterations];

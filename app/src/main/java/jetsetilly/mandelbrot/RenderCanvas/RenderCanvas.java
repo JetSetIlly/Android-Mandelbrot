@@ -223,7 +223,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
-            if (gestures.last_touch_state == Gestures.TouchState.SCALE) {
+            if (gestures.has_scaled) {
                 render_canvas.drawBitmap(display_bm, 0, 0, null);
             } else {
                 render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);

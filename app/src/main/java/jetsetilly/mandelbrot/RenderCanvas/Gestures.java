@@ -50,10 +50,13 @@ public class Gestures implements
                 rendering in the onScaleEnd callback but instead we set the dirty_canvas flag to
                 keep things consistent.
                 */
-                if (event.getActionMasked() == MotionEvent.ACTION_UP && touch_state == TouchState.SCROLL) {
-                    Log.d(DEBUG_TAG, "onUp (after move): " + event.toString());
+                if (event.getActionMasked() == MotionEvent.ACTION_UP ) {
+                    if (touch_state == TouchState.SCROLL) {
+                        Log.d(DEBUG_TAG, "onUp (after move): " + event.toString());
+                        canvas.startRender();
+                    }
+
                     touch_state = TouchState.IDLE;
-                    canvas.startRender();
                 }
 
                 boolean ret_val = scale_detector.onTouchEvent(event);
@@ -115,10 +118,10 @@ public class Gestures implements
         int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
         int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
 
-        canvas.doubleTouchZoom(offset_x, offset_y);
         touch_state = TouchState.DOUBLE_TOUCH;
+        canvas.doubleTouchZoom(offset_x, offset_y);
 
-        // not dirtying canvas -- we'll restart the render in the canvas.animatedZoom method
+        // render restarted in the canvas.doubleTouchZoom method
 
         return true;
     }

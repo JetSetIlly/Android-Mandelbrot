@@ -23,7 +23,6 @@ public class ProgressView extends ImageView {
     private double start_time = 0.0;
 
     private AtomicInteger busy_ct = new AtomicInteger(0);
-    private AtomicBoolean busy_sustain = new AtomicBoolean(false);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -38,12 +37,6 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
-        if (getVisibility() == VISIBLE) {
-            // progress view is already visible so set busy_sustain to true. busy_sustain
-            // is checked during the postDelayed() runnable launched in the unregister() method.
-            busy_sustain.set(true);
-        }
-
         start_time = System.nanoTime();
     }
 
@@ -54,12 +47,6 @@ public class ProgressView extends ImageView {
     public void kick(int pass, int num_passes, boolean show_immediately) {
         // quick exit if progress is already visible
         if (getVisibility() == VISIBLE) return;
-
-        // KLUDGE
-        // end sustain -- we don't the variable getting stuck at true - this may happen if it is
-        // set in between the postDelayed() check and the resetting back to false that occurs as a result
-        // of the check
-        busy_sustain.set(false);
 
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
@@ -119,10 +106,9 @@ public class ProgressView extends ImageView {
         // wait until spinner has finished
         postDelayed(new Runnable() {
             public void run() {
-                if (busy_sustain.get()) {
+                if (busy_ct.get() > 0) {
                     // busy_sustain is set so kick the spin animation to continue the progress view
                     startAnimation(getSpinAnimation());
-                    busy_sustain.set(false);
                     return;
                 }
 

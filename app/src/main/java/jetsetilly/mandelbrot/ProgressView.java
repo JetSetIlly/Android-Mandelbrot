@@ -11,8 +11,6 @@ import android.widget.ImageView;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO: it seems wasteful to setup the animations each time but setting them up once doesn't seem to work. there must be a way of recycling the animation
-
 public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
@@ -106,6 +104,9 @@ public class ProgressView extends ImageView {
         // wait until spinner has finished
         postDelayed(new Runnable() {
             public void run() {
+                // check to see if another MandelbrotThread has registered with ProgressView in the
+                // time it takes for postDelayed() to run. if it has, resume the spin animation
+                // and exit
                 if (busy_ct.get() > 0) {
                     // busy_sustain is set so kick the spin animation to continue the progress view
                     startAnimation(getSpinAnimation());
@@ -114,10 +115,7 @@ public class ProgressView extends ImageView {
 
                 startAnimation(hide_anim);
 
-                // inelegant way of handling invisibility
-                // it would be nice to have this inside a listener as in
-                // the visibility_on_anim above but we can't call clearAnimation()
-                // inside the listener and we need to call that for setVisibility(INVISIBLE) to work
+                // the hide animation has concluded so set visibility of ProgressView to invisible
                 postDelayed(new Runnable() {
                     public void run() {
                         clearAnimation();

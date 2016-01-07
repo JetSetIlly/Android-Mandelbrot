@@ -3,7 +3,7 @@ package jetsetilly.mandelbrot.Widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import jetsetilly.mandelbrot.RenderCanvas.GestureSettings;
+import jetsetilly.mandelbrot.Settings.GestureSettings;
 
 public class DoubleTapScaleSlider extends ReportingSeekBar {
     private GestureSettings canvas_settings = GestureSettings.getInstance();

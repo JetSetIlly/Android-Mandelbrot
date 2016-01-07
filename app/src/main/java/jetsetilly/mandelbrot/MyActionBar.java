@@ -35,6 +35,8 @@ public class MyActionBar extends Toolbar {
     }
 
     public void hide(boolean hide) {
+        // translucent status bar is set on/off in styles.xml - it would be useful if this was programmatic
+
         if (hide) {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
 

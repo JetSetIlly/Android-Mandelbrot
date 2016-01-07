@@ -8,12 +8,13 @@
     </style>
 
     <style name="MainActivityTheme" parent="@style/AppTheme">
+        <!-- uncomment to allow translucent status bar - doesn't really fit with material themes
         <item name="android:windowTranslucentStatus">true</item>
+        -->
     </style>
 
-    <!-- we want an ordinary actionbar for other activities -->
-
     <style name="OtherActivityTheme" parent="@style/Theme.AppCompat.Light">
+        <!-- we want an ordinary action bar for other activities -->
     </style>
 
     <!-- theme for iterations dialog -->

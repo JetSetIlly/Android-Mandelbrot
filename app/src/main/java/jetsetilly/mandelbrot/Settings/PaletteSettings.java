@@ -1,7 +1,10 @@
-package jetsetilly.mandelbrot.Palette;
+package jetsetilly.mandelbrot.Settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import jetsetilly.mandelbrot.Palette.PaletteDefinition;
+import jetsetilly.mandelbrot.Palette.Presets;
 
 public class PaletteSettings {
     private final String DBG_TAG = "palette settings";

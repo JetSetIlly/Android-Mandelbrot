@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot.RenderCanvas;
+package jetsetilly.mandelbrot.Settings;
 
 public class GestureSettings {
     public float double_tap_scale = 3.0f;

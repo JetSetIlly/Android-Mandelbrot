@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import jetsetilly.mandelbrot.ColoursActivity;
 import jetsetilly.mandelbrot.R;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
 public class PaletteListAdapter implements ListAdapter {
     final static public String DBG_TAG = "colours adapter";

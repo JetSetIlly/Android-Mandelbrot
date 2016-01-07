@@ -14,8 +14,8 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 import jetsetilly.mandelbrot.Palette.PaletteDefinition;
-import jetsetilly.mandelbrot.Palette.PaletteSettings;
-import jetsetilly.mandelbrot.R;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.GestureSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {

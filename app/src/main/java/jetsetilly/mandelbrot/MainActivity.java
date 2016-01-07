@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import jetsetilly.mandelbrot.Palette.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 

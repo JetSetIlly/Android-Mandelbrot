@@ -1,11 +1,17 @@
 package jetsetilly.mandelbrot.Widgets;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import jetsetilly.mandelbrot.R;
 
 public class ReportingSeekBar extends LinearLayout {
     private TextView value;
@@ -21,10 +27,18 @@ public class ReportingSeekBar extends LinearLayout {
 
     public ReportingSeekBar(Context context, AttributeSet attrs) {
         super(context, attrs);
+        Resources resources = context.getResources();
         this.setOrientation(VERTICAL);
 
         value = new TextView(context);
         slider = new SeekBar(context);
+
+        ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
+        thumb.setIntrinsicHeight(resources.getDimensionPixelSize(R.dimen.seekbar_thumb_height));
+        thumb.setIntrinsicWidth(resources.getDimensionPixelSize(R.dimen.seekbar_thumb_width));
+        thumb.getPaint().setColor(resources.getColor(R.color.seekbar_thumb_colour));
+        slider.setThumb(thumb);
+
         value.setGravity(Gravity.END);
         this.addView(value);
         this.addView(slider);

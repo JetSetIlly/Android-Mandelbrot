@@ -13,7 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import jetsetilly.mandelbrot.Google.SlidingTabLayout;
 import jetsetilly.mandelbrot.Palette.PaletteListAdapter;
-import jetsetilly.mandelbrot.Palette.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
 
 public class ColoursActivity extends AppCompatActivity {

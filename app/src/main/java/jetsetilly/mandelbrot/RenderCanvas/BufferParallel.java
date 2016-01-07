@@ -1,7 +1,5 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
-import android.util.Log;
-
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
 
 public class BufferParallel implements Buffer {

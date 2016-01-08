@@ -10,6 +10,7 @@ import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Widgets.BailoutSlider;
 import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;
 import jetsetilly.mandelbrot.Widgets.IterationsSlider;
@@ -99,6 +100,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 // save settings
                 MandelbrotSettings.getInstance().save(this);
+                GestureSettings.getInstance().save(this);
 
                 finish();
                 setTransitionAnim();

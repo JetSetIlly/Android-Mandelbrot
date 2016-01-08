@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 import android.os.AsyncTask;
 
 import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
     /* from the android documentation:

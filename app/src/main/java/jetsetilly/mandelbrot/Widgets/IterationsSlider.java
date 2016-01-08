@@ -3,7 +3,7 @@ package jetsetilly.mandelbrot.Widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 public class IterationsSlider extends ReportingSeekBar {
     private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();

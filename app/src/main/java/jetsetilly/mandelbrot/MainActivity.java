@@ -22,7 +22,7 @@ import java.util.Locale;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_reset:
                 render_canvas.stopRender();
-                MandelbrotSettings.getInstance().resetCoords();
+                MandelbrotSettings.getInstance().reset();
                 render_canvas.kickStartCanvas();
                 return true;
 

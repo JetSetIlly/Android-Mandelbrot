@@ -1,6 +1,6 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 public class BufferParallel implements Buffer {
     final static public String DBG_TAG = "buffer parallel";

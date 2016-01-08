@@ -9,7 +9,7 @@ import android.widget.CheckBox;
 import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Widgets.BailoutSlider;
 import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;

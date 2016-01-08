@@ -8,6 +8,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";

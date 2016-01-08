@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;

@@ -1,7 +1,10 @@
-package jetsetilly.mandelbrot.Mandelbrot;
+package jetsetilly.mandelbrot.Settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotPresets;
 
 public class MandelbrotSettings {
     public double real_left;
@@ -16,16 +19,16 @@ public class MandelbrotSettings {
     public boolean parallel_render;
 
     MandelbrotSettings() {
-        resetCoords();
+        reset();
     }
 
-    public void resetCoords() {
-        real_left = Presets.presets[Presets.DEFAULT_SETTINGS].real_left;
-        real_right = Presets.presets[Presets.DEFAULT_SETTINGS].real_right;
-        imaginary_upper = Presets.presets[Presets.DEFAULT_SETTINGS].imaginary_upper;
-        imaginary_lower = Presets.presets[Presets.DEFAULT_SETTINGS].imaginary_lower;
-        max_iterations = Presets.presets[Presets.DEFAULT_SETTINGS].max_iterations;
-        bailout_value = Presets.presets[Presets.DEFAULT_SETTINGS].bailout_value;
+    public void reset() {
+        real_left = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_left;
+        real_right = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_right;
+        imaginary_upper = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_upper;
+        imaginary_lower = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower;
+        max_iterations = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations;
+        bailout_value = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value;
     }
 
     public void save(Context context) {
@@ -50,12 +53,12 @@ public class MandelbrotSettings {
     public void restore(Context context) {
         // set interface to reflect stored values
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
-        real_left = prefs.getFloat("real_left", (float) Presets.presets[Presets.DEFAULT_SETTINGS].real_left);
-        real_right = prefs.getFloat("real_right", (float) Presets.presets[Presets.DEFAULT_SETTINGS].real_right);
-        imaginary_upper = prefs.getFloat("imaginary_upper", (float) Presets.presets[Presets.DEFAULT_SETTINGS].imaginary_upper);
-        imaginary_lower = prefs.getFloat("imaginary_lower", (float) Presets.presets[Presets.DEFAULT_SETTINGS].imaginary_lower);
-        max_iterations = prefs.getInt("max_iterations", Presets.presets[Presets.DEFAULT_SETTINGS].max_iterations);
-        bailout_value = prefs.getFloat("bailout_value", (float) Presets.presets[Presets.DEFAULT_SETTINGS].bailout_value);
+        real_left = prefs.getFloat("real_left", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_left);
+        real_right = prefs.getFloat("real_right", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_right);
+        imaginary_upper = prefs.getFloat("imaginary_upper", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_upper);
+        imaginary_lower = prefs.getFloat("imaginary_lower", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower);
+        max_iterations = prefs.getInt("max_iterations", MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations);
+        bailout_value = prefs.getFloat("bailout_value", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value);
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.TOP_DOWN.ordinal())];
         parallel_render = prefs.getBoolean("parallel_render", false);
     }

@@ -3,9 +3,9 @@ package jetsetilly.mandelbrot.RenderCanvas;
 public class BufferSingle implements Buffer {
     final static public String DBG_TAG = "buffer single";
 
-    private RenderCanvas canvas;
+    private final RenderCanvas canvas;
 
-    public float[] points;
+    public final float[] points;
     public int points_len;
     private int iteration;
 

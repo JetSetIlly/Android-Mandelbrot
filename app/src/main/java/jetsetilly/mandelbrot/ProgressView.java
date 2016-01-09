@@ -7,8 +7,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProgressView extends ImageView {
@@ -20,7 +18,7 @@ public class ProgressView extends ImageView {
     private final int SPIN_DURATION = 1000;
     private double start_time = 0.0;
 
-    private AtomicInteger busy_ct = new AtomicInteger(0);
+    private final AtomicInteger busy_ct = new AtomicInteger(0);
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);

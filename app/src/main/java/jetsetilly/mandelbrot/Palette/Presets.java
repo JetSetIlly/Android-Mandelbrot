@@ -5,8 +5,8 @@ public class Presets {
     iteration. see MandelbrotQueue() for details.
      */
 
-    static public PaletteDefinition[] presets = {
-            new PaletteDefinition("Red/Grey", PaletteDefinition.PaletteMode.WEIGHTED_INDEX,
+    static public final PaletteDefinition[] presets = {
+            new PaletteDefinition("Red/Grey", PaletteDefinition.PaletteMode.INTERPOLATE,
                     new int[] { 0xFF000000,
                             0xFFFF4444, 0xFF114444, 32
                     },

@@ -43,7 +43,7 @@
     <view
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        class="jetsetilly.mandelbrot.MyActionBar"
+        class="jetsetilly.mandelbrot.MandelbrotActionBar"
         android:id="@+id/toolbar"
         android:layout_gravity="start|top"
         android:minHeight="?attr/actionBarSize"

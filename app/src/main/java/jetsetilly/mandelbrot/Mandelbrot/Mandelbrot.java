@@ -15,13 +15,13 @@ public class Mandelbrot {
 
     public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
 
-    private Context context;
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final Context context;
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr[];
     protected boolean render_completed = false;
 
-    protected MandelbrotCanvas canvas;
+    protected final MandelbrotCanvas canvas;
     protected double pixel_scale;
     private double fractal_ratio;
 
@@ -146,11 +146,7 @@ public class Mandelbrot {
         no_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
         // make sure render mode etc. is set correctly
-        if (zoom_factor == 0) {
-            rescaling_render = false;
-        } else {
-            rescaling_render = true;
-        }
+        rescaling_render = zoom_factor != 0;
 
         num_passes = DEF_NUM_PASSES;
         canvas_update_frequency = DEF_UPDATE_FREQ;

@@ -3,8 +3,5 @@
     <color name="primary_material_light">#ffffff</color>
     <color name="primary_dark_material_light">#607d8b</color>
 
-    <color name="palette_activity_selected_card">@color/primary_dark_material_light</color>
-    <color name="palette_activity_unselected_card">#FFFFFF</color>
-
     <color name="seekbar_thumb_colour">@color/accent_material_light</color>
 </resources>

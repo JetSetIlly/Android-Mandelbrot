@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/action_palette"
-        android:title="@string/action_colours"
+        android:title="@string/action_palette"
         android:icon="@drawable/ic_palette_light"
         app:showAsAction="ifRoom"
     />
@@ -25,7 +25,7 @@
 
     <item
         android:id="@+id/action_reset"
-        android:title="@string/action_reset_coords"
+        android:title="@string/action_reset"
         app:showAsAction="never"
     />
 

@@ -4,9 +4,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
 public class IterationsSlider extends ReportingSeekBar {
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     public IterationsSlider(Context context) {
         this(context, null);

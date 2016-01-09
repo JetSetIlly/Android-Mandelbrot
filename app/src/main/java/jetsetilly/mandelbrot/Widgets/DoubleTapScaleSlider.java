@@ -4,12 +4,13 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import jetsetilly.mandelbrot.Settings.GestureSettings;
+import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
 public class DoubleTapScaleSlider extends ReportingSeekBar {
-    private GestureSettings canvas_settings = GestureSettings.getInstance();
+    private final GestureSettings canvas_settings = GestureSettings.getInstance();
 
-    private int MIN_SCALE_VAL = 1;
-    private int MAX_SCALE_VAL = 5;
+    private final int MIN_SCALE_VAL = 1;
+    private final int MAX_SCALE_VAL = 5;
 
     public DoubleTapScaleSlider(Context context) {
         this(context, null);

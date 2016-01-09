@@ -15,7 +15,7 @@ public class PaletteSettings {
 
     /* for simplicity, use palettes as defined in PalettePresets
      TODO: store/retrieve definitions on disk */
-    public PaletteDefinition[] palettes = Presets.presets;
+    public final PaletteDefinition[] palettes = Presets.presets;
 
     public int selected_id;
     public PaletteDefinition selected_palette;
@@ -92,7 +92,7 @@ public class PaletteSettings {
     /* colour counting */
 
     /* singleton pattern */
-    private static PaletteSettings singleton = new PaletteSettings();
+    private static final PaletteSettings singleton = new PaletteSettings();
     public static PaletteSettings getInstance() {
         return singleton;
     }

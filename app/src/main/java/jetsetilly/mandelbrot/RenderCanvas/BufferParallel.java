@@ -7,15 +7,15 @@ public class BufferParallel implements Buffer {
 
     private final int BUFFER_SIZE = 4096; // this should be an even number
 
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
-    private RenderCanvas canvas;
-    private IterationQueue[] queues;
+    private final RenderCanvas canvas;
+    private final IterationQueue[] queues;
 
     // bundled_points is used in popDraw(). we don't want to keep reinitialising
     // memory every time popDraw() is called so we're declaring it here
-    private float[] bundled_points;
-    private int bundled_points_len;
+    private final float[] bundled_points;
+    private final int bundled_points_len;
 
     private long number_of_pushes;
 
@@ -55,7 +55,7 @@ public class BufferParallel implements Buffer {
     }
 
     class IterationQueue {
-        public float[] points;
+        public final float[] points;
         public int points_len;
 
         public IterationQueue()

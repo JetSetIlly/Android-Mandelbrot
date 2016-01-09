@@ -19,6 +19,8 @@ import jetsetilly.mandelbrot.Widgets.IterationsSlider;
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
+    public final static String ITERATIONS_VALUE_INTENT = "ITERATIONS_VALUE";
+
     private IterationsSlider iterations;
     private BailoutSlider bailout;
     private DoubleTapScaleSlider double_tap;
@@ -26,7 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
     private CheckBox progressive_render;
     private int reference_render_mode;
 
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         /* get the values that wer set on the previous screen
         they've not been committed yet so we've passed them by intent */
         Intent settings_intent = getIntent();
-        int iterations_value = settings_intent.getIntExtra(getString(R.string.settings_intent_iteration_value), -1);
+        int iterations_value = settings_intent.getIntExtra(ITERATIONS_VALUE_INTENT, -1);
         iterations.set(iterations_value);
 
         // set render mode radio button

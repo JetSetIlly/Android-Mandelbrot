@@ -22,23 +22,23 @@ public class IterationsDialog extends DialogFragment {
         builder.setTitle(R.string.settings_max_iterations_label);
         builder.setView(createView());
 
-        builder.setPositiveButton(R.string.dialog_max_iter_ok, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_max_iteration_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (iterations.fixate()) {
                     MainActivity.render_canvas.startRender();
                 }
             }
-        }).setNeutralButton(R.string.dialog_max_iter_more, new DialogInterface.OnClickListener() {
+        }).setNeutralButton(R.string.dialog_max_iteration_more, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Activity curr_activity = getActivity();
 
                 Intent settings_intent = new Intent(curr_activity, SettingsActivity.class);
-                settings_intent.putExtra(getString(R.string.settings_intent_iteration_value), iterations.getInteger());
+                settings_intent.putExtra(SettingsActivity.ITERATIONS_VALUE_INTENT, iterations.getInteger());
 
                 startActivity(settings_intent);
                 curr_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
             }
-        }).setNegativeButton(R.string.dialog_max_iter_cancel, null);
+        }).setNegativeButton(R.string.dialog_max_iteration_cancel, null);
 
         // Create the AlertDialog object and return it
         return builder.create();

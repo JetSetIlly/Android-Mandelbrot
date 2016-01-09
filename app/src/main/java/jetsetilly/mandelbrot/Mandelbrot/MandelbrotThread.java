@@ -16,9 +16,9 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
     final static public String DBG_TAG = "render thread";
 
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
-    private Mandelbrot m;
-    private int target_iteration;
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final Mandelbrot m;
+    private final int target_iteration;
 
     /* target_iterations of > 0 will result in a one shot thread for one iteration value */
 

@@ -7,29 +7,29 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-public class MyActionBar extends Toolbar {
+public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "myactionbar";
 
     private MainActivity context;
     private View status_bar;
 
-    public MyActionBar(Context context, AttributeSet attrs, int defStyle) {
+    public MandelbrotActionBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public MyActionBar(Context context, AttributeSet attrs) {
+    public MandelbrotActionBar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MyActionBar(Context context) {
+    public MandelbrotActionBar(Context context) {
         super(context);
     }
 
-    public void completeSetup(MainActivity context) {
+    public void completeSetup(MainActivity context, String title) {
         this.context = context;
         status_bar = context.getWindow().getDecorView();
 
-        setTitle(R.string.app_name);
+        setTitle(title);
         setY(Tools.getStatusBarHeight(context));
         hide(false);
     }

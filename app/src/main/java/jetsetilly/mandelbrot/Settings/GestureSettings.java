@@ -23,7 +23,7 @@ public class GestureSettings {
     }
 
     /* singleton pattern */
-    private static GestureSettings singleton = new GestureSettings();
+    private static final GestureSettings singleton = new GestureSettings();
     public static GestureSettings getInstance() {
         return singleton;
     }

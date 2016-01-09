@@ -21,17 +21,17 @@
         </activity>
 
         <activity
-            android:name=".ColoursActivity"
-            android:label="@string/action_colours"
+            android:name=".PaletteActivity"
+            android:label="@string/action_palette"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/OtherActivityTheme" >
+            android:theme="@style/PaletteActivityTheme" >
         </activity>
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/OtherActivityTheme" >
+            android:theme="@style/SettingsActivityTheme" >
         </activity>
     </application>
 

@@ -39,9 +39,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // a solution IMO
     private Bitmap display_bm;
 
-    private PaletteSettings palette_settings = PaletteSettings.getInstance();
-    private GestureSettings gesture_settings = GestureSettings.getInstance();
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final PaletteSettings palette_settings = PaletteSettings.getInstance();
+    private final GestureSettings gesture_settings = GestureSettings.getInstance();
+    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private double zoom_factor;
 
@@ -151,7 +151,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         int palette_entry;
 
         // map iteration to palette entry
-        if (palette_settings.selected_palette.palette_mode == PaletteDefinition.PaletteMode.WEIGHTED_INDEX) {
+        if (palette_settings.selected_palette.palette_mode == PaletteDefinition.PaletteMode.INTERPOLATE) {
             int iterations_step = mandelbrot_settings.max_iterations / palette_settings.selected_palette.num_colours;
 
             if (iteration == 0) {

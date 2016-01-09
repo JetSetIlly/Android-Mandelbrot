@@ -64,7 +64,7 @@ public class MandelbrotSettings {
     }
 
     /* singleton pattern */
-    private static MandelbrotSettings singleton = new MandelbrotSettings();
+    private static final MandelbrotSettings singleton = new MandelbrotSettings();
     public static MandelbrotSettings getInstance() {
         return singleton;
     }

@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     static public RenderCanvas render_canvas;
     static public ProgressView progress;
 
-    public MyActionBar action_bar;
+    public MandelbrotActionBar action_bar;
     public ImageView background_view;
 
     @Override
@@ -52,17 +52,13 @@ public class MainActivity extends AppCompatActivity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // set up actionbar
-        action_bar = (MyActionBar) findViewById(R.id.toolbar);
-        action_bar.completeSetup(this);
+        action_bar = (MandelbrotActionBar) findViewById(R.id.toolbar);
+        action_bar.completeSetup(this, getResources().getString(R.string.app_name));
         setSupportActionBar(action_bar);
 
-        // restore mandelbrot settings
+        // restore settings
         MandelbrotSettings.getInstance().restore(this);
-
-        // restore mandelbrot settings
         PaletteSettings.getInstance().restore(this);
-
-        // restore gesture settings
         GestureSettings.getInstance().restore(this);
 
         // progress view
@@ -106,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.action_palette:
-                Intent palette_intent = new Intent(this, ColoursActivity.class);
+                Intent palette_intent = new Intent(this, PaletteActivity.class);
                 startActivity(palette_intent);
                 overridePendingTransition(R.anim.from_right_nofade, R.anim.from_right_fade_out);
                 return true;

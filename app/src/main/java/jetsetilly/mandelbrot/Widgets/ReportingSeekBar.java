@@ -2,7 +2,6 @@ package jetsetilly.mandelbrot.Widgets;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.util.AttributeSet;
@@ -14,8 +13,8 @@ import android.widget.TextView;
 import jetsetilly.mandelbrot.R;
 
 public class ReportingSeekBar extends LinearLayout {
-    private TextView value;
-    private SeekBar slider;
+    private final TextView value;
+    private final SeekBar slider;
 
     private int start_value;
     private int base_value;

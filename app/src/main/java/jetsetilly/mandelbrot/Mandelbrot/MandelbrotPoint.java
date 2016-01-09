@@ -1,8 +1,8 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 public class MandelbrotPoint {
-    double x;
-    double y;
+    final double x;
+    final double y;
     double A;
     double B;
     double U;

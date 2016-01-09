@@ -2,12 +2,12 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">0dp</dimen>
     <dimen name="activity_vertical_margin">0dp</dimen>
-
-    <dimen name="palette_activity_selected_card">0dp</dimen>
-    <dimen name="palette_activity_unselected_card">1dp</dimen>
-
-    <dimen name="palette_activity_preview_height">100dp</dimen>
     <!-- deliberately no definition for preview_width -->
+
+    <dimen name="palette_grid_size">150dp</dimen>
+    <dimen name="palette_grid_spacing">10dp</dimen>
+    <dimen name="palette_entry_padding">10dp</dimen>
+    <dimen name="palette_swatch_size">125dp</dimen>
 
     <dimen name="seekbar_thumb_height">20dp</dimen>
     <dimen name="seekbar_thumb_width">10dp</dimen>

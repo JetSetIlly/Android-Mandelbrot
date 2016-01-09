@@ -19,7 +19,7 @@ public class Gestures implements
     public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, SCROLL, SCALE}
     public TouchState touch_state = TouchState.IDLE;
 
-    private RenderCanvas canvas;
+    private final RenderCanvas canvas;
     public boolean has_scaled;
 
     // gestures will be ignored so long as blocked == true

@@ -16,8 +16,7 @@
     <style name="PaletteActivityTheme" parent="@style/AppTheme">
     </style>
 
-    <style name="SettingsActivityTheme" parent="@style/Theme.AppCompat.Light">
-        <!-- we want an ordinary action bar for other activities -->
+    <style name="SettingsActivityTheme" parent="@style/AppTheme">
     </style>
 
     <!-- theme for iterations dialog -->

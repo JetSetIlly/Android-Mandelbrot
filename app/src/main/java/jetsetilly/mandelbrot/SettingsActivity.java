@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CheckBox;
@@ -34,6 +35,12 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        // set up actionbar
+        Toolbar action_bar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(action_bar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         iterations = (IterationsSlider) findViewById(R.id.iterations);
         bailout = (BailoutSlider) findViewById(R.id.bailout);

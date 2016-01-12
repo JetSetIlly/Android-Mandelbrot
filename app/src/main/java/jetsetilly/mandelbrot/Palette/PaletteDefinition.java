@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 
+import static java.lang.Math.abs;
+
 public class PaletteDefinition {
     private final String DBG_TAG = "palette definition";
 
@@ -83,7 +85,35 @@ public class PaletteDefinition {
     }
 
     private Bitmap generatePalettePreview() {
-        int num_stripes = Math.min(MAX_COLOURS_TO_PREVIEW, colours.length-1);
+        Bitmap bm = Bitmap.createBitmap(preview_width, preview_height, Bitmap.Config.RGB_565);
+        Canvas cnv = new Canvas(bm);
+        Paint pnt = new Paint();
+
+        int[] swatch_dimensions = paletteDimensions(colours.length-1);
+        int entry_width = preview_width / swatch_dimensions[0];
+        int entry_height = preview_height / swatch_dimensions[1];
+
+        int lft, top, col_idx;
+
+        col_idx = 1;
+        top = 0;
+        for (int y = 0; y < swatch_dimensions[1]; y ++ ) {
+            lft = 0;
+            for (int x = 0; x < swatch_dimensions[0]; x ++ ) {
+                pnt.setColor(colours[col_idx]);
+                cnv.drawRect(lft, top, lft + entry_width, top + entry_height, pnt);
+
+                lft += entry_width;
+                col_idx ++;
+            }
+            top += entry_height;
+        }
+
+        return bm;
+    }
+
+    private Bitmap generatePalettePreview_stripes() {
+        int num_stripes = Math.min(MAX_COLOURS_TO_PREVIEW, colours.length - 1);
         int stripe_width = preview_width / num_stripes;
         float lft;
 
@@ -94,10 +124,36 @@ public class PaletteDefinition {
         // one stripe per colour
         for (int i = 0; i < num_stripes; ++i) {
             lft = (float) i * stripe_width;
-            pnt.setColor(colours[i+1]);
+            pnt.setColor(colours[i + 1]);
             cnv.drawRect(lft, 0, lft + stripe_width, preview_height, pnt);
         }
 
         return bm;
+    }
+
+    private int[] paletteDimensions(int num_colours) {
+       	int sx = 0;
+    	int si = 0;
+
+	    int z = num_colours - 1;
+
+        while (si == 0) {
+            z ++;
+            int d = z;
+            for (int i = 1; i <= z/2; i ++) {
+                int x = z / i;
+                float y = (float)z / i;
+
+                if (y - x == 0) {
+                    if (abs(i - x) < d) {
+                        d = abs(i - x);
+                        sx = x;
+                        si = i;
+                    }
+                }
+            }
+        }
+
+        return (new int[] {si, sx});
     }
 }

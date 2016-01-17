@@ -5,7 +5,7 @@
     >
 
     <scale
-        android:duration="@integer/palette_selected_duration_half"
+        android:duration="@integer/palette_selected_pulse_duration"
         android:fromXScale="1.0"
         android:fromYScale="1.0"
         android:toXScale="0.8"
@@ -15,7 +15,7 @@
         />
 
     <rotate
-        android:duration="@integer/palette_selected_duration"
+        android:duration="@integer/palette_selected_spin_duration"
         android:fromDegrees="0"
         android:toDegrees="360"
         android:pivotX="50%"
@@ -23,8 +23,8 @@
         />
 
     <scale
-        android:startOffset="@integer/palette_selected_duration_half"
-        android:duration="@integer/palette_selected_duration_half"
+        android:startOffset="@integer/palette_selected_pulse_duration"
+        android:duration="@integer/palette_selected_pulse_duration"
         android:fromXScale="1.0"
         android:fromYScale="1.0"
         android:toXScale="1.25"

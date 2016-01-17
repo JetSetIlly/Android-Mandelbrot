@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="palette_selected_duration">500</integer>
-    <integer name="palette_selected_duration_half">250</integer>
+    <integer name="palette_selected_tick_duration">500</integer>
+    <integer name="palette_selected_untick_duration">250</integer>
+    <integer name="palette_selected_spin_duration">250</integer>
+    <integer name="palette_selected_pulse_duration">125</integer>
 </resources>

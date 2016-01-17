@@ -11,12 +11,27 @@
         android:id="@+id/palette_id"
         android:visibility="gone" />
 
-    <jetsetilly.mandelbrot.Widgets.CircularImageView
-        android:layout_width="@dimen/palette_swatch_size"
-        android:layout_height="@dimen/palette_swatch_size"
-        android:layout_gravity="center"
-        android:id="@+id/palette_swatch"
-        android:src="#a8d8d6" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="@dimen/palette_swatch_size"
+            android:layout_height="@dimen/palette_swatch_size"
+            android:layout_gravity="center"
+            android:id="@+id/palette_swatch"
+            android:src="#a8d8d6"
+            android:clickable="false" />
+
+        <ImageView
+            android:id="@+id/palette_selected"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_swatch_selected"
+            android:layout_alignEnd="@id/palette_swatch" />
+
+    </RelativeLayout>
 
     <TextView
         android:layout_width="wrap_content"

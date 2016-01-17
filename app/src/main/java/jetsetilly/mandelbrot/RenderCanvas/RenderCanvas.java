@@ -85,7 +85,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private void clearImage() {
-            Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.RGB_565);
+            Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
             Canvas clear_canvas = new Canvas(clear_bm);
             clear_canvas.drawColor(palette_settings.mostFrequentColor());
             setImageBitmap(display_bm = clear_bm);
@@ -216,7 +216,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void startRender() {
         stopRender();
 
-        render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         render_canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
@@ -333,7 +333,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // without the zoom_factor going crazy or losing definition
 
         /// do offset
-        offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         zoom_canvas = new Canvas(offset_bm);
         zoom_canvas.drawColor(palette_settings.mostFrequentColor());
         zoom_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
@@ -344,7 +344,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         new_right = getWidth() - new_left;
         new_top = zoom_factor * getHeight();
         new_bottom = getHeight() - new_top;
-        zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
+        zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         zoom_canvas = new Canvas(zoomed_bm);
 
         blit_to = new Rect(0, 0, getWidth(), getHeight());

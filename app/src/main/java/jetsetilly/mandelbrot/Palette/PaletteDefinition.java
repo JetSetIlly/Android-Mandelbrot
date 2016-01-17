@@ -4,16 +4,15 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 
-import static java.lang.Math.abs;
-
 public class PaletteDefinition {
     private final String DBG_TAG = "palette definition";
-
-    final static int MAX_COLOURS_TO_PREVIEW = 128;
 
     public enum PaletteMode {INDEX, INTERPOLATE};
 
@@ -21,10 +20,9 @@ public class PaletteDefinition {
     public PaletteMode palette_mode;
     public int[]  colours;
     public int num_colours;
-    public Bitmap swatch;
 
-    static int preview_height = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_swatch_size);
-    static int preview_width = preview_height;
+    public Bitmap swatch;
+    static int swatch_size = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_swatch_size);
 
     /* initialisation - if interpolate == true then colours[] should be of the form
 
@@ -75,9 +73,9 @@ public class PaletteDefinition {
 
         for (int i = 2; i <= num_of_steps; ++ i ) {
             colours[i] = Color.rgb(
-                    Math.min(255, Math.max(0, start_red + (red_step * (i-1)))),
-                    Math.min(255, Math.max(0, start_green + (green_step * (i-1)))),
-                    Math.min(255, Math.max(0, start_blue + (blue_step * (i-1))))
+                    Math.min(255, Math.max(0, start_red + (red_step * (i - 1)))),
+                    Math.min(255, Math.max(0, start_green + (green_step * (i - 1)))),
+                    Math.min(255, Math.max(0, start_blue + (blue_step * (i - 1))))
             );
         }
 
@@ -85,13 +83,13 @@ public class PaletteDefinition {
     }
 
     private Bitmap generatePalettePreview() {
-        Bitmap bm = Bitmap.createBitmap(preview_width, preview_height, Bitmap.Config.RGB_565);
+        int[] swatch_dimensions = paletteDimensions(colours.length - 1);
+        int entry_width = swatch_size / swatch_dimensions[0];
+        int entry_height = swatch_size / swatch_dimensions[1];
+
+        Bitmap bm = Bitmap.createBitmap(entry_width * swatch_dimensions[0], entry_height * swatch_dimensions[1], Bitmap.Config.ARGB_8888);
         Canvas cnv = new Canvas(bm);
         Paint pnt = new Paint();
-
-        int[] swatch_dimensions = paletteDimensions(colours.length-1);
-        int entry_width = preview_width / swatch_dimensions[0];
-        int entry_height = preview_height / swatch_dimensions[1];
 
         int lft, top, col_idx;
 
@@ -104,34 +102,15 @@ public class PaletteDefinition {
                 cnv.drawRect(lft, top, lft + entry_width, top + entry_height, pnt);
 
                 lft += entry_width;
-                col_idx ++;
+                col_idx = Math.min(colours.length, col_idx + 1);
             }
             top += entry_height;
         }
 
-        return bm;
+        return getCircularSwatch(bm, swatch_size);
     }
 
-    private Bitmap generatePalettePreview_stripes() {
-        int num_stripes = Math.min(MAX_COLOURS_TO_PREVIEW, colours.length - 1);
-        int stripe_width = preview_width / num_stripes;
-        float lft;
-
-        Bitmap bm = Bitmap.createBitmap(preview_width, preview_height, Bitmap.Config.RGB_565);
-        Canvas cnv = new Canvas(bm);
-        Paint pnt = new Paint();
-
-        // one stripe per colour
-        for (int i = 0; i < num_stripes; ++i) {
-            lft = (float) i * stripe_width;
-            pnt.setColor(colours[i + 1]);
-            cnv.drawRect(lft, 0, lft + stripe_width, preview_height, pnt);
-        }
-
-        return bm;
-    }
-
-    private int[] paletteDimensions(int num_colours) {
+    private static int[] paletteDimensions(int num_colours) {
        	int sx = 0;
     	int si = 0;
 
@@ -145,8 +124,8 @@ public class PaletteDefinition {
                 float y = (float)z / i;
 
                 if (y - x == 0) {
-                    if (abs(i - x) < d) {
-                        d = abs(i - x);
+                    if (Math.abs(i - x) < d) {
+                        d = Math.abs(i - x);
                         sx = x;
                         si = i;
                     }
@@ -155,5 +134,32 @@ public class PaletteDefinition {
         }
 
         return (new int[] {si, sx});
+    }
+
+    private static Bitmap getCircularSwatch(Bitmap bmp, int radius) {
+        Bitmap scaled_bitmap;
+        if(bmp.getWidth() != radius || bmp.getHeight() != radius)
+            scaled_bitmap = Bitmap.createScaledBitmap(bmp, radius, radius, false);
+        else
+            scaled_bitmap = bmp;
+
+        Bitmap circular_bitmap = Bitmap.createBitmap(scaled_bitmap.getWidth(),
+                scaled_bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(circular_bitmap);
+
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, scaled_bitmap.getWidth(), scaled_bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        paint.setFilterBitmap(true);
+        paint.setDither(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(Color.parseColor("#BAB399"));
+        canvas.drawCircle(scaled_bitmap.getWidth() / 2+0.7f, scaled_bitmap.getHeight() / 2+0.7f,
+                scaled_bitmap.getWidth() / 2+0.1f, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(scaled_bitmap, rect, rect, paint);
+
+        return circular_bitmap;
     }
 }

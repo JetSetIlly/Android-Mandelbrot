@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.Palette;
 
 import android.content.Context;
 import android.database.DataSetObserver;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,20 +13,23 @@ import android.widget.TextView;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
 public class PaletteActivityListAdapter implements ListAdapter {
+    private final String DBG_TAG = "palette list adapter";
+
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
-    private final Context context;
+    private final PaletteActivity context;
     private final LayoutInflater inflater;
 
     private View selected_palette;
 
     public PaletteActivityListAdapter(Context context) {
         super();
-        this.context = context;
+        this.context = (PaletteActivity) context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -34,19 +38,24 @@ public class PaletteActivityListAdapter implements ListAdapter {
         final View view;
 
         if (convert_view == null) {
-            view = inflater.inflate(R.layout.activity_palette_entry, parent, false);
+            view = inflater.inflate(getItemViewType(position), parent, false);
         } else {
             view = convert_view;
         }
 
-        ((TextView) view.findViewById(R.id.palette_label)).setText(palette_settings.palettes[position].name);
+        PaletteDefinition item = (PaletteDefinition) getItem(position);
+
+        ((TextView) view.findViewById(R.id.palette_label)).setText(item.name);
         ((TextView) view.findViewById(R.id.palette_id)).setText(String.format("%d", position));
-        ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(palette_settings.palettes[position].swatch);
+        ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(item.swatch);
 
         // tick this view if this is the currently selected palette
         if (position == palette_settings.selected_id) {
             selected_palette = view;
-            selected_palette.findViewById(R.id.palette_selected).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.palette_selected_icon).setVisibility(View.VISIBLE);
+        } else {
+            // set the palette selected icon to invisible if this isn't the selected palette
+            view.findViewById(R.id.palette_selected_icon).setVisibility(View.INVISIBLE);
         }
 
         view.setOnClickListener(new View.OnClickListener() {
@@ -64,31 +73,35 @@ public class PaletteActivityListAdapter implements ListAdapter {
                 swatch.startAnimation(AnimationUtils.loadAnimation(context, R.anim.palette_swatch_click));
 
                 // un-tick palette that was selected
-                final ImageView old_selected = (ImageView) selected_palette.findViewById(R.id.palette_selected);
-                Animation deselected_anim = AnimationUtils.loadAnimation(context, R.anim.palette_swatch_deselected);
-                deselected_anim.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                    }
+                if (selected_palette != null) {
+                    final ImageView old_selected_icon = (ImageView) selected_palette.findViewById(R.id.palette_selected_icon);
+                    Animation deselected_anim = AnimationUtils.loadAnimation(context, R.anim.palette_swatch_deselected);
+                    deselected_anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            Log.d(DBG_TAG, "old selected icon anim start");
+                        }
 
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        old_selected.setVisibility(View.INVISIBLE);
-                    }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            old_selected_icon.setVisibility(View.INVISIBLE);
+                        }
 
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                    }
-                });
-                old_selected.startAnimation(deselected_anim);
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+
+                    old_selected_icon.startAnimation(deselected_anim);
+                }
 
                 // tick this palette
-                final ImageView new_selected = (ImageView) v.findViewById(R.id.palette_selected);
+                final ImageView new_selected_icon = (ImageView) v.findViewById(R.id.palette_selected_icon);
                 Animation selected_anim = AnimationUtils.loadAnimation(context, R.anim.palette_swatch_selected);
                 selected_anim.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
-                        new_selected.setVisibility(View.VISIBLE);
+                        new_selected_icon.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -99,12 +112,19 @@ public class PaletteActivityListAdapter implements ListAdapter {
                     public void onAnimationRepeat(Animation animation) {
                     }
                 });
-                new_selected.startAnimation(selected_anim);
+                new_selected_icon.startAnimation(selected_anim);
 
                 // note which palette entry this is
                 selected_palette = v;
             }
         });
+
+        // i don't like this call but it's required because animations will not always be started
+        // in the onClick listener - specifically, the deselect animation will not be run if the
+        // position of the selected icon is position 0
+        // i'm not testing for this condition because i'm not entirely sure the bug won't occur
+        // in other scenarios.
+        context.adapter_getView_callback();
 
         return view;
     }

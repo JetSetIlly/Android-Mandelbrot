@@ -11,6 +11,8 @@ import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "colours activity";
 
+    private GridView palette_entries;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,7 +24,7 @@ public class PaletteActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        GridView palette_entries = (GridView) findViewById(R.id.palette_entries);
+        palette_entries = (GridView) findViewById(R.id.palette_entries);
         palette_entries.setAdapter(new PaletteActivityListAdapter(this));
     }
 
@@ -51,5 +53,11 @@ public class PaletteActivity extends AppCompatActivity {
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
         overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+    }
+
+    /* called whenever an entry has been added - used to fix flaw in Android where animations
+    * are no always run (see call in PaletteActivityListAdapter()) */
+    public void adapter_getView_callback() {
+        palette_entries.invalidateViews();
     }
 }

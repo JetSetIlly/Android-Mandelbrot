@@ -20,12 +20,10 @@
             android:layout_height="@dimen/palette_swatch_size"
             android:layout_gravity="center"
             android:id="@+id/palette_swatch"
-            android:src="#a8d8d6"
-            android:clickable="false" />
+            android:src="#a8d8d6" />
 
         <ImageView
-            android:id="@+id/palette_selected"
-            android:visibility="invisible"
+            android:id="@+id/palette_selected_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@mipmap/ic_swatch_selected"

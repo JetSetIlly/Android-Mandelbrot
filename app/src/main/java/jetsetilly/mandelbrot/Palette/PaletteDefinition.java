@@ -109,7 +109,7 @@ public class PaletteDefinition {
             top += entry_height;
         }
 
-        return getCircularSwatch(bm, swatch_size);
+        return bm;
     }
 
     private static int[] paletteDimensions(int num_colours) {

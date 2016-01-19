@@ -122,9 +122,9 @@ public class PaletteActivityListAdapter implements ListAdapter {
         // i don't like this call but it's required because animations will not always be started
         // in the onClick listener - specifically, the deselect animation will not be run if the
         // position of the selected icon is position 0
-        // i'm not testing for this condition because i'm not entirely sure the bug won't occur
-        // in other scenarios.
-        context.adapter_getView_callback();
+        // note that if we don't test for this condition the scrollview can go berserk!
+        if (position == 0)
+            context.adapter_getView_callback();
 
         return view;
     }

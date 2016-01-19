@@ -5,7 +5,7 @@
     <!-- deliberately no definition for preview_width -->
 
     <dimen name="palette_grid_size">150dp</dimen>
-    <dimen name="palette_grid_spacing">10dp</dimen>
+    <dimen name="palette_grid_spacing">5dp</dimen>
     <dimen name="palette_entry_padding">10dp</dimen>
     <dimen name="palette_swatch_size">145dp</dimen>
 

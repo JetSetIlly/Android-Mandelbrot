@@ -48,6 +48,12 @@ public class PaletteSettings {
         setColours(prefs.getInt("palette_id", DEF_PALETTE_ID));
     }
 
+    public void createSwatches(Context context) {
+        for (PaletteDefinition swatch : palettes) {
+            swatch.generatePalettePreview(context);
+        }
+    }
+
     /* helper functions */
     public void setColours(int id) {
         selected_id = id;

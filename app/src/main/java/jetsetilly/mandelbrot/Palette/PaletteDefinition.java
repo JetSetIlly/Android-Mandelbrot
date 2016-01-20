@@ -1,14 +1,17 @@
 package jetsetilly.mandelbrot.Palette;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+
+import java.util.Random;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
@@ -16,7 +19,7 @@ import jetsetilly.mandelbrot.R;
 public class PaletteDefinition {
     private final String DBG_TAG = "palette definition";
 
-    public enum PaletteMode {INDEX, INTERPOLATE};
+    public enum PaletteMode {INDEX, INTERPOLATE}
 
     public String   name;
     public PaletteMode palette_mode;
@@ -24,7 +27,7 @@ public class PaletteDefinition {
     public int num_colours;
 
     public Bitmap swatch;
-    static int swatch_size = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_swatch_size);
+    static final int swatch_size = MainActivity.resources.getDimensionPixelSize(R.dimen.palette_swatch_size);
 
     /* initialisation - if interpolate == true then colours[] should be of the form
 
@@ -52,7 +55,8 @@ public class PaletteDefinition {
         }
         num_colours = this.colours.length -1;
 
-        swatch = generatePalettePreview();
+        // swatch will be generated later once we have a Context
+        swatch = null;
     }
 
     private int[] interpolatePalette(int[] interpolation) {
@@ -84,7 +88,7 @@ public class PaletteDefinition {
         return colours;
     }
 
-    private Bitmap generatePalettePreview() {
+    public void generatePalettePreview(Context context) {
         int[] swatch_dimensions = paletteDimensions(colours.length - 1);
         int entry_width = swatch_size / swatch_dimensions[0];
         int entry_height = swatch_size / swatch_dimensions[1];
@@ -109,7 +113,7 @@ public class PaletteDefinition {
             top += entry_height;
         }
 
-        return bm;
+        swatch = getMaskedBitmap(bm, swatch_size, context);
     }
 
     private static int[] paletteDimensions(int num_colours) {
@@ -138,6 +142,43 @@ public class PaletteDefinition {
         return (new int[] {si, sx});
     }
 
+    private static Bitmap getMaskedBitmap(Bitmap bmp, int radius, Context context) {
+        // scale swatch to correct size
+        Bitmap scaled_bitmap;
+        if(bmp.getWidth() != radius || bmp.getHeight() != radius) {
+            scaled_bitmap = Bitmap.createScaledBitmap(bmp, radius, radius, false);
+        } else {
+            scaled_bitmap = bmp;
+        }
+
+        // decide which mask we're using
+        int mask_resource_id = context.getResources().getIdentifier(
+                "splotch" + new Random().nextInt(5),
+                "drawable", context.getPackageName()
+        );
+
+        // load in mask
+        Bitmap mask = Bitmap.createBitmap(BitmapFactory.decodeResource(context.getResources(), mask_resource_id));
+
+        // rotate
+        Matrix matrix = new Matrix();
+        matrix.postRotate(new Random().nextInt(8)*45, mask.getWidth()/2, mask.getHeight()/2);
+        mask = Bitmap.createBitmap(mask, 0, 0, mask.getWidth(), mask.getHeight(), matrix, false);
+
+        // scale
+        mask = Bitmap.createScaledBitmap(mask, radius, radius, false);
+
+        // apply the mask to the swatch
+        Rect rect = new Rect(0, 0, radius, radius);
+        Paint paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+
+        Canvas canvas = new Canvas(mask);
+        canvas.drawBitmap(scaled_bitmap, rect, rect, paint);
+
+        return mask;
+    }
+
     private static Bitmap getCircularSwatch(Bitmap bmp, int radius) {
         Bitmap scaled_bitmap;
         if(bmp.getWidth() != radius || bmp.getHeight() != radius)
@@ -164,4 +205,5 @@ public class PaletteDefinition {
 
         return circular_bitmap;
     }
+
 }

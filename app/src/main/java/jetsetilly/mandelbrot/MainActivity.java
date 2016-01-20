@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         PaletteSettings.getInstance().restore(this);
         GestureSettings.getInstance().restore(this);
 
+        // generate swatches for palettes
+        PaletteSettings.getInstance().createSwatches(this);
+
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
 

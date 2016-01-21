@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.util.Log;
 
 import java.util.Random;
 
@@ -17,7 +18,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 
 public class PaletteDefinition {
-    private final String DBG_TAG = "palette definition";
+    private static final String DBG_TAG = "palette definition";
 
     public enum PaletteMode {INDEX, INTERPOLATE}
 
@@ -113,7 +114,7 @@ public class PaletteDefinition {
             top += entry_height;
         }
 
-        swatch = getMaskedBitmap(bm, swatch_size, context);
+        swatch = getCircularSwatch(bm, swatch_size);
     }
 
     private static int[] paletteDimensions(int num_colours) {
@@ -151,22 +152,14 @@ public class PaletteDefinition {
             scaled_bitmap = bmp;
         }
 
-        // decide which mask we're using
-        int mask_resource_id = context.getResources().getIdentifier(
-                "splotch" + new Random().nextInt(5),
-                "drawable", context.getPackageName()
-        );
-
         // load in mask
-        Bitmap mask = Bitmap.createBitmap(BitmapFactory.decodeResource(context.getResources(), mask_resource_id));
+        Bitmap mask = Bitmap.createBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.splotch));
 
-        // rotate
+        // scale and rotate
         Matrix matrix = new Matrix();
+        matrix.postScale(((float) radius)/mask.getWidth(), ((float) radius)/mask.getHeight());
         matrix.postRotate(new Random().nextInt(8)*45, mask.getWidth()/2, mask.getHeight()/2);
-        mask = Bitmap.createBitmap(mask, 0, 0, mask.getWidth(), mask.getHeight(), matrix, false);
-
-        // scale
-        mask = Bitmap.createScaledBitmap(mask, radius, radius, false);
+        mask = Bitmap.createBitmap(mask, 0, 0, mask.getWidth(), mask.getHeight(), matrix, true);
 
         // apply the mask to the swatch
         Rect rect = new Rect(0, 0, radius, radius);

@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/palette_entry_padding">
+    android:padding="@dimen/palette_entry_padding"
+    android:layout_gravity="center">
 
     <TextView
         android:layout_width="wrap_content"
@@ -13,14 +14,15 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal">
 
         <ImageView
             android:layout_width="@dimen/palette_swatch_size"
             android:layout_height="@dimen/palette_swatch_size"
-            android:layout_gravity="center"
             android:id="@+id/palette_swatch"
-            android:src="#a8d8d6" />
+            android:src="#a8d8d6"
+            android:layout_centerHorizontal="true" />
 
         <ImageView
             android:id="@+id/palette_selected_icon"

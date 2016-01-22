@@ -173,26 +173,29 @@ public class PaletteDefinition {
     }
 
     private static Bitmap getCircularSwatch(Bitmap bmp, int radius) {
+        // scale swatch to correct size
         Bitmap scaled_bitmap;
         if(bmp.getWidth() != radius || bmp.getHeight() != radius)
             scaled_bitmap = Bitmap.createScaledBitmap(bmp, radius, radius, false);
         else
             scaled_bitmap = bmp;
 
+        // create mask
         Bitmap circular_bitmap = Bitmap.createBitmap(scaled_bitmap.getWidth(),
                 scaled_bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(circular_bitmap);
 
         final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, scaled_bitmap.getWidth(), scaled_bitmap.getHeight());
-
         paint.setAntiAlias(true);
         paint.setFilterBitmap(true);
         paint.setDither(true);
+
+        Canvas canvas = new Canvas(circular_bitmap);
         canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(Color.parseColor("#BAB399"));
         canvas.drawCircle(scaled_bitmap.getWidth() / 2+0.7f, scaled_bitmap.getHeight() / 2+0.7f,
                 scaled_bitmap.getWidth() / 2+0.1f, paint);
+
+        // apply mask to the swatch
+        final Rect rect = new Rect(0, 0, scaled_bitmap.getWidth(), scaled_bitmap.getHeight());
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(scaled_bitmap, rect, rect, paint);
 

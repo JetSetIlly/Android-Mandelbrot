@@ -28,8 +28,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Mandelbrot mandelbrot;
 
     private Bitmap render_bm;
-    private Canvas render_canvas;
-    private Paint render_paint;
     private Buffer buffer;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
@@ -60,9 +58,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private double mandelbrot_offset_y;
     private double scroll_scale;
 
-    // number of pixels drawn since last update()
-    private long draw_ct = 0;
-
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
@@ -82,14 +77,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void init(Context context) {
         this.context = (MainActivity) context;
         this.gestures = new Gestures(context, this);
-        render_paint = new Paint();
     }
 
     private void clearImage() {
-            Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-            Canvas clear_canvas = new Canvas(clear_bm);
-            clear_canvas.drawColor(palette_settings.mostFrequentColor());
-            setImageBitmap(display_bm = clear_bm);
+        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+        Canvas clear_canvas = new Canvas(clear_bm);
+        clear_canvas.drawColor(palette_settings.mostFrequentColor());
+        setImageBitmap(display_bm = clear_bm);
     }
 
     public void kickStartCanvas() {
@@ -107,12 +101,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* MandelbrotCanvas implementation */
     public void startDraw(Mandelbrot.RenderMode render_mode) {
         if (render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
-            buffer = new BufferSingle(this);
+            buffer = new BufferPixels(this);
         } else {
-            buffer = new BufferParallel(this);
+            buffer = new BufferPixels(this);
         }
 
-        draw_ct = 0;
+        buffer.primeBuffer(render_bm);
     }
 
     public void drawPoint(float dx, float dy, int iteration)
@@ -121,15 +115,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void endDraw() {
-        buffer.flush();
+        buffer.flush(render_bm, true);
         invalidate();
     }
 
     public void update() {
-        if (draw_ct > 100000 ) {
-            draw_ct = 0;
-            invalidate();
-        }
+        buffer.flush(render_bm, false);
+        invalidate();
     }
 
     public int getCanvasWidth() {
@@ -146,37 +138,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
-
-    /* drawBufferedPoints() - method to plot lots of points at once */
-    public void drawBufferedPoints(float[] points, int points_len, int iteration) {
-        int palette_entry;
-
-        // map iteration to palette entry
-        if (palette_settings.selected_palette.palette_mode == PaletteDefinition.PaletteMode.INTERPOLATE) {
-            int iterations_step = mandelbrot_settings.max_iterations / palette_settings.selected_palette.num_colours;
-
-            if (iteration == 0) {
-                palette_entry = 0;
-            } else {
-                palette_entry = (iteration / iterations_step) + 1;
-                palette_entry = Math.min(palette_entry, palette_settings.selected_palette.num_colours);
-            }
-        } else {
-            palette_entry = iteration;
-
-            if (iteration >= getPaletteSize()) {
-                palette_entry = (iteration % (getPaletteSize() - 1)) + 1;
-            }
-        }
-
-        render_paint.setColor(palette_settings.selected_palette.colours[palette_entry]);
-        render_canvas.drawPoints(points, 0, points_len, render_paint);
-
-        palette_settings.updateCount(palette_entry);
-
-        draw_ct += points_len /2;
-    }
-    /* end of drawBufferedPoints() method */
 
     /* property functions */
     public double getCanvasMidX() {
@@ -218,7 +179,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        render_canvas = new Canvas(render_bm);
+        Canvas render_canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
         render_canvas.drawColor(palette_settings.mostFrequentColor());

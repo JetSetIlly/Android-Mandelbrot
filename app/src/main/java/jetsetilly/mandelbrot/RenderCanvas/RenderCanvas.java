@@ -80,7 +80,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private void clearImage() {
-        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap clear_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas clear_canvas = new Canvas(clear_bm);
         clear_canvas.drawColor(palette_settings.mostFrequentColor());
         setImageBitmap(display_bm = clear_bm);
@@ -124,19 +124,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         invalidate();
     }
 
-    public int getCanvasWidth() {
-        return getWidth();
-    }
+    /* use ImageView implementations getWidth() and getHeight() */
 
-    public int getCanvasHeight() {
-        return getHeight();
-    }
-
-    public double getCanvasHypotenuse() { return Math.hypot(getHeight(), getWidth()); }
-
-    public double getCanvasRatio() { return (double) getWidth() / (double) getHeight(); }
-
-    public int getPaletteSize() { return palette_settings.numColors(); }
     /* end of MandelbrotCanvas implementation */
 
     /* property functions */
@@ -325,9 +314,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         return zoomed_bm;
     }
 
-
     private double factorFromPixels(int pixels) {
-        return pixels / getCanvasHypotenuse();
+        return pixels / Math.hypot(getHeight(), getWidth());
     }
 
     private float scaleFromPixels(int pixels) {

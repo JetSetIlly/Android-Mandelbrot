@@ -60,7 +60,7 @@ public class Mandelbrot {
     }
 
     private void calculatePixelScale() {
-        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasWidth();
+        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
 
         Log.d(DBG_TAG, this.toString());
@@ -68,19 +68,20 @@ public class Mandelbrot {
 
     public void correctMandelbrotRange()
     {
-        double  padding;
+        double padding;
+        double canvas_ratio = (double) canvas.getWidth() / (double) canvas.getHeight();
 
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
 
         // correct range according to canvas dimensions
-        if (fractal_ratio > canvas.getCanvasRatio()) {
+        if (fractal_ratio > canvas_ratio) {
             // canvas is taller than fractal - expand fractal vertically
-            padding = ((mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasRatio()) - (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
+            padding = ((mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas_ratio) - (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
             mandelbrot_settings.imaginary_upper += padding / 2;
             mandelbrot_settings.imaginary_lower -= padding / 2;
-        } else if (fractal_ratio < canvas.getCanvasRatio()) {
+        } else if (fractal_ratio < canvas_ratio) {
             // canvas is wider than fractal - expand fractal horizontally
-            padding = (canvas.getCanvasRatio() * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
+            padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
             mandelbrot_settings.real_right += padding / 2;
             mandelbrot_settings.real_left -= padding / 2;
         }
@@ -103,7 +104,7 @@ public class Mandelbrot {
             mandelbrot_settings.real_right -= zoom_factor * fractal_width;
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 2);
+            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 3);
         }
 
         // scroll
@@ -143,7 +144,7 @@ public class Mandelbrot {
         scrollAndZoom(offset_x, offset_y, zoom_factor);
 
         // initialise no_render_area
-        no_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
+        no_render_area = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         // make sure render mode etc. is set correctly
         rescaling_render = zoom_factor != 0;
@@ -156,13 +157,13 @@ public class Mandelbrot {
             if (offset_x < 0) {
                 no_render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
-                no_render_area.left = canvas.getCanvasWidth() - (int) offset_x;
+                no_render_area.left = canvas.getWidth() - (int) offset_x;
             }
 
             if (offset_y < 0) {
                 no_render_area.top = (int) -offset_y;
             } else if (offset_y > 0) {
-                no_render_area.bottom = canvas.getCanvasHeight() - (int) offset_y;
+                no_render_area.bottom = canvas.getHeight() - (int) offset_y;
             }
         }
 

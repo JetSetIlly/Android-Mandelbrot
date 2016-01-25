@@ -19,10 +19,10 @@ public class BufferPixels implements Buffer {
     private int mostFreqPaletteEntry;
 
     public BufferPixels(RenderCanvas canvas) {
-        width = canvas.getCanvasWidth();
-        height = canvas.getCanvasHeight();
+        width = canvas.getWidth();
+        height = canvas.getHeight();
 
-        pixels = new int[canvas.getCanvasHeight() * width];
+        pixels = new int[canvas.getHeight() * width];
         pixel_ct = 0;
 
         freqPaletteEntry = new int[MandelbrotSettings.getInstance().max_iterations];

@@ -40,7 +40,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
-    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private double zoom_factor;
 

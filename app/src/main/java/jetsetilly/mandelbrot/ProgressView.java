@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
@@ -16,7 +17,9 @@ public class ProgressView extends ImageView {
     private final float PROGRESS_DELAY = (float) 0.5;   // the fraction of the total num_passes to wait before showing the progress animation
     private final int SPIN_FRAME_COUNT = 360;
     private final int SPIN_DURATION = 1000;
+
     private double start_time = 0.0;
+    private double kick_time = 0.0;
 
     private final AtomicInteger busy_ct = new AtomicInteger(0);
 
@@ -34,6 +37,7 @@ public class ProgressView extends ImageView {
 
     public void startSession() {
         start_time = System.nanoTime();
+        kick_time = start_time;
     }
 
     public void register() {
@@ -41,6 +45,8 @@ public class ProgressView extends ImageView {
     }
 
     public void kick(int pass, int num_passes, boolean show_immediately) {
+        kick_time = System.nanoTime();
+
         // quick exit if progress is already visible
         if (getVisibility() == VISIBLE) return;
 
@@ -58,7 +64,31 @@ public class ProgressView extends ImageView {
         // and begin spin on animation end
         show_anim.setAnimationListener(new Animation.AnimationListener() {
             public void onAnimationEnd(Animation a) {
-                startAnimation(getSpinAnimation());
+                Animation spin_anim = getSpinAnimation();
+                spin_anim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                        // check that the animation hasn't been spinning too long
+                        // this shouldn't be necessary because threads should always unregister
+                        // once they are done in all circumstances
+                        // if the wtf message is every logged then this clearly isn't happening
+                        if (System.nanoTime() - kick_time > PROGRESS_WAIT ) {
+                            Log.wtf(DBG_TAG, "spinner has been spinning too long without activity - forcing closure");
+                            unregister();
+                        }
+                    }
+                });
+                startAnimation(spin_anim);
             }
 
             public void onAnimationRepeat(Animation a) {

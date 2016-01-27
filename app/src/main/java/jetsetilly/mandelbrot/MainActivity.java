@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
             public void run() {
-                render_canvas.kickStartCanvas();
+                render_canvas.startCanvas();
             }
         });
 
@@ -127,11 +127,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_reset:
                 render_canvas.stopRender();
                 MandelbrotSettings.getInstance().reset();
-                render_canvas.kickStartCanvas();
+                render_canvas.startCanvas();
                 return true;
 
             case R.id.action_redraw:
-                render_canvas.kickStartCanvas();
+                render_canvas.startCanvas();
                 return true;
         }
 

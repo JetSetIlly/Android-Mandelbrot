@@ -85,7 +85,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(display_bm = clear_bm);
     }
 
-    public void kickStartCanvas() {
+    public void startCanvas() {
         // kill any existing image
         clearImage();
 
@@ -113,14 +113,17 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer.pushDraw(dx, dy, iteration);
     }
 
-    public void endDraw() {
-        buffer.flush(render_bm, true);
-        invalidate();
+    public void update() {
+        if (buffer.flush(render_bm, false)) {
+            invalidate();
+        }
     }
 
-    public void update() {
-        buffer.flush(render_bm, false);
-        invalidate();
+    public void endDraw() {
+        // NOT the same as update() - we're passing true to the buffer.flush() function
+        if (buffer.flush(render_bm, true)) {
+            invalidate();
+        }
     }
 
     /* use ImageView implementations getWidth() and getHeight() */

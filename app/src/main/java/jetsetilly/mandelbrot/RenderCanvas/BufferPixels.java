@@ -34,12 +34,17 @@ public class BufferPixels implements Buffer {
     }
 
     @Override
-    public void flush(Bitmap bitmap, Boolean forced) {
+    public boolean flush(Bitmap bitmap, Boolean forced) {
+
         if (forced || pixel_ct > 10000) {
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
             palette_settings.updateCount(mostFreqPaletteEntry);
             pixel_ct = 0;
+
+            return true;
         }
+
+        return false;
     }
 
     @Override

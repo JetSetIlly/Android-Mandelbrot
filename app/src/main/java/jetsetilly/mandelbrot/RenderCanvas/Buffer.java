@@ -4,6 +4,6 @@ import android.graphics.Bitmap;
 
 public interface Buffer {
     void primeBuffer(Bitmap bitmap);
-    void flush(Bitmap bitmap, Boolean forced);
+    boolean flush(Bitmap bitmap, Boolean forced);   // returns true if bitmap has been altered
     void pushDraw(float cx, float cy, int iteration);
 }

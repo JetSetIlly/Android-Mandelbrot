@@ -3,6 +3,8 @@ package jetsetilly.mandelbrot.RenderCanvas;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
+import java.util.concurrent.ExecutionException;
+
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
@@ -49,7 +51,7 @@ public class BufferPixels implements Buffer {
                 while (!isCancelled() ) {
                     if (pixel_flush) {
                         flushPixels();
-                        publishProgress(num_of_calls++);
+                        publishProgress(++ num_of_calls);
                         pixel_flush = false;
                     }
                 }
@@ -64,6 +66,7 @@ public class BufferPixels implements Buffer {
 
             @Override
             protected void onCancelled() {
+                /* it's important that we flush and invalidate here because */
                 flushPixels();
                 render_canvas.invalidate();
             }
@@ -85,6 +88,7 @@ public class BufferPixels implements Buffer {
 
             if (final_flush) {
                 set_pixels_task.cancel(false);
+                set_pixels_task = null;
             }
         }
     }

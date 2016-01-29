@@ -12,7 +12,8 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.ImageView;
 
-import jetsetilly.mandelbrot.MainActivity;
+import org.w3c.dom.Text;
+
 import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -31,6 +32,10 @@ public class PaletteActivityListAdapter implements ListAdapter {
         super();
         this.context = (PaletteActivity) context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public int getSelectedPaletteID() {
+        return Integer.parseInt((String) ((TextView) selected_palette.findViewById(R.id.palette_id)).getText());
     }
 
     @Override
@@ -60,16 +65,10 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                TextView id_v = (TextView) v.findViewById(R.id.palette_id);
-                int id = Integer.parseInt((String) id_v.getText());
-
-                palette_settings.setColours(id);
-                palette_settings.save(context);
-                MainActivity.render_canvas.startRender();
+            public void onClick(View palette_entry) {
 
                 // animate selection
-                ImageView swatch = (ImageView) v.findViewById(R.id.palette_swatch);
+                ImageView swatch = (ImageView) palette_entry.findViewById(R.id.palette_swatch);
                 swatch.startAnimation(AnimationUtils.loadAnimation(context, R.anim.palette_swatch_click));
 
                 // un-tick palette that was selected
@@ -96,7 +95,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
                 }
 
                 // tick this palette
-                final ImageView new_selected_icon = (ImageView) v.findViewById(R.id.palette_selected_icon);
+                final ImageView new_selected_icon = (ImageView) palette_entry.findViewById(R.id.palette_selected_icon);
                 Animation selected_anim = AnimationUtils.loadAnimation(context, R.anim.palette_swatch_selected);
                 selected_anim.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -115,7 +114,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
                 new_selected_icon.startAnimation(selected_anim);
 
                 // note which palette entry this is
-                selected_palette = v;
+                selected_palette = palette_entry;
             }
         });
 

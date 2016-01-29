@@ -2,6 +2,8 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
 
+import java.util.concurrent.Semaphore;
+
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
@@ -215,12 +217,13 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
     protected void onPostExecute(Integer result) {
         m.canvas.endDraw();
         MainActivity.progress.unregister();
-
-        m.render_completed = result >= 0;
+        m.render_completed = true;
     }
 
     @Override
     protected void onCancelled() {
-        onPostExecute(-1);
+        m.canvas.endDraw();
+        MainActivity.progress.unregister();
+        m.render_completed = false;
     }
 }

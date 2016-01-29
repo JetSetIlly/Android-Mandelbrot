@@ -1,15 +1,22 @@
 package jetsetilly.mandelbrot;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
 public class PaletteActivity extends AppCompatActivity {
-    private final String DBG_TAG = "colours activity";
+    private final String DBG_TAG = "palette activity";
+
+    public static final String ACTIVITY_RESULT_PALETTE_ID = "PALETTE_ID";
+    public static final Integer ACTIVITY_RESULT_CHANGE = 0;
+    public static final Integer ACTIVITY_RESULT_NO_CHANGE = -1;
 
     private GridView palette_entries;
 
@@ -36,6 +43,21 @@ public class PaletteActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                // get selected palette id
+                int palette_id = ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID();
+
+                // check to see if palette has changed
+                if (PaletteSettings.getInstance().selected_id != palette_id) {
+                    // build palette change intent
+                    Intent activity_result_intent = new Intent(this, MainActivity.class);
+                    activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_ID, palette_id);
+
+                    // set result
+                    setResult(ACTIVITY_RESULT_CHANGE, activity_result_intent);
+                } else {
+                    setResult(ACTIVITY_RESULT_NO_CHANGE);
+                }
+
                 finish();
                 setTransitionAnim();
                 return true;

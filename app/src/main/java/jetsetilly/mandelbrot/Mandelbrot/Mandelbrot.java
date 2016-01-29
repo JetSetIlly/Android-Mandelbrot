@@ -125,13 +125,6 @@ public class Mandelbrot {
         for (int i = 0; i < render_thr.length; ++ i) {
             if (render_thr[i] != null) {
                 render_thr[i].cancel(true);
-
-                try {
-                    render_thr[i].get();
-                } catch (InterruptedException | ExecutionException | CancellationException e) {
-                    // do nothing
-                }
-
                 render_thr[i] = null;
             }
         }

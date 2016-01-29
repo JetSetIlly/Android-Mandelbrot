@@ -120,8 +120,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void endDraw() {
-        // NOT the same as update() - we're passing final_flush=true to the buffer.flush() function
+        // NOT the same as update() - we're passing true to the buffer.flush() function
         buffer.flush(display_bm, true);
+        buffer = null;
     }
 
     /* use ImageView implementations getWidth() and getHeight() */

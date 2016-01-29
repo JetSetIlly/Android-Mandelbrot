@@ -3,12 +3,14 @@ package jetsetilly.mandelbrot;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +29,9 @@ import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 public class MainActivity extends AppCompatActivity {
     private final String DBG_TAG = "main activity";
+
+    private static final int PALETTE_ACTIVITY_ID = 0;
+    private static final int SETTINGS_ACTIVITY_ID = 1;
 
     // allow other classes to access resources (used in PaletteDefinition)
     // not sure if there is a more elegant way to do this - this seems heavy handed
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, PaletteActivity.class);
-                startActivity(palette_intent);
+                startActivityForResult(palette_intent, PALETTE_ACTIVITY_ID);
                 overridePendingTransition(R.anim.from_right_nofade, R.anim.from_right_fade_out);
                 return true;
 
@@ -136,6 +141,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int request_code, int result_code, Intent intent) {
+        switch(request_code) {
+            case PALETTE_ACTIVITY_ID:
+                if (result_code == PaletteActivity.ACTIVITY_RESULT_CHANGE) {
+                    int palette_id = intent.getIntExtra(PaletteActivity.ACTIVITY_RESULT_PALETTE_ID, -1);
+                    if (palette_id >= 0) {
+                        render_canvas.stopRender();
+
+                        PaletteSettings palette_settings = PaletteSettings.getInstance();
+                        palette_settings.setColours(palette_id);
+                        palette_settings.save(this);
+
+                        render_canvas.startRender();
+                    }
+                }
+                break;
+
+            case SETTINGS_ACTIVITY_ID:
+                break;
+        }
     }
 
     public boolean saveImage() {

@@ -122,7 +122,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
         switch (mandelbrot_settings.render_mode) {
             case TOP_DOWN:
-                    /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
+                /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                 for (int pass = 0; pass < m. num_passes; ++ pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
                     for (cy = pass; cy < m.canvas.getHeight(); cy += m.num_passes, my += (m.pixel_scale * m.num_passes)) {

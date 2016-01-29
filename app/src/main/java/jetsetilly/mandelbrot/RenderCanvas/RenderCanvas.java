@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
+import java.util.concurrent.ExecutionException;
+
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
@@ -27,9 +29,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private Mandelbrot mandelbrot;
 
-    private Bitmap render_bm;
-    private Buffer buffer;
-
     // the display_bm is a pointer to whatever bitmap is currently displayed
     // whenever setImageBitmap() is called we should set display_bm to equal
     // whatever the Bitmap is being sent
@@ -37,6 +36,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // I considered overloading the setImageBitmap() method but that's too clumsy
     // a solution IMO
     private Bitmap display_bm;
+
+    private Bitmap render_bm;
+    private Buffer buffer;
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
@@ -105,7 +107,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             buffer = new BufferPixels(this);
         }
 
-        buffer.primeBuffer(render_bm);
+        buffer.primeBuffer(display_bm);
     }
 
     public void drawPoint(float dx, float dy, int iteration)
@@ -114,16 +116,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void update() {
-        if (buffer.flush(render_bm, false)) {
-            invalidate();
-        }
+        buffer.flush(display_bm, false);
     }
 
     public void endDraw() {
-        // NOT the same as update() - we're passing true to the buffer.flush() function
-        if (buffer.flush(render_bm, true)) {
-            invalidate();
-        }
+        // NOT the same as update() - we're passing final_flush=true to the buffer.flush() function
+        buffer.flush(display_bm, true);
     }
 
     /* use ImageView implementations getWidth() and getHeight() */

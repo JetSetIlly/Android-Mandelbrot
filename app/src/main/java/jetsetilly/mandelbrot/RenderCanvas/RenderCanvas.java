@@ -3,20 +3,14 @@ package jetsetilly.mandelbrot.RenderCanvas;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
-
-import java.util.concurrent.ExecutionException;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 
@@ -24,7 +18,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
     private final String DBG_TAG = "render canvas";
 
-    private MainActivity context;
+    private MainActivity main_activity;
     private Gestures gestures;
 
     private Mandelbrot mandelbrot;
@@ -76,7 +70,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private void init(Context context) {
-        this.context = (MainActivity) context;
+        this.main_activity = (MainActivity) context;
         this.gestures = new Gestures(context, this);
     }
 
@@ -94,7 +88,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // set background color
         setBackgroundColor(palette_settings.mostFrequentColor());
 
-        mandelbrot = new Mandelbrot(context, this);
+        mandelbrot = new Mandelbrot(main_activity, this);
         startRender();
     }
     /* end of initialisation */
@@ -144,12 +138,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public boolean checkActionBar(float x, float y) {
         // returns false if coordinates are in action bar, otherwise true
-        if (context.action_bar.inActionBar(y)) {
-            context.action_bar.hide(false);
+        if (main_activity.action_bar.inActionBar(y)) {
+            main_activity.action_bar.hide(false);
             return false;
         }
 
-        context.action_bar.hide(true);
+        main_activity.action_bar.hide(true);
         return true;
     }
     /* end of property functions */
@@ -238,7 +232,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // to palette_settings.mostFrequentColor()
         //
         // we'll remove this when we introduce tessellated bitmaps
-        context.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
+        main_activity.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
 
         // do animation
         ViewPropertyAnimator anim = animate();

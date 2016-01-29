@@ -30,10 +30,12 @@ import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 public class MainActivity extends AppCompatActivity {
     private final String DBG_TAG = "main activity";
 
+    // IDs for other activities. used in calls to startActivityForResult()
+    // and onActivityResult() implementation
     private static final int PALETTE_ACTIVITY_ID = 0;
     private static final int SETTINGS_ACTIVITY_ID = 1;
 
-    // allow other classes to access resources (used in PaletteDefinition)
+    // allow other classes to access resources (principally PaletteDefinition)
     // not sure if there is a more elegant way to do this - this seems heavy handed
     static public Resources resources;
 

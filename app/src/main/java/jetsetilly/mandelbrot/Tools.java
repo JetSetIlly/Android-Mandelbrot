@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot;
 
 import android.content.Context;
+import android.util.Log;
 
 public class Tools {
     static public int getStatusBarHeight(Context context) {
@@ -10,5 +11,21 @@ public class Tools {
             result = context.getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+    }
+
+    static public void printWTF(String tag, String msg) {
+        printDebug(tag, msg, false);
+    }
+
+    static public void printStackTrace(String tag) {
+        printDebug(tag, Log.getStackTraceString(new Exception()));
+    }
+
+    static public void printDebug(String tag, String msg) {
+       printDebug(tag, msg, false);
+    }
+
+    static public void printDebug(String tag, String msg, boolean wtf) {
+        Log.d(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
     }
 }

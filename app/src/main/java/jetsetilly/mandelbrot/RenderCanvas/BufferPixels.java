@@ -3,10 +3,11 @@ package jetsetilly.mandelbrot.RenderCanvas;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Tools;
 
 public class BufferPixels implements Buffer {
     final static public String DBG_TAG = "buffer pixels";
@@ -18,12 +19,11 @@ public class BufferPixels implements Buffer {
 
     private int[] pixels;
     private int pixel_ct;
-    private boolean pixel_flush;
 
     private int[] palette_frequency;
     private int most_frequent_palette_entry;
 
-    private AsyncTask<Bitmap, Integer, Void> set_pixels_task;
+    private SetPixelsTask set_pixels_task;
 
     public BufferPixels(RenderCanvas canvas) {
         render_canvas = canvas;
@@ -32,45 +32,10 @@ public class BufferPixels implements Buffer {
 
         pixels = new int[canvas.getHeight() * width];
         pixel_ct = 0;
-        pixel_flush = false;
 
         palette_frequency = new int[MandelbrotSettings.getInstance().max_iterations];
 
-        set_pixels_task = new AsyncTask<Bitmap, Integer, Void>() {
-            private int num_of_calls = 0;
-            private Bitmap flush_bitmap;
-
-            private void flushPixels() {
-                flush_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-            }
-
-            @Override
-            protected Void doInBackground(Bitmap... bitmap) {
-                flush_bitmap = bitmap[0];
-
-                while (!isCancelled() ) {
-                    if (pixel_flush) {
-                        flushPixels();
-                        publishProgress(++ num_of_calls);
-                        pixel_flush = false;
-                    }
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onProgressUpdate(Integer... pass) {
-                render_canvas.invalidate();
-            }
-
-            @Override
-            protected void onCancelled() {
-                /* it's important that we flush and invalidate here because */
-                flushPixels();
-                render_canvas.invalidate();
-            }
-        };
+        set_pixels_task = new SetPixelsTask();
     }
 
     @Override
@@ -80,15 +45,16 @@ public class BufferPixels implements Buffer {
     }
 
     @Override
-    public void flush(final Bitmap bitmap, Boolean final_flush) {
+    public void flush(Boolean final_flush) {
         if (final_flush || pixel_ct > 10000) {
-            pixel_flush = true;
             palette_settings.updateCount(most_frequent_palette_entry);
             pixel_ct = 0;
 
             if (final_flush) {
-                set_pixels_task.cancel(false);
+                set_pixels_task.finish();
                 set_pixels_task = null;
+            } else {
+                set_pixels_task.draw();
             }
         }
     }
@@ -109,5 +75,54 @@ public class BufferPixels implements Buffer {
         }
 
         pixel_ct ++;
+    }
+
+    private class SetPixelsTask extends AsyncTask<Bitmap, Void, Void> {
+        private Bitmap flush_bitmap = null;
+        private Semaphore set_pixels_signal = new Semaphore(1);
+        private Boolean finish = false;
+
+        public void finish() {
+            finish = true;
+            set_pixels_signal.release();
+        }
+
+        public void draw() {
+            set_pixels_signal.release();
+        }
+
+        private void flushPixels() {
+            flush_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        }
+
+        @Override
+        protected Void doInBackground(Bitmap... bitmap) {
+            flush_bitmap = bitmap[0];
+
+            while (!finish && !isCancelled()) {
+                try {
+                    set_pixels_signal.acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                flushPixels();
+                publishProgress();
+                set_pixels_signal.release();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... v) {
+            render_canvas.invalidate();
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            flushPixels();
+            render_canvas.invalidate();
+        }
     }
 }

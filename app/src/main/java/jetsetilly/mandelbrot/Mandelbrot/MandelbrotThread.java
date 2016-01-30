@@ -6,8 +6,9 @@ import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Tools;
 
-class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
+class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
     /* from the android documentation:
 
     AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
@@ -115,29 +116,28 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
     }
 
     @Override
-    protected Integer doInBackground(Void... v) {
+    protected Void doInBackground(Void... v) {
         int cx, cy, cyb;
         double mx, my, myb;
 
         m.render_completed = false;
-        m.canvas.startDraw(mandelbrot_settings.render_mode);
 
         switch (mandelbrot_settings.render_mode) {
             case TOP_DOWN:
-                /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
-                for (int pass = 0; pass < m. num_passes; ++ pass) {
+            /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
+                for (int pass = 0; pass < m.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
                     for (cy = pass; cy < m.canvas.getHeight(); cy += m.num_passes, my += (m.pixel_scale * m.num_passes)) {
 
                         mx = mandelbrot_settings.real_left;
-                        for (cx = 0; cx < m.canvas.getWidth(); ++ cx, mx += m.pixel_scale) {
+                        for (cx = 0; cx < m.canvas.getWidth(); ++cx, mx += m.pixel_scale) {
                             m.canvas.drawPoint(cx, cy, doIterations(mx, my));
                         }
 
-                        // exit early if necessary
-                        if (isCancelled()) return cy;
-
                         publishProgress(pass);
+
+                        // exit early if necessary
+                        if (isCancelled()) return null;
                     }
                 }
                 break;
@@ -145,7 +145,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
             case CENTRE:
                 int half_height = m.canvas.getHeight() / 2;
 
-                for (int pass = 0; pass < m.num_passes; ++ pass) {
+                for (int pass = 0; pass < m.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * m.pixel_scale);
                     myb = mandelbrot_settings.imaginary_lower + ((half_height - m.num_passes + pass) * m.pixel_scale);
                     for (cy = pass, cyb = m.num_passes - pass; cy < half_height; cy += m.num_passes, cyb += m.num_passes, my += (m.pixel_scale * m.num_passes), myb -= (m.pixel_scale * m.num_passes)) {
@@ -165,7 +165,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
                             this_line_end = m.canvas.getWidth();
                         }
 
-                        for (cx = this_line_start; cx < this_line_end; ++ cx, mx += m.pixel_scale) {
+                        for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             int i = doIterations(mx, my);
                             if (i >= 0) {
                                 m.canvas.drawPoint(cx, y_line, i);
@@ -184,23 +184,23 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
                             this_line_end = m.canvas.getWidth();
                         }
 
-                        for (cx = this_line_start; cx < this_line_end; ++ cx, mx += m.pixel_scale) {
+                        for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             int i = doIterations(mx, myb);
                             if (i >= 0) {
                                 m.canvas.drawPoint(cx, y_line, i);
                             }
                         }
 
-                        // exit early if necessary
-                        if (isCancelled()) return cy;
-
                         publishProgress(pass);
+
+                        // exit early if necessary
+                        if (isCancelled()) return null;
                     }
                 }
                 break;
         }
 
-        return 0;
+        return null;
     }
 
     @Override
@@ -211,19 +211,20 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Integer> {
 
     protected void onPreExecute() {
         MainActivity.progress.register();
+        m.canvas.startDraw(mandelbrot_settings.render_mode);
     }
 
     @Override
-    protected void onPostExecute(Integer result) {
-        m.canvas.endDraw();
+    protected void onPostExecute(Void v) {
         MainActivity.progress.unregister();
+        m.canvas.endDraw();
         m.render_completed = true;
     }
 
     @Override
     protected void onCancelled() {
-        m.canvas.endDraw();
         MainActivity.progress.unregister();
+        // not called m.canvas.endDraw()
         m.render_completed = false;
     }
 }

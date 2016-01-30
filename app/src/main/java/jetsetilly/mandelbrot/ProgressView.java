@@ -1,9 +1,7 @@
 package jetsetilly.mandelbrot;
 
-
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
@@ -83,7 +81,7 @@ public class ProgressView extends ImageView {
                         // once they are done in all circumstances
                         // if the wtf message is every logged then this clearly isn't happening
                         if (System.currentTimeMillis() - kick_time > PROGRESS_WAIT ) {
-                            Log.wtf(DBG_TAG, "spinner has been spinning too long without activity - forcing closure");
+                            Tools.printWTF(DBG_TAG, "spinner has been spinning too long without activity - forcing closure");
                             unregister();
                         }
                     }

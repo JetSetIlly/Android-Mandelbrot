@@ -2,7 +2,6 @@ package jetsetilly.mandelbrot.Palette;
 
 import android.content.Context;
 import android.database.DataSetObserver;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +11,10 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.ImageView;
 
-import org.w3c.dom.Text;
-
 import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Tools;
 
 public class PaletteActivityListAdapter implements ListAdapter {
     private final String DBG_TAG = "palette list adapter";
@@ -78,7 +76,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
                     deselected_anim.setAnimationListener(new Animation.AnimationListener() {
                         @Override
                         public void onAnimationStart(Animation animation) {
-                            Log.d(DBG_TAG, "old selected icon anim start");
+                            Tools.printDebug(DBG_TAG, "old selected icon anim start");
                         }
 
                         @Override

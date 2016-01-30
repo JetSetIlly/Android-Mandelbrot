@@ -2,12 +2,13 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+
+import jetsetilly.mandelbrot.Tools;
 
 public class Gestures implements
         GestureDetector.OnGestureListener,
@@ -52,7 +53,7 @@ public class Gestures implements
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP ) {
                     if (touch_state == TouchState.SCROLL) {
-                        Log.d(DEBUG_TAG, "onUp (after move): " + event.toString());
+                        Tools.printDebug(DEBUG_TAG, "onUp (after move): " + event.toString());
                         canvas.startRender();
                     }
 
@@ -84,7 +85,7 @@ public class Gestures implements
     public boolean onDown(MotionEvent event) {
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onDown: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY());
         touch_state = TouchState.TOUCH;
         resetGestureState();
@@ -98,7 +99,7 @@ public class Gestures implements
         if (touch_state != TouchState.TOUCH && touch_state != TouchState.SCROLL)
             return true;
 
-        Log.d(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
+        Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
         touch_state = TouchState.SCROLL;
         return true;
@@ -111,7 +112,7 @@ public class Gestures implements
     public boolean onDoubleTap(MotionEvent event) {
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onDoubleTap: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
         canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
@@ -133,9 +134,9 @@ public class Gestures implements
     public boolean onScale(ScaleGestureDetector detector) {
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onScale: " + detector.toString());
-        Log.d(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
-        Log.d(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
+        Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
+        Tools.printDebug(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
+        Tools.printDebug(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
 
         canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan()) / 1.25));
 
@@ -146,7 +147,7 @@ public class Gestures implements
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+        Tools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
 
         /* don't allow scaling to happen twice without a call to
         resetGestureState(). This is to prevent awkwardness in RenderCanvas.
@@ -164,7 +165,7 @@ public class Gestures implements
     public void onScaleEnd(ScaleGestureDetector detector) {
         if (blocked) return;
 
-        Log.d(DEBUG_TAG, "onScaleEnd: " + detector.toString());
+        Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
         has_scaled = true;
 
@@ -179,7 +180,7 @@ public class Gestures implements
         /* implementation of onGesturesListener */
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+        Tools.printDebug(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
     }
 
@@ -188,7 +189,7 @@ public class Gestures implements
         /* implementation of onGesturesListener */
         if (blocked) return;
 
-        Log.d(DEBUG_TAG, "onLongPress: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
     }
 
     @Override
@@ -196,7 +197,7 @@ public class Gestures implements
         /* implementation of onGesturesListener */
         if (blocked) return;
 
-        Log.d(DEBUG_TAG, "onShowPress: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
@@ -204,7 +205,7 @@ public class Gestures implements
         /* implementation of onGesturesListener */
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onSingleTapUp: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onSingleTapUp: " + event.toString());
         return true;
     }
 
@@ -213,7 +214,7 @@ public class Gestures implements
         /* implementation of onDoubleTapListener interface */
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 
@@ -222,7 +223,7 @@ public class Gestures implements
         /* implementation of onDoubleTapListener interface */
         if (blocked) return false;
 
-        Log.d(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
+        Tools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
         return true;
     }
 }

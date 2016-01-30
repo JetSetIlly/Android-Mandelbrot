@@ -2,13 +2,11 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.util.Log;
-
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import android.os.AsyncTask;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Tools;
 
 public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
@@ -18,7 +16,7 @@ public class Mandelbrot {
     private final Context context;
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
-    private MandelbrotThread render_thr[];
+    private MandelbrotThread render_thr;
     protected boolean render_completed = false;
 
     protected final MandelbrotCanvas canvas;
@@ -62,8 +60,7 @@ public class Mandelbrot {
     private void calculatePixelScale() {
         pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
-
-        Log.d(DBG_TAG, this.toString());
+        Tools.printDebug(DBG_TAG, this.toString());
     }
 
     public void correctMandelbrotRange()
@@ -89,8 +86,6 @@ public class Mandelbrot {
         calculatePixelScale();
 
         mandelbrot_settings.save(context);
-
-        Log.d(DBG_TAG, this.toString());
     }
 
     private void scrollAndZoom(double offset_x, double offset_y, double zoom_factor)
@@ -122,16 +117,11 @@ public class Mandelbrot {
             return;
         }
 
-        for (int i = 0; i < render_thr.length; ++ i) {
-            if (render_thr[i] != null) {
-                render_thr[i].cancel(true);
-                render_thr[i] = null;
-            }
-        }
+        render_thr.cancel(false);
+        render_thr = null;
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
-        MainActivity.progress.startSession();
         stopRender();
 
         scrollAndZoom(offset_x, offset_y, zoom_factor);
@@ -162,17 +152,9 @@ public class Mandelbrot {
 
         calculatePixelScale();
 
-        if (mandelbrot_settings.parallel_render) {
-            render_thr = new MandelbrotThread[mandelbrot_settings.max_iterations];
-            for (int i = 0; i < mandelbrot_settings.max_iterations; ++ i){
-                render_thr[i] = new MandelbrotThread(this, i+1);
-                render_thr[i].execute();
-            }
-        } else {
-            render_thr = new MandelbrotThread[1];
-            render_thr[0] = new MandelbrotThread(this, -1);
-            render_thr[0].execute();
-        }
+        MainActivity.progress.startSession();
+        render_thr = new MandelbrotThread(this, -1);
+        render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     /* end of threading */
 }

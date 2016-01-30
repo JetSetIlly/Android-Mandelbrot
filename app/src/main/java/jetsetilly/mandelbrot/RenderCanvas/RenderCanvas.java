@@ -95,6 +95,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     /* MandelbrotCanvas implementation */
     public void startDraw(Mandelbrot.RenderMode render_mode) {
+        /* flush buffer here whether we need to or not. this is a hacky solution to the problem of
+         cancelling the Mandelbrot thread and restarting it before ASyncTask.onCancelled()
+         has run. the scheduling of onCancelled() is unreliable and the new thread may have started
+         in the meantime. calling buffer.flush() from onCancelled() may try to write to a non-existing
+         buffer. worse, if it does run it will kill the buffer leaving the new task nothing to
+         work with
+         */
+        if (buffer != null) buffer.flush(true);
+
         if (render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
             buffer = new BufferPixels(this);
         } else {
@@ -110,13 +119,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void update() {
-        buffer.flush(display_bm, false);
+        buffer.flush(false);
     }
 
     public void endDraw() {
-        // NOT the same as update() - we're passing true to the buffer.flush() function
-        buffer.flush(display_bm, true);
-        buffer = null;
+        if (buffer != null) {
+            buffer.flush(true);
+            buffer = null;
+        }
     }
 
     /* use ImageView implementations getWidth() and getHeight() */

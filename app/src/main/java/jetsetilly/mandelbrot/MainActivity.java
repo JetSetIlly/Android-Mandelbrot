@@ -3,14 +3,12 @@ package jetsetilly.mandelbrot;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -179,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
         values.put(MediaStore.Images.Media.TITLE, title);
         values.put(MediaStore.Images.Media.DESCRIPTION, this.getString(R.string.app_name));
         values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, curr_time);
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
 
         ContentResolver cr = this.getContentResolver();
@@ -188,9 +187,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             url = cr.insert(url, values);
-
-            OutputStream o = cr.openOutputStream(url);
-            render_canvas.getDisplayedBitmap().compress(Bitmap.CompressFormat.JPEG, 100, o);
+            OutputStream output_stream = cr.openOutputStream(url);
+            render_canvas.getDisplayedBitmap().compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {
             if (url != null) {
                 cr.delete(url, null, null);

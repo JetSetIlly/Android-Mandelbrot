@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
-    private final double PROGRESS_WAIT = 1000000000; // in nanoseconds
+    private final double PROGRESS_WAIT = 1000; // in milliseconds
     private final float PROGRESS_DELAY = (float) 0.5;   // the fraction of the total num_passes to wait before showing the progress animation
     private final int SPIN_FRAME_COUNT = 360;
     private final int SPIN_DURATION = 1000;
@@ -36,7 +36,7 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
-        start_time = System.nanoTime();
+        start_time = System.currentTimeMillis();
         kick_time = start_time;
     }
 
@@ -45,7 +45,7 @@ public class ProgressView extends ImageView {
     }
 
     public void kick(int pass, int num_passes, boolean show_immediately) {
-        kick_time = System.nanoTime();
+        kick_time = System.currentTimeMillis();
 
         // quick exit if progress is already visible
         if (getVisibility() == VISIBLE) return;
@@ -53,7 +53,7 @@ public class ProgressView extends ImageView {
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
-            if (!(System.nanoTime() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
+            if (!(System.currentTimeMillis() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
                 return;
             }
         }
@@ -82,7 +82,7 @@ public class ProgressView extends ImageView {
                         // this shouldn't be necessary because threads should always unregister
                         // once they are done in all circumstances
                         // if the wtf message is every logged then this clearly isn't happening
-                        if (System.nanoTime() - kick_time > PROGRESS_WAIT ) {
+                        if (System.currentTimeMillis() - kick_time > PROGRESS_WAIT ) {
                             Log.wtf(DBG_TAG, "spinner has been spinning too long without activity - forcing closure");
                             unregister();
                         }

@@ -2,11 +2,8 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
 
-import java.util.concurrent.Semaphore;
-
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Tools;
 
 class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
     /* from the android documentation:
@@ -156,10 +153,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                         // bottom half of image
                         y_line = half_height + cy;
                         mx = mandelbrot_settings.real_left;
-                        if (y_line > m.no_render_area.top && y_line < m.no_render_area.bottom) {
-                            mx += (m.pixel_scale * m.no_render_area.left);
-                            this_line_start = m.no_render_area.left;
-                            this_line_end = m.no_render_area.right;
+                        if (y_line > m.protected_render_area.top && y_line < m.protected_render_area.bottom) {
+                            mx += (m.pixel_scale * m.protected_render_area.left);
+                            this_line_start = m.protected_render_area.left;
+                            this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
                             this_line_end = m.canvas.getWidth();
@@ -175,10 +172,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                         // top half of image
                         y_line = half_height - cyb;
                         mx = mandelbrot_settings.real_left;
-                        if (y_line > m.no_render_area.top && y_line < m.no_render_area.bottom) {
-                            mx += (m.pixel_scale * m.no_render_area.left);
-                            this_line_start = m.no_render_area.left;
-                            this_line_end = m.no_render_area.right;
+                        if (y_line > m.protected_render_area.top && y_line < m.protected_render_area.bottom) {
+                            mx += (m.pixel_scale * m.protected_render_area.left);
+                            this_line_start = m.protected_render_area.left;
+                            this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
                             this_line_end = m.canvas.getWidth();

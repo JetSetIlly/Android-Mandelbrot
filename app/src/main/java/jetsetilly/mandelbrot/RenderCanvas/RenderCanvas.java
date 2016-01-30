@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -31,6 +32,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // a solution IMO
     private Bitmap display_bm;
 
+    // render_bm is sometimes equal to display_bm sometimes not.
+    // 1. on startRender() the current  display_bm is used to copy into the new render_bm by the
+    // correct offset (resetting the scroll  of the ImageView afterwards)
+    // 2. when pinch zooming the zoom amount is applied to the render_bm and not the display_bm. this
+    // prevents exponential zooming of the image
     private Bitmap render_bm;
     private Buffer buffer;
 
@@ -129,7 +135,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
     }
 
-    /* use ImageView implementations getWidth() and getHeight() */
+    /* using ImageView implementations getWidth() and getHeight() */
 
     /* end of MandelbrotCanvas implementation */
 

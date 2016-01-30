@@ -109,16 +109,6 @@
 
             </RadioGroup>
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_parallel_render"
-                android:id="@+id/progressive_render" />
-
         </LinearLayout>
     </ScrollView>
 

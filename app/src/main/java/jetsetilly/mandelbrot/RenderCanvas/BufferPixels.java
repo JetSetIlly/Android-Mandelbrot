@@ -2,12 +2,10 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-
 import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Tools;
 
 public class BufferPixels implements Buffer {
     final static public String DBG_TAG = "buffer pixels";
@@ -79,16 +77,16 @@ public class BufferPixels implements Buffer {
 
     private class SetPixelsTask extends AsyncTask<Bitmap, Void, Void> {
         private Bitmap flush_bitmap = null;
-        private Semaphore set_pixels_signal = new Semaphore(1);
+        private Semaphore signal = new Semaphore(1);
         private Boolean finish = false;
 
         public void finish() {
             finish = true;
-            set_pixels_signal.release();
+            signal.release();
         }
 
         public void draw() {
-            set_pixels_signal.release();
+            signal.release();
         }
 
         private void flushPixels() {
@@ -101,14 +99,14 @@ public class BufferPixels implements Buffer {
 
             while (!finish && !isCancelled()) {
                 try {
-                    set_pixels_signal.acquire();
+                    signal.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
                 flushPixels();
                 publishProgress();
-                set_pixels_signal.release();
+                signal.release();
             }
 
             return null;

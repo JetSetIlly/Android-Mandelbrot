@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.CheckBox;
 import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -26,7 +25,6 @@ public class SettingsActivity extends AppCompatActivity {
     private BailoutSlider bailout;
     private DoubleTapScaleSlider double_tap;
     private RadioGroup render_mode;
-    private CheckBox progressive_render;
     private int reference_render_mode;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
@@ -46,7 +44,6 @@ public class SettingsActivity extends AppCompatActivity {
         bailout = (BailoutSlider) findViewById(R.id.bailout);
         double_tap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
-        progressive_render = (CheckBox) findViewById(R.id.progressive_render);
 
         /* get the values that wer set on the previous screen
         they've not been committed yet so we've passed them by intent */
@@ -64,9 +61,6 @@ public class SettingsActivity extends AppCompatActivity {
         // render mode selected at start of activity -- if this changes then
         // we'll stop the current rendering process
         reference_render_mode = render_mode.getCheckedRadioButtonId();
-
-        // set progressive render
-        progressive_render.setChecked(mandelbrot_settings.parallel_render);
     }
 
     @Override
@@ -91,12 +85,6 @@ public class SettingsActivity extends AppCompatActivity {
                             mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
                             break;
                     }
-                }
-
-                // check for new progressive render setting
-                if (mandelbrot_settings.parallel_render != progressive_render.isChecked()) {
-                    MainActivity.render_canvas.stopRender();
-                    mandelbrot_settings.parallel_render = progressive_render.isChecked();
                 }
 
                 // change mandelbrot parameters as appropriate

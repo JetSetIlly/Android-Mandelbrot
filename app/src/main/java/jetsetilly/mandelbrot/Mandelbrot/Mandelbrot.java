@@ -23,18 +23,15 @@ public class Mandelbrot {
     protected double pixel_scale;
     private double fractal_ratio;
 
-    /* no_render_area is used to define that area of the canvas
+    /* protected_render_area is used to define that area of the canvas
     that do not need to be rendered again because those pixels (hopefully)
     already appear on the canvas
      */
-    protected Rect no_render_area;
+    protected Rect protected_render_area;
 
     /* ui related stuff */
-    private final int DEF_NUM_PASSES = 2;
-    private final int DEF_UPDATE_FREQ = 1;
-
-    public int num_passes = DEF_NUM_PASSES; // in lines
-    public int canvas_update_frequency = DEF_UPDATE_FREQ; // in lines
+    // TODO: this should be part of MandelbrotSettings
+    public int num_passes = 2; // in lines
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
@@ -126,27 +123,24 @@ public class Mandelbrot {
 
         scrollAndZoom(offset_x, offset_y, zoom_factor);
 
-        // initialise no_render_area
-        no_render_area = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
+        // initialise protected_render_area
+        protected_render_area = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         // make sure render mode etc. is set correctly
         rescaling_render = zoom_factor != 0;
 
-        num_passes = DEF_NUM_PASSES;
-        canvas_update_frequency = DEF_UPDATE_FREQ;
-
         if (zoom_factor == 0 && render_completed) {
-            /* define no_render_area more accurately */
+            /* define protected_render_area more accurately */
             if (offset_x < 0) {
-                no_render_area.right = (int) -offset_x;
+                protected_render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
-                no_render_area.left = canvas.getWidth() - (int) offset_x;
+                protected_render_area.left = canvas.getWidth() - (int) offset_x;
             }
 
             if (offset_y < 0) {
-                no_render_area.top = (int) -offset_y;
+                protected_render_area.top = (int) -offset_y;
             } else if (offset_y > 0) {
-                no_render_area.bottom = canvas.getHeight() - (int) offset_y;
+                protected_render_area.bottom = canvas.getHeight() - (int) offset_y;
             }
         }
 

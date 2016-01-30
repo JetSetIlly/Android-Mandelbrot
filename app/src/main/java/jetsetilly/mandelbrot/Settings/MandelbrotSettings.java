@@ -16,7 +16,6 @@ public class MandelbrotSettings {
     public double bailout_value;
 
     public Mandelbrot.RenderMode render_mode;
-    public boolean parallel_render;
 
     MandelbrotSettings() {
         reset();
@@ -44,7 +43,6 @@ public class MandelbrotSettings {
         prefs_editor.putInt("max_iterations", max_iterations);
         prefs_editor.putFloat("bailout_value", (float) bailout_value);
         prefs_editor.putInt("render_mode", render_mode.ordinal());
-        prefs_editor.putBoolean("parallel_render", parallel_render);
 
         // Commit the edits!
         prefs_editor.apply();
@@ -60,7 +58,6 @@ public class MandelbrotSettings {
         max_iterations = prefs.getInt("max_iterations", MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations);
         bailout_value = prefs.getFloat("bailout_value", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value);
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.TOP_DOWN.ordinal())];
-        parallel_render = prefs.getBoolean("parallel_render", false);
     }
 
     /* singleton pattern */

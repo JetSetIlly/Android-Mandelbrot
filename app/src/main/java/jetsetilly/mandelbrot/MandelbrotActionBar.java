@@ -35,12 +35,16 @@ public class MandelbrotActionBar extends Toolbar {
     }
 
     public void hide(boolean hide) {
+        hide(hide, true);
+    }
+
+    public void hide(boolean hide, boolean animate) {
         // translucent status bar is set on/off in styles.xml - it would be useful if this was programmatic
 
         if (hide) {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
 
-            if (getVisibility() != View.INVISIBLE) {
+            if (getVisibility() != View.INVISIBLE && animate) {
                 Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_hide);
 
                 // set invisibility on animation end
@@ -62,11 +66,13 @@ public class MandelbrotActionBar extends Toolbar {
                 });
 
                 startAnimation(anim);
+            } else {
+                setVisibility(View.INVISIBLE);
             }
         } else {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
-            if (getVisibility() != View.VISIBLE) {
+            if (getVisibility() != View.VISIBLE && animate) {
                 Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_show);
 
                 // set visibility on animation start
@@ -82,11 +88,12 @@ public class MandelbrotActionBar extends Toolbar {
 
                     @Override
                     public void onAnimationRepeat(Animation animation) {
-
                     }
                 });
 
                 startAnimation(anim);
+            } else {
+                setVisibility(View.VISIBLE);
             }
         }
     }

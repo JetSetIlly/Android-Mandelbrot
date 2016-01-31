@@ -117,15 +117,9 @@ public class ProgressView extends ImageView {
 
         final Animation hide_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_hide);
 
-        long delay;
+        // wait for spin_anim to finish at the key frame
         Animation spin_anim = getAnimation();
-        if (spin_anim != null) {
-            // wait for spin_anim to finish at the key frame
-            spin_anim.setRepeatCount(0);
-            delay = spin_anim.computeDurationHint();
-        } else {
-            delay = 0;
-        }
+        spin_anim.setRepeatCount(0);
 
         // wait until spinner has finished
         postDelayed(new Runnable() {
@@ -149,7 +143,7 @@ public class ProgressView extends ImageView {
                     }
                 }, hide_anim.getDuration());
             }
-        }, delay);
+        }, SPIN_DURATION);
     }
 
     private Animation getSpinAnimation() {

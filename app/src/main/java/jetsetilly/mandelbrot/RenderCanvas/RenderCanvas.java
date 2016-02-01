@@ -7,11 +7,15 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
+import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 
@@ -229,15 +233,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         animatedZoom(gesture_settings.double_tap_scale, offset_x, offset_y);
     }
 
-    public void animatedZoom(float scale, int offset_x, int offset_y) {
+    private void animatedZoom(float scale, int offset_x, int offset_y) {
         // animation can take a while -- we don't gestures to be honoured
         // while the animation is taking place. call blockGestures() here
         // and unblockGestures() in the animation's endAction
         gestures.blockGestures();
 
-        stopRender(); // stop render to avoid smearing
+        // stop render to avoid smearing
+        stopRender();
 
+        // update offsets ready for the new render
         updateOffsets(offset_x, offset_y);
+
+        // generate final zoomed image
         final Bitmap zoomed_bm = zoomImage(scale, true);
 
         // we're going to animate the image view not the bitmap itself
@@ -249,6 +257,45 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         //
         // we'll remove this when we introduce tessellated bitmaps
         main_activity.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
+
+        /*
+        // OLD FASHIONED ANIMATION (pre 3.0)
+        // set up zoom animation
+        Animation scale_anim = new ScaleAnimation(1.0f, scale, 1.0f, scale, (float)getCanvasMidX(), (float)getCanvasMidY());
+        Animation translate_anim = new TranslateAnimation(
+                0,
+                -offset_x*scale,
+                0,
+                -offset_y*scale
+        );
+        AnimationSet zoom_anim = new AnimationSet(true);
+        zoom_anim.addAnimation(scale_anim);
+        zoom_anim.addAnimation(translate_anim);
+        zoom_anim.setDuration(1000);
+        zoom_anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                setScaleX(1f);
+                setScaleY(1f);
+                setX(0f);
+                setY(0f);
+                setImageBitmap(display_bm = zoomed_bm);
+                startRender();
+                gestures.unblockGestures();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        startAnimation(zoom_anim);
+        // END OF OLD FASHIONED ANIMATION
+        */
 
         // do animation
         ViewPropertyAnimator anim = animate();

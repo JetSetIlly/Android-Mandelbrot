@@ -2,6 +2,8 @@ package jetsetilly.mandelbrot;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.ViewAnimationUtils;
+import android.view.ViewPropertyAnimator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
@@ -119,6 +121,7 @@ public class ProgressView extends ImageView {
 
         // wait for spin_anim to finish at the key frame
         Animation spin_anim = getAnimation();
+        if (spin_anim == null) return;
         spin_anim.setRepeatCount(0);
 
         // wait until spinner has finished

@@ -258,6 +258,32 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // we'll remove this when we introduce tessellated bitmaps
         main_activity.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
 
+        // do animation
+        ViewPropertyAnimator anim = animate();
+
+        anim.withLayer();
+        anim.setDuration(1000);
+        anim.x(-offset_x * scale);
+        anim.y(-offset_y * scale);
+        anim.scaleX(scale);
+        anim.scaleY(scale);
+
+        anim.withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                setScaleX(1f);
+                setScaleY(1f);
+                setX(0f);
+                setY(0f);
+                setImageBitmap(display_bm = zoomed_bm);
+                postInvalidate();
+                startRender();
+                gestures.unblockGestures();
+            }
+
+        });
+        anim.start();
+
         /*
         // OLD FASHIONED ANIMATION (pre 3.0)
         // set up zoom animation
@@ -296,32 +322,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         startAnimation(zoom_anim);
         // END OF OLD FASHIONED ANIMATION
         */
-
-        // do animation
-        ViewPropertyAnimator anim = animate();
-
-        anim.withLayer();
-        anim.setDuration(1000);
-        anim.x(-offset_x * scale);
-        anim.y(-offset_y * scale);
-        anim.scaleX(scale);
-        anim.scaleY(scale);
-
-        anim.withEndAction(new Runnable() {
-            @Override
-            public void run() {
-                setScaleX(1f);
-                setScaleY(1f);
-                setX(0f);
-                setY(0f);
-                setImageBitmap(display_bm = zoomed_bm);
-                postInvalidate();
-                startRender();
-                gestures.unblockGestures();
-            }
-        });
-
-        anim.start();
     }
 
     public void zoomBy(int pixels) {

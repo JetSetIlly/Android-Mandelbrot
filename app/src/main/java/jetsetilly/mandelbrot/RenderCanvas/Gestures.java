@@ -116,8 +116,8 @@ public class Gestures implements
 
         canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
 
-        int offset_x = (int) (event.getX() - canvas.getCanvasMidX());
-        int offset_y = (int) (event.getY() - canvas.getCanvasMidY());
+        int offset_x = (int) (event.getX() - (canvas.getWidth() /2));
+        int offset_y = (int) (event.getY() - (canvas.getHeight() / 2));
 
         touch_state = TouchState.DOUBLE_TOUCH;
         canvas.doubleTouchZoom(offset_x, offset_y);

@@ -18,79 +18,12 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     private final Mandelbrot m;
-    private final int target_iteration;
 
-    /* target_iterations of > 0 will result in a one shot thread for one iteration value */
-
-    public MandelbrotThread(Mandelbrot context, int target_iteration) {
+    public MandelbrotThread(Mandelbrot context) {
         this.m = context;
-        this.target_iteration = target_iteration;
-    }
-
-    private int doIterations(MandelbrotPoint p, int max_iterations) {
-        int i;
-
-        for (i = Math.abs(p.iteration); i <= max_iterations; ++ i) {
-            p.B = 2.0 * p.A * p.B + p.y;
-            p.A = p.U - p.V + p.x;
-            p.U = p.A * p.A;
-            p.V = p.B * p.B;
-
-            if (p.U + p.V > mandelbrot_settings.bailout_value) {
-                return p.iteration = i;
-            }
-        }
-
-        if (i < mandelbrot_settings.max_iterations)
-            return p.iteration = -i;
-
-        return p.iteration = 0;
-    }
-
-    private int doIterations(double x, double y, int target_iteration) {
-        double U, V, A, B;
-
-        U = (A = x) * A;
-        V = (B = y) * B;
-
-        int i;
-
-        for (i = 1; i < target_iteration; ++ i) {
-            B = 2.0 * A * B + y;
-            A = U - V + x;
-            U = A * A;
-            V = B * B;
-
-            if (U + V > mandelbrot_settings.bailout_value) {
-                // we've not reached the target iteration so return a negative
-                // number to indicate that
-                return -1;
-            }
-        }
-
-        // i is now equal to target_iteration
-
-        B = 2.0 * A * B + y;
-        A = U - V + x;
-        U = A * A;
-        V = B * B;
-
-        if (U + V > mandelbrot_settings.bailout_value) {
-            return i;
-        }
-
-        if (i == mandelbrot_settings.max_iterations) {
-            return 0;
-        } else {
-            return -1;
-        }
     }
 
     private int doIterations(double x, double y) {
-        if (target_iteration > 0) {
-            return doIterations(x, y, target_iteration);
-        }
-
         double U, V, A, B;
 
         U = (A = x) * A;

@@ -147,7 +147,7 @@ public class Mandelbrot {
         calculatePixelScale();
 
         MainActivity.progress.startSession();
-        render_thr = new MandelbrotThread(this, -1);
+        render_thr = new MandelbrotThread(this);
         render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     /* end of threading */

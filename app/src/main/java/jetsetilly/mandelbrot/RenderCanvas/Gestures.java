@@ -46,10 +46,6 @@ public class Gestures implements
 
                 note that onSingleTapUp() is not the same thing because it is not
                 called after a ACTION_MOVE
-
-                we also allow scale events to use the dirty_canvas flag. we could kick-start
-                rendering in the onScaleEnd callback but instead we set the dirty_canvas flag to
-                keep things consistent.
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP ) {
                     if (touch_state == TouchState.SCROLL) {
@@ -174,7 +170,7 @@ public class Gestures implements
     /* END OF implementation of OnScaleGesture interface */
 
 
-    /* following methods are not really used */
+    /* following methods are not used */
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         /* implementation of onGesturesListener */

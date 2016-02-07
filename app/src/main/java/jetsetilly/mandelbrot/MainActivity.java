@@ -13,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
-import android.widget.ImageView;
 
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -45,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     static public ProgressView progress;
 
     public MandelbrotActionBar action_bar;
-    public ImageView background_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,12 +74,9 @@ public class MainActivity extends AppCompatActivity {
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
             public void run() {
-                render_canvas.startCanvas();
+                render_canvas.initPostLayout();
             }
         });
-
-        // get reference to background view
-        background_view = (ImageView) findViewById(R.id.background);
     }
 
     @Override
@@ -132,11 +127,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_reset:
                 render_canvas.stopRender();
                 MandelbrotSettings.getInstance().reset();
-                render_canvas.startCanvas();
+                render_canvas.resetCanvas();
                 return true;
 
             case R.id.action_redraw:
-                render_canvas.startCanvas();
+                render_canvas.resetCanvas();
                 return true;
         }
 
@@ -188,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             url = cr.insert(url, values);
             OutputStream output_stream = cr.openOutputStream(url);
-            render_canvas.getDisplayedBitmap().compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
+            render_canvas.display_bm.compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {
             if (url != null) {
                 cr.delete(url, null, null);

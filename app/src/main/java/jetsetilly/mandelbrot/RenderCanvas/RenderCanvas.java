@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
+import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 
@@ -20,8 +21,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private MainActivity main_activity;
     private Gestures gestures;
-
     private Mandelbrot mandelbrot;
+
+    private ImageView static_background;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
     // whenever setImageBitmap() is called we should set display_bm to equal
@@ -29,7 +31,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // the idiosyncratic ways to do this is setImageBitmap(display_bm = bm)
     // I considered overloading the setImageBitmap() method but that's too clumsy
     // a solution IMO
-    private Bitmap display_bm;
+    public Bitmap display_bm;
 
     // render_bm is sometimes equal to display_bm sometimes not.
     // 1. on startRender() the current  display_bm is used to copy into the new render_bm by the
@@ -42,7 +44,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
-    private double zoom_factor;
+    private double cumulative_zoom_factor;
 
     // the amount of deviation (offset) from the current render_bm
     // used when chaining scroll and zoom events
@@ -79,29 +81,28 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         this.main_activity = (MainActivity) context;
         this.gestures = new Gestures(context, this);
     }
-    /* end of initialisation */
 
+    public void initPostLayout() {
+        this.static_background = (ImageView) main_activity.findViewById(R.id.static_background);
+        resetCanvas();
+    }
+    /* end of initialisation */
 
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas clear_canvas = new Canvas(clear_bm);
-        clear_canvas.drawColor(palette_settings.mostFrequentColor());
+        clear_bm.eraseColor(palette_settings.mostFrequentColor());
         setImageBitmap(display_bm = clear_bm);
     }
 
-    public void startCanvas() {
+    public void resetCanvas() {
         // kill any existing image
         clearImage();
 
-        // set background color
+        // set base color
         setBackgroundColor(palette_settings.mostFrequentColor());
 
         mandelbrot = new Mandelbrot(main_activity, this);
         startRender();
-    }
-
-    public Bitmap getDisplayedBitmap() {
-        return display_bm;
     }
 
     public boolean checkActionBar(float x, float y) {
@@ -166,12 +167,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
-            if (gestures.has_scaled) {
-                render_canvas.drawBitmap(display_bm, 0, 0, null);
-            } else {
-                render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
-                scrollTo(0, 0);
-            }
+            render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
+            scrollTo(0, 0);
         }
 
         // lose reference to old bitmap(s)
@@ -181,9 +178,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         palette_settings.resetCount();
 
         // start render thread
-        mandelbrot.startRender(mandelbrot_offset_x, mandelbrot_offset_y, zoom_factor);
+        mandelbrot.startRender(mandelbrot_offset_x, mandelbrot_offset_y, cumulative_zoom_factor);
 
-        zoom_factor = 0;
+        cumulative_zoom_factor = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;
         mandelbrot_offset_x = 0;
@@ -192,7 +189,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void stopRender() {
-        // change background colour - we do it here so that we perform the change
+        // change base colour - we do it here so that we perform the change
         // it in all instances. when the render is interrupted by a touch event
         // and when startRender is called (startRender() calls stopRender() to make sure
         // there is nothing currently going on).
@@ -204,18 +201,18 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* canvas transformation */
-    @Override
-    public void scrollBy(int x, int y) {
-        stopRender(); // stop render to avoid smearing
-        super.scrollBy(x, y);
-        updateOffsets(x, y);
-    }
-
     private void updateOffsets(int offset_x, int offset_y) {
         rendered_offset_x += offset_x;
         rendered_offset_y += offset_y;
         mandelbrot_offset_x += offset_x * mandelbrot_scroll_scale;
         mandelbrot_offset_y += offset_y * mandelbrot_scroll_scale;
+    }
+
+    @Override
+    public void scrollBy(int x, int y) {
+        stopRender(); // stop render to avoid smearing
+        super.scrollBy(x, y);
+        updateOffsets(x, y);
     }
 
     public void doubleTouchZoom(int offset_x, int offset_y) {
@@ -234,18 +231,21 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // update offsets ready for the new render
         updateOffsets(offset_x, offset_y);
 
+        // update zoom factor
+        cumulative_zoom_factor += zoomFactorFromScale(scale);
+
         // generate final zoomed image
-        final Bitmap zoomed_bm = zoomImage(scale, true);
+        final Bitmap zoomed_bm = getZoomedImage();
 
         // we're going to animate the image view not the bitmap itself
         // in other words, the image view is going to change size and show whatever
         // is behind the image view in the layout. in our case the thing that is behind the
-        // image view is another image view. we use this background_view to keep the illusion
-        // that the bitmap is scaling. to do this we set the background color of background_view
+        // image view is another image view. we use this static background to keep the illusion
+        // that the bitmap is scaling. to do this we set the background color of static_background
         // to palette_settings.mostFrequentColor()
         //
-        // we'll remove this when we introduce tessellated bitmaps
-        main_activity.background_view.setBackgroundColor(palette_settings.mostFrequentColor());
+        // we'll remove this when we introduce tessellated/giant bitmaps
+        static_background.setBackgroundColor(palette_settings.mostFrequentColor());
 
         // do animation
         ViewPropertyAnimator anim = animate();
@@ -313,33 +313,37 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void zoomBy(int pixels) {
-        stopRender(); // stop render to avoid smearing
-        zoomImage(scaleFromPixels(pixels), false);
+        // stop render to avoid smearing
+        stopRender();
+
+        cumulative_zoom_factor += zoomFactorFromScale(scaleFromPixels(pixels));
+        Bitmap zoomed_bm = getZoomedImage();
+        scrollTo(0, 0);
+
+        setImageBitmap(display_bm = zoomed_bm);
     }
 
-    private Bitmap zoomImage(float scale, boolean defer) {
+    private Bitmap getZoomedImage() {
+        /* TODO: make this more efficient */
+
         double new_left, new_right, new_top, new_bottom;
-        Canvas zoom_canvas;
+        Canvas offset_canvas, zoom_canvas;
         Bitmap offset_bm, zoomed_bm;
         Rect blit_to, blit_from;
 
-        // calculate zoom
-        zoom_factor += zoomFactorFromScale(scale);
-
         // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
-        // without the zoom_factor going crazy or losing definition
+        // without the cumulative_zoom_factor going crazy or losing definition
 
         /// do offset
         offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        zoom_canvas = new Canvas(offset_bm);
-        zoom_canvas.drawColor(palette_settings.mostFrequentColor());
-        zoom_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
-        scrollTo(0, 0);
+        offset_canvas = new Canvas(offset_bm);
+        offset_canvas.drawColor(palette_settings.mostFrequentColor());
+        offset_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
 
         // do zoom
-        new_left = zoom_factor * getWidth();
+        new_left = cumulative_zoom_factor * getWidth();
         new_right = getWidth() - new_left;
-        new_top = zoom_factor * getHeight();
+        new_top = cumulative_zoom_factor * getHeight();
         new_bottom = getHeight() - new_top;
         zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         zoom_canvas = new Canvas(zoomed_bm);
@@ -349,13 +353,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         zoom_canvas.drawColor(palette_settings.mostFrequentColor());
         zoom_canvas.drawBitmap(offset_bm, blit_from, blit_to, null);
-
-        // image zoomed so scrolling needs a new mandelbrot_scroll_scale
-        mandelbrot_scroll_scale = (new_right - new_left) / getWidth();
-
-        if (!defer) {
-            setImageBitmap(display_bm = zoomed_bm);
-        }
 
         return zoomed_bm;
     }

@@ -17,11 +17,10 @@ public class Gestures implements
 {
     private static final String DEBUG_TAG = "touch canvas";
 
-    public enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, SCROLL, SCALE}
-    public TouchState touch_state = TouchState.IDLE;
+    private enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, SCROLL, SCALE}
+    private TouchState touch_state = TouchState.IDLE;
 
     private final RenderCanvas canvas;
-    public boolean has_scaled;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
@@ -56,12 +55,10 @@ public class Gestures implements
                     touch_state = TouchState.IDLE;
                 }
 
-                boolean ret_val = scale_detector.onTouchEvent(event);
-                return gestures_detector.onTouchEvent(event) || ret_val;
+                boolean scale_ret = scale_detector.onTouchEvent(event);
+                return gestures_detector.onTouchEvent(event) || scale_ret;
             }
         });
-
-        resetGestureState();
     }
 
     public void blockGestures() {
@@ -72,10 +69,6 @@ public class Gestures implements
         blocked = false;
     }
 
-    private void resetGestureState() {
-        has_scaled = false;
-    }
-
     /* implementation of onGesturesListener */
     @Override
     public boolean onDown(MotionEvent event) {
@@ -84,7 +77,6 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY());
         touch_state = TouchState.TOUCH;
-        resetGestureState();
         return true;
     }
 
@@ -131,10 +123,8 @@ public class Gestures implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-        Tools.printDebug(DEBUG_TAG, "currentSpan: " + detector.getCurrentSpan());
-        Tools.printDebug(DEBUG_TAG, "previousSpan: " + detector.getPreviousSpan());
 
-        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan()) / 1.25));
+        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan())));
 
         return true;
     }
@@ -144,14 +134,6 @@ public class Gestures implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
-
-        /* don't allow scaling to happen twice without a call to
-        resetGestureState(). This is to prevent awkwardness in RenderCanvas.
-        I'm sure it's fixable but this is simple fix without much imapact on usability
-         */
-        if (has_scaled) {
-            return false;
-        }
 
         touch_state = TouchState.SCALE;
         return true;
@@ -163,7 +145,6 @@ public class Gestures implements
 
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
-        has_scaled = true;
 
         canvas.startRender();
     }

@@ -75,7 +75,7 @@ public class Gestures implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
-        canvas.checkActionBar(event.getX(), event.getY());
+        canvas.checkActionBar(event.getX(), event.getY(), false);
         touch_state = TouchState.TOUCH;
         return true;
     }
@@ -90,6 +90,17 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
         touch_state = TouchState.SCROLL;
+        return true;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
+        /* implementation of onDoubleTapListener interface */
+        if (blocked) return false;
+
+        Tools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
+        canvas.checkActionBar(event.getX(), event.getY(), true);
+
         return true;
     }
     /* END OF implementation of onGesturesListener */
@@ -195,12 +206,4 @@ public class Gestures implements
         return true;
     }
 
-    @Override
-    public boolean onSingleTapConfirmed(MotionEvent event) {
-        /* implementation of onDoubleTapListener interface */
-        if (blocked) return false;
-
-        Tools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
-        return true;
-    }
 }

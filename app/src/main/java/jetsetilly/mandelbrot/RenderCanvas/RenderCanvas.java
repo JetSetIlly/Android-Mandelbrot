@@ -23,6 +23,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Gestures gestures;
     private Mandelbrot mandelbrot;
 
+    // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
+    // so that zooming the canvas doesn't expose the nothingness behind the canvas.
     private ImageView static_background;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
@@ -105,17 +107,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         startRender();
     }
 
-    public boolean checkActionBar(float x, float y) {
+    public void checkActionBar(float x, float y, boolean show) {
         // returns false if coordinates are in action bar, otherwise true
-        if (main_activity.action_bar.inActionBar(y)) {
-            main_activity.action_bar.hide(false);
-            return false;
+        if (show) {
+            if (main_activity.action_bar.inActionBar(y)) {
+                main_activity.action_bar.hide(false);
+            }
+        } else {
+            main_activity.action_bar.hide(true);
         }
-
-        main_activity.action_bar.hide(true);
-        return true;
     }
-
 
     /* MandelbrotCanvas implementation */
     public void startDraw(Mandelbrot.RenderMode render_mode) {

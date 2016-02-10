@@ -6,12 +6,6 @@ public class Presets {
      */
 
     static public final PaletteDefinition[] presets = {
-            new PaletteDefinition("Red/Grey", PaletteDefinition.PaletteMode.INTERPOLATE,
-                    new int[] { 0xFF000000,
-                            0xFFFF4444, 0xFF114444, 32
-                    },
-                    true),
-
             new PaletteDefinition("Candied Stripes", PaletteDefinition.PaletteMode.INDEX,
                     new int[]{      0xFF000000,
                             0xFF213877, 0xFF0a5bff, 0xFF2d98c2,
@@ -22,6 +16,12 @@ public class Presets {
                             0xFFec84ef, 0xFFf0adf4, 0xFFf76df7,
                             0xFFff51c5, 0xFFff0fcf
                     }),
+
+            new PaletteDefinition("Red/Grey", PaletteDefinition.PaletteMode.INTERPOLATE,
+                    new int[] { 0xFF000000,
+                            0xFFFF4444, 0xFF114444, 32
+                    },
+                    true),
 
             new PaletteDefinition("Sunnydale", PaletteDefinition.PaletteMode.INDEX,
                     new int[]{       0xFF000000,

@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.Settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Palette.Presets;
@@ -76,7 +77,8 @@ public class PaletteSettings {
 
         // colour_cnt_highest is used to fill the screen
         // when starting rendering. set it to a random number to begin with
-        colour_cnt_highest = 1; // new Random().nextInt(colours.length-1)+1;
+        //colour_cnt_highest = new Random().nextInt(colours.length-1)+1;
+        colour_cnt_highest = 1;
     }
 
     public void updateCount(int palette_entry)
@@ -93,6 +95,7 @@ public class PaletteSettings {
     }
 
     public int mostFrequentColor() {
+        Log.d(DBG_TAG, "color count " + colour_cnt_highest);
         return selected_palette.colours[colour_cnt_highest];
     }
     /* colour counting */

@@ -57,7 +57,7 @@ public class MandelbrotSettings {
         imaginary_lower = prefs.getFloat("imaginary_lower", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower);
         max_iterations = prefs.getInt("max_iterations", MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations);
         bailout_value = prefs.getFloat("bailout_value", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value);
-        render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.TOP_DOWN.ordinal())];
+        render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.CENTRE.ordinal())];
     }
 
     /* singleton pattern */

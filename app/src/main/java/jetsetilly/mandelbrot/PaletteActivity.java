@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -30,6 +29,7 @@ public class PaletteActivity extends AppCompatActivity {
         setSupportActionBar(action_bar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_24dp);
 
         palette_entries = (GridView) findViewById(R.id.palette_entries);
         palette_entries.setAdapter(new PaletteActivityListAdapter(this));

@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     // IDs for other activities. used in calls to startActivityForResult()
     // and onActivityResult() implementation
-    private static final int PALETTE_ACTIVITY_ID = 0;
-    private static final int SETTINGS_ACTIVITY_ID = 1;
+    private static final int PALETTE_ACTIVITY_ID = 1;
+    private static final int SETTINGS_ACTIVITY_ID = 2;
 
     // allow other classes to access resources (principally PaletteDefinition)
     // not sure if there is a more elegant way to do this - this seems heavy handed
@@ -140,6 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int request_code, int result_code, Intent intent) {
+        if (intent == null)
+            return;
+
         switch(request_code) {
             case PALETTE_ACTIVITY_ID:
                 if (result_code == PaletteActivity.ACTIVITY_RESULT_CHANGE) {
@@ -164,9 +167,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean saveImage() {
         long curr_time = System.currentTimeMillis();
 
-        String title = String.format("%s_%s.jpeg",
-                this.getString(R.string.app_name),
-                new SimpleDateFormat("ssmmhhddmmyyyy", Locale.ENGLISH).format(curr_time));
+        String title = String.format("%s_%s.jpeg", this.getString(R.string.app_name), new SimpleDateFormat("yyyymmdd_hhmmss", Locale.ENGLISH).format(curr_time));
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, title);

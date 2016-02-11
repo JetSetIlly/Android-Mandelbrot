@@ -14,8 +14,8 @@ public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
 
     public static final String ACTIVITY_RESULT_PALETTE_ID = "PALETTE_ID";
-    public static final Integer ACTIVITY_RESULT_CHANGE = 0;
-    public static final Integer ACTIVITY_RESULT_NO_CHANGE = -1;
+    public static final Integer ACTIVITY_RESULT_NO_CHANGE = 1;
+    public static final Integer ACTIVITY_RESULT_CHANGE = 2;
 
     private GridView palette_entries;
 

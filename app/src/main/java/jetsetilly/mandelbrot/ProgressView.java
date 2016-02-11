@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
@@ -93,6 +94,7 @@ public class ProgressView extends ImageView {
                 spin_anim.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
+                        setLayerType(View.LAYER_TYPE_HARDWARE, null);
                     }
 
                     @Override
@@ -118,6 +120,7 @@ public class ProgressView extends ImageView {
                             public void onAnimationEnd(Animation animation) {
                                 clearAnimation();
                                 setVisibility(INVISIBLE);
+                                setLayerType(View.LAYER_TYPE_NONE, null);
                             }
 
                             @Override

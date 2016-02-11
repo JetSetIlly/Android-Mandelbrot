@@ -35,5 +35,10 @@
         app:showAsAction="never"
     />
 
+    <item
+        android:id="@+id/action_toggle_info_pane"
+        android:title="@string/action_toggle_info_pane"
+        app:showAsAction="never"
+    />
 </menu>
 

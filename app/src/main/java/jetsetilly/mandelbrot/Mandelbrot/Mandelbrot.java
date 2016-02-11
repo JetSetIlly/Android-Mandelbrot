@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
+import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -14,12 +15,14 @@ public class Mandelbrot {
     public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
 
     private final Context context;
+    protected final MandelbrotCanvas canvas;
+    private final TextView fractal_info;
+
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
     protected boolean render_completed = false;
 
-    protected final MandelbrotCanvas canvas;
     protected double pixel_scale;
     private double fractal_ratio;
 
@@ -37,26 +40,31 @@ public class Mandelbrot {
     // we use this so that progress view is shown immediately
     protected boolean rescaling_render;
 
-    public Mandelbrot(Context context, MandelbrotCanvas canvas) {
+    public Mandelbrot(Context context, MandelbrotCanvas canvas, TextView fractal_info) {
         this.context = context;
         this.canvas = canvas;
+        this.fractal_info = fractal_info;
         this.render_thr = null;
     }
 
     @Override
     public String toString() {
-        String ret_val = super.toString() + "\n";
+        String info_str = "";
 
-        ret_val = ret_val + "xl: " + mandelbrot_settings.real_left + " xr: " + mandelbrot_settings.real_right + " yu: " + mandelbrot_settings.imaginary_upper + " yl: " + mandelbrot_settings.imaginary_lower;
-        ret_val = ret_val + "pixel scale: " + pixel_scale + "\n";
-        ret_val = ret_val + "fractal ratio: " + fractal_ratio + "\n";
-        ret_val = ret_val + "max iterations: " + mandelbrot_settings.max_iterations + "\n";
-        return ret_val;
+        info_str = info_str + "yu: " + mandelbrot_settings.imaginary_upper + "\n";
+        info_str = info_str + "xl: " + mandelbrot_settings.real_left + "\n";
+        info_str = info_str + "xr: " + mandelbrot_settings.real_right + "\n";
+        info_str = info_str + "yl: " + mandelbrot_settings.imaginary_lower + "\n";
+        info_str = info_str + "pixel scale: " + pixel_scale + "\n";
+        info_str = info_str + "max iterations: " + mandelbrot_settings.max_iterations;
+
+        return info_str;
     }
 
     private void calculatePixelScale() {
         pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
         fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
+        fractal_info.setText(this.toString());
         Tools.printDebug(DBG_TAG, this.toString());
     }
 

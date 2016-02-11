@@ -12,7 +12,8 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/static_background" />
+        android:id="@+id/static_background"
+        android:contentDescription="static background to stop zooming of fractal view revealing the brick wall at the back of theatre" />
 
     <view
         android:layout_width="match_parent"
@@ -49,6 +50,20 @@
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:visibility="invisible" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/info_pane"
+        android:layout_gravity="left|bottom"
+        android:text="Small Text"
+        android:padding="7dp"
+        android:background="#ffffff"
+        android:backgroundTint="@color/primary_dark_material_light"
+        android:textColor="@color/primary_text_default_material_light"
+        android:visibility="invisible"
+        />
 
 </FrameLayout>
 

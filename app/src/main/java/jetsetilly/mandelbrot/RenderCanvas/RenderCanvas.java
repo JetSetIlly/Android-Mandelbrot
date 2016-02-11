@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -107,7 +108,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // set base color
         setBackgroundColor(palette_settings.mostFrequentColor());
 
-        mandelbrot = new Mandelbrot(main_activity, this);
+        mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
         startRender();
     }
 

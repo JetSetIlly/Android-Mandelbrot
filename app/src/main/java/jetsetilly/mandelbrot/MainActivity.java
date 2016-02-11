@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.OutputStream;
@@ -132,6 +133,15 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_redraw:
                 render_canvas.resetCanvas();
+                return true;
+
+            case R.id.action_toggle_info_pane:
+                View info_pane = findViewById(R.id.info_pane);
+                if (info_pane.getVisibility() == View.INVISIBLE) {
+                    info_pane.setVisibility(View.VISIBLE);
+                } else {
+                    info_pane.setVisibility(View.INVISIBLE);
+                }
                 return true;
         }
 

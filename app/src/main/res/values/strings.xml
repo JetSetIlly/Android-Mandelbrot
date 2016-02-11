@@ -6,6 +6,7 @@
     <string name="action_save">Save Image</string>
     <string name="action_reset">Reset Coordinates</string>
     <string name="action_redraw">Redraw</string>
+    <string name="action_toggle_info_pane">Toggle Info Pane</string>
 
     <string name="settings_max_iterations_label">Maximum Iterations</string>
     <string name="settings_bailout_label">Bailout Value</string>

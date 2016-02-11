@@ -25,15 +25,17 @@ public class PaletteActivityListAdapter implements ListAdapter {
     private final LayoutInflater inflater;
 
     private View selected_palette;
+    private int selected_palette_id;
 
     public PaletteActivityListAdapter(Context context) {
         super();
         this.context = (PaletteActivity) context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        selected_palette_id = palette_settings.selected_id;
     }
 
     public int getSelectedPaletteID() {
-        return Integer.parseInt((String) ((TextView) selected_palette.findViewById(R.id.palette_id)).getText());
+        return selected_palette_id;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
         ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(item.swatch);
 
         // tick this view if this is the currently selected palette
-        if (position == palette_settings.selected_id) {
+        if (position == selected_palette_id) {
             selected_palette = view;
             view.findViewById(R.id.palette_selected_icon).setVisibility(View.VISIBLE);
         } else {
@@ -64,7 +66,6 @@ public class PaletteActivityListAdapter implements ListAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View palette_entry) {
-
                 // animate selection
                 ImageView swatch = (ImageView) palette_entry.findViewById(R.id.palette_swatch);
                 swatch.startAnimation(AnimationUtils.loadAnimation(context, R.anim.palette_swatch_click));
@@ -113,6 +114,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
                 // note which palette entry this is
                 selected_palette = palette_entry;
+                selected_palette_id = Integer.parseInt((String) ((TextView) selected_palette.findViewById(R.id.palette_id)).getText());
             }
         });
 
@@ -180,5 +182,4 @@ public class PaletteActivityListAdapter implements ListAdapter {
     public boolean areAllItemsEnabled() {
         return true;
     }
-
 }

@@ -152,7 +152,7 @@ public class PaletteDefinition {
         }
 
         // load in mask
-        Bitmap mask = Bitmap.createBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.splotch));
+        Bitmap mask = Bitmap.createBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.palette_splatter));
 
         // scale and rotate
         Matrix matrix = new Matrix();

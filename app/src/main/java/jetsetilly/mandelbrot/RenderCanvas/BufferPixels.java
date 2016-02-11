@@ -31,7 +31,10 @@ public class BufferPixels implements Buffer {
         pixels = new int[canvas.getHeight() * width];
         pixel_ct = 0;
 
-        palette_frequency = new int[MandelbrotSettings.getInstance().max_iterations];
+        palette_frequency = new int[
+                Math.min(palette_settings.selected_palette.num_colours,
+                        MandelbrotSettings.getInstance().max_iterations) + 1
+                ];
 
         set_pixels_task = new SetPixelsTask();
     }

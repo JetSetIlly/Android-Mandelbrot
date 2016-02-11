@@ -154,7 +154,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
     @Override
     protected void onCancelled() {
         MainActivity.progress.unregister();
-        // not called m.canvas.endDraw()
+        m.canvas.cancelDraw();
         m.render_completed = false;
     }
 }

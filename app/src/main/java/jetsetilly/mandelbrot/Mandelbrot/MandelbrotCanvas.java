@@ -5,6 +5,7 @@ public interface MandelbrotCanvas {
     void drawPoint(float dx, float dy, int iteration);
     void update();
     void endDraw();
+    void cancelDraw();
 
     int getWidth();
     int getHeight();

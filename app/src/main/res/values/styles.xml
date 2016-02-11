@@ -1,6 +1,6 @@
 <resources>
     <style name="MyActionButtonOverflow" parent="@style/Theme.AppCompat.Light.NoActionBar">
-        <item name="android:src">@drawable/ic_overflow</item>
+        <item name="android:src">@drawable/ic_more_vert_24dp</item>
     </style>
 
     <style name="AppTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">

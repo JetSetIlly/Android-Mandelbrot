@@ -25,6 +25,10 @@ public class Gestures implements
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
 
+    // whether the canvas has been altered somehow (ie. scaled or moved)
+    private boolean altered_canvas;
+
+
     /* initialisation */
     public Gestures(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
@@ -47,8 +51,8 @@ public class Gestures implements
                 called after a ACTION_MOVE
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP ) {
-                    if (touch_state == TouchState.SCROLL) {
-                        Tools.printDebug(DEBUG_TAG, "onUp (after move): " + event.toString());
+                    if (altered_canvas) {
+                        Tools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
                         canvas.startRender();
                     }
 
@@ -77,6 +81,7 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY(), false);
         touch_state = TouchState.TOUCH;
+        altered_canvas = false;
         return true;
     }
 
@@ -90,6 +95,7 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
         touch_state = TouchState.SCROLL;
+        altered_canvas = true;
         return true;
     }
 
@@ -121,7 +127,9 @@ public class Gestures implements
         touch_state = TouchState.DOUBLE_TOUCH;
         canvas.doubleTouchZoom(offset_x, offset_y);
 
-        // render restarted in the canvas.doubleTouchZoom method
+        // not setting altered_canvas to true because we need to
+        // restart the render via canvas.doubleTouchZoom method instead
+        // see the anim.withEndAction() in animatedZoom()
 
         return true;
     }
@@ -134,8 +142,7 @@ public class Gestures implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-
-        canvas.zoomBy((int) ((detector.getCurrentSpan()-detector.getPreviousSpan())));
+        canvas.scaleBy(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
     }
@@ -157,7 +164,8 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
 
-        canvas.startRender();
+        canvas.scaleCorrection();
+        altered_canvas = true;
     }
     /* END OF implementation of OnScaleGesture interface */
 

@@ -6,9 +6,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 public class MandelbrotActionBar extends Toolbar {
-    private final String DBG_TAG = "myactionbar";
+    private final String DBG_TAG = "mandelbrotactionbar";
 
-    private MainActivity context;
     private View status_bar;
 
     public MandelbrotActionBar(Context context, AttributeSet attrs, int defStyle) {
@@ -24,23 +23,26 @@ public class MandelbrotActionBar extends Toolbar {
     }
 
     public void completeSetup(MainActivity context, String title) {
-        this.context = context;
         status_bar = context.getWindow().getDecorView();
 
         setTitle(title);
         setY(Tools.getStatusBarHeight(context));
-        hide(false);
+        setVisibility(false);
     }
 
-    public void hide(boolean hide) {
-        hide(hide, true);
+    public void show_noanim() {
+        if (getVisibility() == INVISIBLE) {
+            status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            setX(0f);
+            setVisibility(VISIBLE);
+        }
     }
 
-    public void hide(boolean hide, boolean animate) {
+    public void setVisibility(boolean hide) {
         if (hide) {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
 
-            if (getVisibility() == View.VISIBLE && animate) {
+            if (getVisibility() == View.VISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
                         .translationXBy(getWidth())
                         .withEndAction(new Runnable() {
@@ -49,13 +51,11 @@ public class MandelbrotActionBar extends Toolbar {
                                 setVisibility(INVISIBLE);
                             }
                         }).start();
-            } else {
-                setVisibility(View.INVISIBLE);
             }
         } else {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
-            if (getVisibility() == View.INVISIBLE && animate) {
+            if (getVisibility() == View.INVISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
                         .translationXBy(-getWidth())
                         .withStartAction(new Runnable() {
@@ -64,8 +64,6 @@ public class MandelbrotActionBar extends Toolbar {
                                 setVisibility(VISIBLE);
                             }
                         }).start();
-            } else {
-                setVisibility(View.VISIBLE);
             }
         }
     }

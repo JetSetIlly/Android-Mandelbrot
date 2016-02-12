@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onResume() {
-        action_bar.hide(false, false); // don't animate - we want the action bar to be there immediately
+        action_bar.show_noanim();
         super.onResume();
     }
 

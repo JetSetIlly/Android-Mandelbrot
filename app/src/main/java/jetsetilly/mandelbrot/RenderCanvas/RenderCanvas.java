@@ -116,10 +116,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // returns false if coordinates are in action bar, otherwise true
         if (show) {
             if (main_activity.action_bar.inActionBar(y)) {
-                main_activity.action_bar.hide(false);
+                main_activity.action_bar.setVisibility(false);
             }
         } else {
-            main_activity.action_bar.hide(true);
+            main_activity.action_bar.setVisibility(true);
         }
     }
 

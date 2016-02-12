@@ -4,8 +4,6 @@ import android.content.Context;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 
 public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "myactionbar";
@@ -39,59 +37,33 @@ public class MandelbrotActionBar extends Toolbar {
     }
 
     public void hide(boolean hide, boolean animate) {
-        // translucent status bar is set on/off in styles.xml - it would be useful if this was programmatic
-
         if (hide) {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
 
-            if (getVisibility() != View.INVISIBLE && animate) {
-                Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_hide);
-
-                // set invisibility on animation end
-                anim.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-
-                startAnimation(anim);
+            if (getVisibility() == View.VISIBLE && animate) {
+                animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
+                        .translationXBy(getWidth())
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                setVisibility(INVISIBLE);
+                            }
+                        }).start();
             } else {
                 setVisibility(View.INVISIBLE);
             }
         } else {
             status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
-            if (getVisibility() != View.VISIBLE && animate) {
-                Animation anim = AnimationUtils.loadAnimation(context, R.anim.action_bar_show);
-
-                // set visibility on animation start
-                anim.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                        setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                    }
-                });
-
-                startAnimation(anim);
+            if (getVisibility() == View.INVISIBLE && animate) {
+                animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
+                        .translationXBy(-getWidth())
+                        .withStartAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                setVisibility(VISIBLE);
+                            }
+                        }).start();
             } else {
                 setVisibility(View.VISIBLE);
             }

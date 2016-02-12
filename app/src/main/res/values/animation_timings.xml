@@ -5,4 +5,6 @@
     <integer name="palette_selected_spin_duration">250</integer>
     <integer name="palette_selected_pulse_duration">125</integer>
     <integer name="info_pane_fade">250</integer>
+    <integer name="action_bar_hide">500</integer>
+    <integer name="action_bar_show">200</integer>
 </resources>

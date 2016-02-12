@@ -136,11 +136,25 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_toggle_info_pane:
-                View info_pane = findViewById(R.id.info_pane);
+                final View info_pane = findViewById(R.id.info_pane);
                 if (info_pane.getVisibility() == View.INVISIBLE) {
-                    info_pane.setVisibility(View.VISIBLE);
+                    info_pane.animate().setDuration(resources.getInteger(R.integer.info_pane_fade)).alpha(1f)
+                            .withStartAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    info_pane.setVisibility(View.VISIBLE);
+                                }
+                            }
+                    ).start();
                 } else {
-                    info_pane.setVisibility(View.INVISIBLE);
+                    info_pane.animate().setDuration(resources.getInteger(R.integer.info_pane_fade)).alpha(0f)
+                            .withEndAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    info_pane.setVisibility(View.INVISIBLE);
+                                }
+                            }
+                    ).start();
                 }
                 return true;
         }

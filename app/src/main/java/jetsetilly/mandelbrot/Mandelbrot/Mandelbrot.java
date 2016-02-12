@@ -55,8 +55,8 @@ public class Mandelbrot {
         info_str = info_str + "xl: " + mandelbrot_settings.real_left + "\n";
         info_str = info_str + "xr: " + mandelbrot_settings.real_right + "\n";
         info_str = info_str + "yl: " + mandelbrot_settings.imaginary_lower + "\n";
-        info_str = info_str + "pixel scale: " + pixel_scale + "\n";
-        info_str = info_str + "max iterations: " + mandelbrot_settings.max_iterations;
+        info_str = info_str + "scale: " + pixel_scale + "\n";
+        info_str = info_str + "iterations: " + mandelbrot_settings.max_iterations;
 
         return info_str;
     }

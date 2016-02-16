@@ -13,10 +13,12 @@ public class MandelbrotSettings {
     public double imaginary_lower;
     public double bailout_value;
     public int max_iterations;
+    public int num_passes;
     public Mandelbrot.RenderMode render_mode;
 
+    private final int DEF_NUM_PASSES = 2; // in lines
+
     MandelbrotSettings() {
-        reset();
     }
 
     public void reset() {
@@ -24,8 +26,8 @@ public class MandelbrotSettings {
         real_right = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_right;
         imaginary_upper = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_upper;
         imaginary_lower = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower;
-        max_iterations = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations;
         bailout_value = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value;
+        max_iterations = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations;
     }
 
     public void save(Context context) {
@@ -41,6 +43,7 @@ public class MandelbrotSettings {
         putDouble(prefs_editor, "bailout_value", (float) bailout_value);
         prefs_editor.putInt("max_iterations", max_iterations);
         prefs_editor.putInt("render_mode", render_mode.ordinal());
+        prefs_editor.putInt("num_passes", num_passes);
 
         // Commit the edits!
         prefs_editor.apply();
@@ -57,6 +60,7 @@ public class MandelbrotSettings {
         bailout_value = getDouble(prefs, "bailout_value", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value);
         max_iterations = prefs.getInt("max_iterations", MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations);
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.CENTRE.ordinal())];
+        num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
     }
 
     /* double width float support for SharedPreferences */

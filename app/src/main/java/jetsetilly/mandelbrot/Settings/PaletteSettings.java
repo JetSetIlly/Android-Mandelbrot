@@ -27,8 +27,6 @@ public class PaletteSettings {
     private int colour_cnt_highest;
 
     public PaletteSettings() {
-        setColours(DEF_PALETTE_ID);
-        resetCount();
     }
 
     /* TODO:
@@ -47,6 +45,7 @@ public class PaletteSettings {
     public void restore(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         setColours(prefs.getInt("palette_id", DEF_PALETTE_ID));
+        resetCount();
     }
 
     public void createSwatches(Context context) {
@@ -95,7 +94,6 @@ public class PaletteSettings {
     }
 
     public int mostFrequentColor() {
-        Log.d(DBG_TAG, "color count " + colour_cnt_highest);
         return selected_palette.colours[colour_cnt_highest];
     }
     /* colour counting */

@@ -14,6 +14,7 @@ import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Widgets.BailoutSlider;
 import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;
 import jetsetilly.mandelbrot.Widgets.IterationsSlider;
+import jetsetilly.mandelbrot.Widgets.NumPassesSlider;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -24,6 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
     private IterationsSlider iterations;
     private BailoutSlider bailout;
     private DoubleTapScaleSlider double_tap;
+    private NumPassesSlider num_passes;
     private RadioGroup render_mode;
     private int reference_render_mode;
 
@@ -44,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
         iterations = (IterationsSlider) findViewById(R.id.iterations);
         bailout = (BailoutSlider) findViewById(R.id.bailout);
         double_tap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
+        num_passes = (NumPassesSlider) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
 
         /* get the values that wer set on the previous screen
@@ -96,6 +99,9 @@ public class SettingsActivity extends AppCompatActivity {
                 // changes to double tap has no effect on rendering
                 double_tap.fixate();
 
+                // changes to num of passes has no effect on rendering
+                num_passes.fixate();
+
                 // save settings
                 MandelbrotSettings.getInstance().save(this);
                 GestureSettings.getInstance().save(this);
@@ -108,6 +114,7 @@ public class SettingsActivity extends AppCompatActivity {
                 iterations.reset();
                 bailout.reset();
                 double_tap.reset();
+                num_passes.reset();
                 return true;
         }
 

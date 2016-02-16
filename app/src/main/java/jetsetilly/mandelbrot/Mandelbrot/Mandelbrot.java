@@ -24,17 +24,12 @@ public class Mandelbrot {
     protected boolean render_completed = false;
 
     protected double pixel_scale;
-    private double fractal_ratio;
 
     /* protected_render_area is used to define that area of the canvas
     that do not need to be rendered again because those pixels (hopefully)
     already appear on the canvas
      */
     protected Rect protected_render_area;
-
-    /* ui related stuff */
-    // TODO: this should be part of MandelbrotSettings
-    public int num_passes = 2; // in lines
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
@@ -61,19 +56,14 @@ public class Mandelbrot {
         return info_str;
     }
 
-    private void calculatePixelScale() {
-        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
-        fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
-        fractal_info.setText(this.toString());
-        Tools.printDebug(DBG_TAG, this.toString());
-    }
 
-    public void correctMandelbrotRange()
+    /*
+    public void correctCoordinates()
     {
         double padding;
         double canvas_ratio = (double) canvas.getWidth() / (double) canvas.getHeight();
 
-        fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
+        double fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
 
         // correct range according to canvas dimensions
         if (fractal_ratio > canvas_ratio) {
@@ -88,12 +78,15 @@ public class Mandelbrot {
             mandelbrot_settings.real_left -= padding / 2;
         }
 
-        calculatePixelScale();
+        // correct pixel scale
+        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
 
+        // save settings
         mandelbrot_settings.save(context);
     }
+    */
 
-    private void scrollAndZoom(double offset_x, double offset_y, double zoom_factor)
+    private void transform(double offset_x, double offset_y, double zoom_factor)
     {
         double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
         double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
@@ -113,7 +106,11 @@ public class Mandelbrot {
         mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
         mandelbrot_settings.imaginary_lower += offset_y * pixel_scale;
 
-        correctMandelbrotRange();
+        // new pixel scale
+        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
+
+        // save settings
+        mandelbrot_settings.save(context);
     }
 
     /* threading */
@@ -136,13 +133,13 @@ public class Mandelbrot {
         figured out.
         */
         stopRender();
-        scrollAndZoom(offset_x, offset_y, zoom_factor);
+        transform(offset_x, offset_y, zoom_factor);
         render_completed = false;
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
         stopRender();
-        scrollAndZoom(offset_x, offset_y, zoom_factor);
+        transform(offset_x, offset_y, zoom_factor);
 
         // initialise protected_render_area
         protected_render_area = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -150,8 +147,8 @@ public class Mandelbrot {
         // make sure render mode etc. is set correctly
         rescaling_render = zoom_factor != 0;
 
+        // define protected_render_area
         if (zoom_factor == 0 && render_completed) {
-            /* define protected_render_area more accurately */
             if (offset_x < 0) {
                 protected_render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
@@ -165,6 +162,11 @@ public class Mandelbrot {
             }
         }
 
+        // display mandelbrot info
+        fractal_info.setText(this.toString());
+        Tools.printDebug(DBG_TAG, this.toString());
+
+        // start render
         MainActivity.progress.startSession();
         render_thr = new MandelbrotThread(this);
         render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

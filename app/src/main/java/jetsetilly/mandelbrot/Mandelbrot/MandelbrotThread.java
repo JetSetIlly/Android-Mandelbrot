@@ -55,9 +55,9 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
         switch (mandelbrot_settings.render_mode) {
             case TOP_DOWN:
             /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
-                for (int pass = 0; pass < m.num_passes; ++pass) {
+                for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
-                    for (cy = pass; cy < m.canvas.getHeight(); cy += m.num_passes, my += (m.pixel_scale * m.num_passes)) {
+                    for (cy = pass; cy < m.canvas.getHeight(); cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
 
                         mx = mandelbrot_settings.real_left;
                         for (cx = 0; cx < m.canvas.getWidth(); ++cx, mx += m.pixel_scale) {
@@ -75,10 +75,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
             case CENTRE:
                 int half_height = m.canvas.getHeight() / 2;
 
-                for (int pass = 0; pass < m.num_passes; ++pass) {
+                for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * m.pixel_scale);
-                    myb = mandelbrot_settings.imaginary_lower + ((half_height - m.num_passes + pass) * m.pixel_scale);
-                    for (cy = pass, cyb = m.num_passes - pass; cy < half_height; cy += m.num_passes, cyb += m.num_passes, my += (m.pixel_scale * m.num_passes), myb -= (m.pixel_scale * m.num_passes)) {
+                    myb = mandelbrot_settings.imaginary_lower + ((half_height - mandelbrot_settings.num_passes + pass) * m.pixel_scale);
+                    for (cy = pass, cyb = mandelbrot_settings.num_passes - pass; cy < half_height; cy += mandelbrot_settings.num_passes, cyb += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes), myb -= (m.pixel_scale * mandelbrot_settings.num_passes)) {
                         int this_line_start;
                         int this_line_end;
                         int y_line;
@@ -135,7 +135,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
 
     @Override
     protected void onProgressUpdate(Integer... pass) {
-        MainActivity.progress.kick(pass[0], m.num_passes, m.rescaling_render);
+        MainActivity.progress.kick(pass[0], mandelbrot_settings.num_passes, m.rescaling_render);
         m.canvas.update();
     }
 

@@ -75,6 +75,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
+             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                android:text="@string/settings_num_passes_label"
+                android:id="@+id/label_num_passes" />
+
+            <view
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                class="jetsetilly.mandelbrot.Widgets.NumPassesSlider"
+                android:id="@+id/num_passes" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="39dp" />
+
             <RadioGroup
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

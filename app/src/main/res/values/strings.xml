@@ -11,6 +11,7 @@
     <string name="settings_max_iterations_label">Maximum Iterations</string>
     <string name="settings_bailout_label">Bailout Value</string>
     <string name="settings_doubletap_label">Double-Tap Scale</string>
+    <string name="settings_num_passes_label">Number of Passes</string>
     <string name="settings_rendermode_label">Render Mode</string>
     <string name="settings_rendermode_topdown">Top/Down</string>
     <string name="settings_rendermode_centre">Centre/Out</string>

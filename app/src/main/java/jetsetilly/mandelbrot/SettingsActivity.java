@@ -95,8 +95,8 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 // change mandelbrot parameters and re-render as appropriate
-                mandelbrot_settings.bailout_value = bailout.getDouble();
-                if (iterations.fixate() ) {
+                if (iterations.fixate() || bailout.hasChanged()) {
+                    mandelbrot_settings.bailout_value = bailout.getDouble();
                     MainActivity.render_canvas.startRender();
                 }
 

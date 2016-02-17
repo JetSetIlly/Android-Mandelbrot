@@ -32,18 +32,19 @@ public class ReportingSeekBar extends LinearLayout {
         this.setOrientation(VERTICAL);
 
         label = new TextView(context);
+        this.addView(label);
+
         value = new TextView(context);
-        slider = new SeekBar(context);
+        value.setGravity(Gravity.END);
+        this.addView(value);
 
         ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
         thumb.setIntrinsicHeight(resources.getDimensionPixelSize(R.dimen.seekbar_thumb_height));
         thumb.setIntrinsicWidth(resources.getDimensionPixelSize(R.dimen.seekbar_thumb_width));
         thumb.getPaint().setColor(resources.getColor(R.color.seekbar_thumb_colour));
-        slider.setThumb(thumb);
 
-        value.setGravity(Gravity.END);
-        this.addView(label);
-        this.addView(value);
+        slider = new SeekBar(context);
+        slider.setThumb(thumb);
         this.addView(slider);
 
         slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -113,12 +114,12 @@ public class ReportingSeekBar extends LinearLayout {
         slider.setProgress(val - base_value);
     }
 
-    public void set(float val) {
+    public void set(double val) {
         slider.setProgress((int) (val * scale) - base_value);
     }
 
-    public void set(double val) {
-        set((float)val);
+    public void set(float val) {
+        set((double)val);
     }
 
     public void reset() {

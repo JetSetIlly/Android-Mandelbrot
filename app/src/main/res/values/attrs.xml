@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ReportingSeekBar">
+        <attr name="label" format="string" />
+        <attr name="value_scale" format="integer" />
+        <attr name="value_min" format="float" />
+        <attr name="value_max" format="float" />
+        <attr name="value_initial" format="float" />
+    </declare-styleable>
+</resources>

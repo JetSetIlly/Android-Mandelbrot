@@ -11,25 +11,23 @@ import android.widget.RadioGroup;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
-import jetsetilly.mandelbrot.Widgets.BailoutSlider;
-import jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider;
-import jetsetilly.mandelbrot.Widgets.IterationsSlider;
-import jetsetilly.mandelbrot.Widgets.NumPassesSlider;
-
+import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
+import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
     public final static String ITERATIONS_VALUE_INTENT = "ITERATIONS_VALUE";
 
-    private IterationsSlider iterations;
-    private BailoutSlider bailout;
-    private DoubleTapScaleSlider double_tap;
-    private NumPassesSlider num_passes;
+    private IterationsSeekBar iterations;
+    private ReportingSeekBar bailout;
+    private ReportingSeekBar double_tap;
+    private ReportingSeekBar num_passes;
     private RadioGroup render_mode;
     private int reference_render_mode;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +41,16 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_24dp);
 
-        iterations = (IterationsSlider) findViewById(R.id.iterations);
-        bailout = (BailoutSlider) findViewById(R.id.bailout);
-        double_tap = (DoubleTapScaleSlider) findViewById(R.id.doubletap);
-        num_passes = (NumPassesSlider) findViewById(R.id.num_passes);
+        iterations = (IterationsSeekBar) findViewById(R.id.iterations);
+        bailout = (ReportingSeekBar) findViewById(R.id.bailout);
+        double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
+        num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
+
+        // set values
+        bailout.set(mandelbrot_settings.bailout_value);
+        double_tap.set(gesture_settings.double_tap_scale);
+        num_passes.set(mandelbrot_settings.num_passes);
 
         /* get the values that wer set on the previous screen
         they've not been committed yet so we've passed them by intent */
@@ -91,16 +94,15 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 }
 
-                // change mandelbrot parameters as appropriate
-                if (iterations.fixate() || bailout.fixate() ) {
+                // change mandelbrot parameters and re-render as appropriate
+                mandelbrot_settings.bailout_value = bailout.getDouble();
+                if (iterations.fixate() ) {
                     MainActivity.render_canvas.startRender();
                 }
 
-                // changes to double tap has no effect on rendering
-                double_tap.fixate();
-
-                // changes to num of passes has no effect on rendering
-                num_passes.fixate();
+                // changes to these settings have no effect on rendering
+                gesture_settings.double_tap_scale = double_tap.getFloat();
+                mandelbrot_settings.num_passes = num_passes.getInteger();
 
                 // save settings
                 MandelbrotSettings.getInstance().save(this);

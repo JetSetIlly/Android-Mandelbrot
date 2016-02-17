@@ -5,14 +5,14 @@ import android.util.AttributeSet;
 
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
-public class IterationsSlider extends ReportingSeekBar {
+public class IterationsSeekBar extends ReportingSeekBar {
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
-    public IterationsSlider(Context context) {
+    public IterationsSeekBar(Context context) {
         this(context, null);
     }
 
-    public IterationsSlider(Context context, AttributeSet attrs) {
+    public IterationsSeekBar(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         set(mandelbrot_settings.max_iterations,

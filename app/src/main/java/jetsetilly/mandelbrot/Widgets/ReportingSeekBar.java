@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.Widgets;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.util.AttributeSet;
@@ -46,9 +47,9 @@ public class ReportingSeekBar extends LinearLayout {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (scale == 1) {
-                    value.setText("" + (slider.getProgress() + base_value));
+                    value.setText(String.format("%d", slider.getProgress() + base_value));
                 } else {
-                    value.setText("" + (double) (slider.getProgress() + base_value) / scale);
+                    value.setText(String.format("%s", (double) (slider.getProgress() + base_value) / scale));
                 }
             }
 
@@ -60,6 +61,18 @@ public class ReportingSeekBar extends LinearLayout {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        // set attributes
+        TypedArray s_attrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ReportingSeekBar, 0, 0);
+        try {
+            final int scale = s_attrs.getInteger(R.styleable.ReportingSeekBar_value_scale, 1);
+            final float min = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_min, 0);
+            final float max = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_max, 100);
+            final float val = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_initial, min);
+            set(val, min, max, scale);
+        } finally {
+            s_attrs.recycle();
+        }
     }
 
     public int getInteger() {
@@ -68,6 +81,10 @@ public class ReportingSeekBar extends LinearLayout {
 
     public double getDouble() {
         return Double.parseDouble(value.getText().toString());
+    }
+
+    public float getFloat() {
+        return Float.parseFloat(value.getText().toString());
     }
 
     public void set(int val, int min, int max) {
@@ -84,6 +101,14 @@ public class ReportingSeekBar extends LinearLayout {
 
     public void set(int val) {
         slider.setProgress(val - base_value);
+    }
+
+    public void set(float val) {
+        slider.setProgress((int)(val * scale) - base_value);
+    }
+
+    public void set(double val) {
+        set((float)val);
     }
 
     public void reset() {

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
@@ -31,10 +33,9 @@
                 android:text="@string/settings_max_iterations_label"
                 android:id="@+id/label_max_iterations" />
 
-            <view
+            <jetsetilly.mandelbrot.Widgets.IterationsSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                class="jetsetilly.mandelbrot.Widgets.IterationsSlider"
                 android:id="@+id/iterations" />
 
             <Space
@@ -48,11 +49,13 @@
                 android:text="@string/settings_bailout_label"
                 android:id="@+id/label_bailout" />
 
-            <view
+            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                class="jetsetilly.mandelbrot.Widgets.BailoutSlider"
-                android:id="@+id/bailout" />
+                android:id="@+id/bailout"
+                app:value_min="0"
+                app:value_max="32"
+                app:value_scale="10"/>
 
             <Space
                 android:layout_width="match_parent"
@@ -65,11 +68,12 @@
                 android:text="@string/settings_doubletap_label"
                 android:id="@+id/label_doubletap" />
 
-            <view
+            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                class="jetsetilly.mandelbrot.Widgets.DoubleTapScaleSlider"
-                android:id="@+id/doubletap" />
+                android:id="@+id/doubletap"
+                app:value_min="1"
+                app:value_max="5" />
 
             <Space
                 android:layout_width="match_parent"
@@ -82,11 +86,12 @@
                 android:text="@string/settings_num_passes_label"
                 android:id="@+id/label_num_passes" />
 
-            <view
+            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                class="jetsetilly.mandelbrot.Widgets.NumPassesSlider"
-                android:id="@+id/num_passes" />
+                android:id="@+id/num_passes"
+                app:value_min="1"
+                app:value_max="4" />
 
             <Space
                 android:layout_width="match_parent"

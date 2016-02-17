@@ -10,10 +10,10 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import jetsetilly.mandelbrot.Widgets.IterationsSlider;
+import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
 
 public class IterationsDialog extends DialogFragment {
-    private IterationsSlider iterations;
+    private IterationsSeekBar iterations;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -48,7 +48,7 @@ public class IterationsDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.dialog_max_iterations, null);
 
-        iterations = (IterationsSlider) view.findViewById(R.id.iterations);
+        iterations = (IterationsSeekBar) view.findViewById(R.id.iterations);
 
         return view;
     }

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotPresets;
+import jetsetilly.mandelbrot.Mandelbrot.Bookmarks;
 
 public class MandelbrotSettings {
     public double real_left;
@@ -22,12 +22,12 @@ public class MandelbrotSettings {
     }
 
     public void reset() {
-        real_left = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_left;
-        real_right = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_right;
-        imaginary_upper = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_upper;
-        imaginary_lower = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower;
-        bailout_value = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value;
-        max_iterations = MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations;
+        real_left = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left;
+        real_right = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_right;
+        imaginary_upper = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_upper;
+        imaginary_lower = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_lower;
+        bailout_value = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].bailout_value;
+        max_iterations = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].max_iterations;
     }
 
     public void save(Context context) {
@@ -53,12 +53,12 @@ public class MandelbrotSettings {
         // set interface to reflect stored values
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
 
-        real_left = getDouble(prefs, "real_left", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_left);
-        real_right = getDouble(prefs, "real_right", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].real_right);
-        imaginary_upper = getDouble(prefs, "imaginary_upper", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_upper);
-        imaginary_lower = getDouble(prefs, "imaginary_lower", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].imaginary_lower);
-        bailout_value = getDouble(prefs, "bailout_value", (float) MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].bailout_value);
-        max_iterations = prefs.getInt("max_iterations", MandelbrotPresets.presets[MandelbrotPresets.DEFAULT_SETTINGS].max_iterations);
+        real_left = getDouble(prefs, "real_left", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left);
+        real_right = getDouble(prefs, "real_right", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_right);
+        imaginary_upper = getDouble(prefs, "imaginary_upper", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_upper);
+        imaginary_lower = getDouble(prefs, "imaginary_lower", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_lower);
+        bailout_value = getDouble(prefs, "bailout_value", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].bailout_value);
+        max_iterations = prefs.getInt("max_iterations", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].max_iterations);
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.CENTRE.ordinal())];
         num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
     }

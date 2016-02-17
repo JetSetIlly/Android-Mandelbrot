@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="bailout_min">1</integer>
+    <integer name="bailout_max">32</integer>
+    <integer name="doubletap_min">1</integer>
+    <integer name="doubletap_max">5</integer>
+    <integer name="num_passes_min">1</integer>
+    <integer name="num_passes_max">4</integer>
+</resources>

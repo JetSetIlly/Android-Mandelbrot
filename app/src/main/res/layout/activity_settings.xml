@@ -26,72 +26,52 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="@string/settings_max_iterations_label"
-                android:id="@+id/label_max_iterations" />
-
             <jetsetilly.mandelbrot.Widgets.IterationsSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/iterations" />
+                android:id="@+id/iterations"
+                app:label="@string/settings_max_iterations_label"
+                app:label_appearance="?android:attr/textAppearanceListItemSmall" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="@string/settings_bailout_label"
-                android:id="@+id/label_bailout" />
-
             <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/bailout"
-                app:value_min="0"
-                app:value_max="32"
+                app:label="@string/settings_bailout_label"
+                app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                app:value_min="@integer/bailout_min"
+                app:value_max="@integer/bailout_max"
                 app:value_scale="10"/>
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="@string/settings_doubletap_label"
-                android:id="@+id/label_doubletap" />
-
             <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/doubletap"
-                app:value_min="1"
-                app:value_max="5" />
+                app:label="@string/settings_doubletap_label"
+                app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                app:value_min="@integer/doubletap_min"
+                app:value_max="@integer/doubletap_max" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                android:text="@string/settings_num_passes_label"
-                android:id="@+id/label_num_passes" />
-
             <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/num_passes"
-                app:value_min="1"
-                app:value_max="4" />
+                app:label="@string/settings_num_passes_label"
+                app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                app:value_min="@integer/num_passes_min"
+                app:value_max="@integer/num_passes_max" />
 
             <Space
                 android:layout_width="match_parent"

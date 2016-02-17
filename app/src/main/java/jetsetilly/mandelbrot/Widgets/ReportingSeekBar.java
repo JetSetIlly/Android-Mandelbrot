@@ -14,6 +14,7 @@ import android.widget.TextView;
 import jetsetilly.mandelbrot.R;
 
 public class ReportingSeekBar extends LinearLayout {
+    private final TextView label;
     private final TextView value;
     private final SeekBar slider;
 
@@ -30,6 +31,7 @@ public class ReportingSeekBar extends LinearLayout {
         Resources resources = context.getResources();
         this.setOrientation(VERTICAL);
 
+        label = new TextView(context);
         value = new TextView(context);
         slider = new SeekBar(context);
 
@@ -40,6 +42,7 @@ public class ReportingSeekBar extends LinearLayout {
         slider.setThumb(thumb);
 
         value.setGravity(Gravity.END);
+        this.addView(label);
         this.addView(value);
         this.addView(slider);
 
@@ -65,6 +68,13 @@ public class ReportingSeekBar extends LinearLayout {
         // set attributes
         TypedArray s_attrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ReportingSeekBar, 0, 0);
         try {
+            label.setText(s_attrs.getString(R.styleable.ReportingSeekBar_label));
+            if (label.getText() == "") {
+                label.setVisibility(GONE);
+            } else {
+                label.setTextAppearance(context, s_attrs.getResourceId(R.styleable.ReportingSeekBar_label_appearance, 0));
+            }
+
             final int scale = s_attrs.getInteger(R.styleable.ReportingSeekBar_value_scale, 1);
             final float min = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_min, 0);
             final float max = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_max, 100);
@@ -104,7 +114,7 @@ public class ReportingSeekBar extends LinearLayout {
     }
 
     public void set(float val) {
-        slider.setProgress((int)(val * scale) - base_value);
+        slider.setProgress((int) (val * scale) - base_value);
     }
 
     public void set(double val) {

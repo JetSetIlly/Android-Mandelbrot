@@ -2,6 +2,7 @@
 <resources>
     <declare-styleable name="ReportingSeekBar">
         <attr name="label" format="string" />
+        <attr name="label_appearance" format="reference" />
         <attr name="value_scale" format="integer" />
         <attr name="value_min" format="float" />
         <attr name="value_max" format="float" />

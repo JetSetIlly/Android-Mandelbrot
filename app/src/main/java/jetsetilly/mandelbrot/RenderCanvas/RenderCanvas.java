@@ -234,7 +234,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // update offsets ready for the new render
         updateOffsets(offset_x, offset_y);
 
-        // update scaling
+        // update zoom rate
         zoom_rate = (scale - 1) / (2 * scale);
 
         // generate final zoomed image

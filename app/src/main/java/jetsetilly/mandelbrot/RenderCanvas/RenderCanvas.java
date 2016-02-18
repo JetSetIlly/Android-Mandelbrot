@@ -235,7 +235,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         updateOffsets(offset_x, offset_y);
 
         // update scaling
-        zoom_rate = 1 / scale;
+        zoom_rate = (scale - 1) / (2 * scale);
 
         // generate final zoomed image
         final Bitmap zoomed_bm = getScaledImage();
@@ -357,5 +357,4 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
     /* end of canvas transformations */
 }
-
 

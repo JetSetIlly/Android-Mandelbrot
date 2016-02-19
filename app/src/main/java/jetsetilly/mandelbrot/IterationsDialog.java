@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
 
 public class IterationsDialog extends DialogFragment {
@@ -22,13 +23,14 @@ public class IterationsDialog extends DialogFragment {
         builder.setTitle(R.string.settings_max_iterations_label);
         builder.setView(createView());
 
-        builder.setPositiveButton(R.string.dialog_max_iteration_ok, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_max_iterations_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                if (iterations.fixate()) {
+                if (iterations.hasChanged()) {
+                    MandelbrotSettings.getInstance().max_iterations = iterations.getInteger();
                     MainActivity.render_canvas.startRender();
                 }
             }
-        }).setNeutralButton(R.string.dialog_max_iteration_more, new DialogInterface.OnClickListener() {
+        }).setNeutralButton(R.string.dialog_max_iterations_more, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Activity curr_activity = getActivity();
 
@@ -38,7 +40,7 @@ public class IterationsDialog extends DialogFragment {
                 startActivity(settings_intent);
                 curr_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
             }
-        }).setNegativeButton(R.string.dialog_max_iteration_cancel, null);
+        }).setNegativeButton(R.string.dialog_max_iterations_cancel, null);
 
         // Create the AlertDialog object and return it
         return builder.create();

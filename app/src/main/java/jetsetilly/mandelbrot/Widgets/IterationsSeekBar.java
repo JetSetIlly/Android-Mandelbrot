@@ -20,14 +20,4 @@ public class IterationsSeekBar extends ReportingSeekBar {
                 (int) (mandelbrot_settings.max_iterations * 1.5)
         );
     }
-
-    public boolean fixate() {
-        // copy selected value to mandelbrot_settings.max_iterations
-        //
-        // return true if value has changed
-        //      false if value has not changed
-
-        mandelbrot_settings.max_iterations = this.getInteger();
-        return hasChanged();
-    }
 }

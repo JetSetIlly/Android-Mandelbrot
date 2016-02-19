@@ -13,6 +13,10 @@ public class Mandelbrot {
     final static public String DBG_TAG = "mandelbrot";
 
     public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
+    public enum IterationsRate {SLOW, NORMAL, FAST}
+
+    // with the current algorithm, this value is the value of the fastest IterationsRate
+    private final int iterations_rate_base = 5;
 
     private final Context context;
     protected final MandelbrotCanvas canvas;
@@ -56,7 +60,6 @@ public class Mandelbrot {
         return info_str;
     }
 
-
     /*
     public void correctCoordinates()
     {
@@ -97,7 +100,8 @@ public class Mandelbrot {
             mandelbrot_settings.real_right -= zoom_factor * fractal_width;
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
-            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / 3);
+
+            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / ( iterations_rate_base - mandelbrot_settings.iterations_rate.ordinal()));
         }
 
         // scroll

@@ -11,6 +11,7 @@ import android.widget.RadioGroup;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
+import jetsetilly.mandelbrot.Widgets.IterationsRateSeekBar;
 import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
 import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
@@ -20,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     public final static String ITERATIONS_VALUE_INTENT = "ITERATIONS_VALUE";
 
     private IterationsSeekBar iterations;
+    private IterationsRateSeekBar iterations_rate;
     private ReportingSeekBar bailout;
     private ReportingSeekBar double_tap;
     private ReportingSeekBar num_passes;
@@ -42,6 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_24dp);
 
         iterations = (IterationsSeekBar) findViewById(R.id.iterations);
+        iterations_rate = (IterationsRateSeekBar) findViewById(R.id.iterations_rate);
         bailout = (ReportingSeekBar) findViewById(R.id.bailout);
         double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
@@ -95,7 +98,8 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 // change mandelbrot parameters and re-render as appropriate
-                if (iterations.fixate() || bailout.hasChanged()) {
+                if (iterations.hasChanged() || bailout.hasChanged()) {
+                    mandelbrot_settings.max_iterations = iterations.getInteger();
                     mandelbrot_settings.bailout_value = bailout.getDouble();
                     MainActivity.render_canvas.startRender();
                 }
@@ -103,6 +107,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // changes to these settings have no effect on rendering
                 gesture_settings.double_tap_scale = double_tap.getFloat();
                 mandelbrot_settings.num_passes = num_passes.getInteger();
+                mandelbrot_settings.iterations_rate = Mandelbrot.IterationsRate.values()[iterations_rate.getProgress()];
 
                 // save settings
                 MandelbrotSettings.getInstance().save(this);

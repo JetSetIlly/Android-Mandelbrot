@@ -37,6 +37,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
+            <jetsetilly.mandelbrot.Widgets.IterationsRateSeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/iterations_rate"
+                app:label="@string/settings_iterations_rate_label"
+                app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                app:thumb_size="@dimen/seekbar_thumb_width_wide" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="39dp" />
+
             <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

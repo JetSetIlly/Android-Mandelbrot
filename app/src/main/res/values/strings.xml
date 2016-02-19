@@ -9,6 +9,7 @@
     <string name="action_toggle_info_pane">Toggle Info Pane</string>
 
     <string name="settings_max_iterations_label">Maximum Iterations</string>
+    <string name="settings_iterations_rate_label">Iterations (rate of increase)</string>
     <string name="settings_bailout_label">Bailout Value</string>
     <string name="settings_doubletap_label">Double-Tap Scale</string>
     <string name="settings_num_passes_label">Number of Passes</string>
@@ -18,10 +19,16 @@
     <string name="settings_parallel_render">Parallel Render (experimental)</string>
     <string name="settings_action_reset">Reset</string>
 
+    <string name="settings_iterations_rate_fast">Fast</string>
+    <string name="settings_iterations_rate_normal">Normal</string>
+    <string name="settings_iterations_rate_slow">Slow</string>
+
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
 
-    <string name="dialog_max_iteration_ok">Done</string>
-    <string name="dialog_max_iteration_more">More Settings</string>
-    <string name="dialog_max_iteration_cancel">Cancel</string>
+    <string name="dialog_max_iterations_ok">Done</string>
+    <string name="dialog_max_iterations_more">More Settings</string>
+    <string name="dialog_max_iterations_cancel">Cancel</string>
+
+    <string name="error_ui_alert">* ERROR *</string>
 </resources>

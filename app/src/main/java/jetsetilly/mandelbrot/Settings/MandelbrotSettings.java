@@ -13,6 +13,7 @@ public class MandelbrotSettings {
     public double imaginary_lower;
     public double bailout_value;
     public int max_iterations;
+    public Mandelbrot.IterationsRate iterations_rate;
     public int num_passes;
     public Mandelbrot.RenderMode render_mode;
 
@@ -42,6 +43,7 @@ public class MandelbrotSettings {
         putDouble(prefs_editor, "imaginary_lower", (float) imaginary_lower);
         putDouble(prefs_editor, "bailout_value", (float) bailout_value);
         prefs_editor.putInt("max_iterations", max_iterations);
+        prefs_editor.putInt("iterations_rate", iterations_rate.ordinal());
         prefs_editor.putInt("render_mode", render_mode.ordinal());
         prefs_editor.putInt("num_passes", num_passes);
 
@@ -59,6 +61,7 @@ public class MandelbrotSettings {
         imaginary_lower = getDouble(prefs, "imaginary_lower", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_lower);
         bailout_value = getDouble(prefs, "bailout_value", (float) Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].bailout_value);
         max_iterations = prefs.getInt("max_iterations", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].max_iterations);
+        iterations_rate = Mandelbrot.IterationsRate.values()[prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL.ordinal())];
         render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.CENTRE.ordinal())];
         num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
     }

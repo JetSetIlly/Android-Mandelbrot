@@ -1,13 +1,21 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -34,7 +42,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // the idiosyncratic ways to do this is setImageBitmap(display_bm = bm)
     // I considered overloading the setImageBitmap() method but that's too clumsy
     // a solution IMO
-    public Bitmap display_bm;
+    private Bitmap display_bm;
 
     // render_bm is sometimes equal to display_bm sometimes not.
     // 1. on startRender() the current  display_bm is used to copy into the new render_bm by the
@@ -355,6 +363,37 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         return zoomed_bm;
     }
-    /* end of canvas transformations */
+
+    public boolean saveImage() {
+        long curr_time = System.currentTimeMillis();
+
+        String title = String.format("%s_%s.jpeg", getContext().getString(R.string.app_name), new SimpleDateFormat("yyyymmdd_hhmmss", Locale.ENGLISH).format(curr_time));
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, getContext().getString(R.string.app_name));
+        values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, curr_time);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+        ContentResolver cr = getContext().getContentResolver();
+        Uri url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        // TODO: album in pictures folder
+
+        try {
+            url = cr.insert(url, values);
+            OutputStream output_stream = cr.openOutputStream(url);
+            this.display_bm.compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
+        } catch (Exception e) {
+            if (url != null) {
+                cr.delete(url, null, null);
+            }
+
+            return false;
+        }
+
+        return true;
+    }   /* end of canvas transformations */
 }
 

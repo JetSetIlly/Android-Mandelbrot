@@ -64,6 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void setValues() {
         // set values
         iterations.set(initial_iterations_value);
+        iterations_rate.reset();
         bailout.set(mandelbrot_settings.bailout_value);
         double_tap.set(gesture_settings.double_tap_scale);
         num_passes.set(mandelbrot_settings.num_passes);

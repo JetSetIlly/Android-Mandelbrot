@@ -16,7 +16,10 @@ public class IterationsRateSeekBar extends ReportingSeekBar {
 
     public IterationsRateSeekBar(Context context, AttributeSet attrs) {
         super(context, attrs);
+        reset();
+    }
 
+    public void reset() {
         set(mandelbrot_settings.iterations_rate.ordinal(), 0, Mandelbrot.IterationsRate.values().length-1);
     }
 

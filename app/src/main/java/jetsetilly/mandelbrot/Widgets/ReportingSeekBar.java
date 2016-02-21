@@ -140,10 +140,6 @@ public class ReportingSeekBar extends LinearLayout {
         set((double) val);
     }
 
-    public void reset() {
-        slider.setProgress(start_value - base_value);
-    }
-
     public boolean hasChanged() {
         return start_progress != this.getProgress();
     }

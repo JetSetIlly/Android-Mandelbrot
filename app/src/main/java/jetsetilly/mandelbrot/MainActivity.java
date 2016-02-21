@@ -1,15 +1,20 @@
 package jetsetilly.mandelbrot;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,10 +51,21 @@ public class MainActivity extends AppCompatActivity {
 
     public MandelbrotActionBar action_bar;
 
+    // handler for dialogs
+    private DialogReceiver dialog_receiver;
+
+    private AppCompatActivity this_activity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // maintain un-shadow-able reference to this
+        this_activity = this;
+
+        // resources
         resources = getResources();
+
         setContentView(R.layout.activity_main);
 
         // lock orientation to portrait mode
@@ -78,17 +94,22 @@ public class MainActivity extends AppCompatActivity {
                 render_canvas.initPostLayout();
             }
         });
+
+        // create new DialogReceiver
+        dialog_receiver = new DialogReceiver();
     }
 
     @Override
     protected void onPause() {
         // TODO: universal setting to allow background rendering
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(dialog_receiver);
     }
 
     protected void onResume() {
         action_bar.show_noanim();
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(dialog_receiver, new IntentFilter(IterationsDialog.ITERATIONS_DIALOG_INTENT));
     }
 
     @Override
@@ -164,12 +185,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int request_code, int result_code, Intent intent) {
-        if (intent == null)
-            return;
-
         switch(request_code) {
             case PALETTE_ACTIVITY_ID:
                 if (result_code == PaletteActivity.ACTIVITY_RESULT_CHANGE) {
+                    if (intent == null)
+                        return;
+
                     int palette_id = intent.getIntExtra(PaletteActivity.ACTIVITY_RESULT_PALETTE_ID, -1);
                     if (palette_id >= 0) {
                         render_canvas.stopRender();
@@ -184,6 +205,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case SETTINGS_ACTIVITY_ID:
+                if (result_code == SettingsActivity.ACTIVITY_RESULT_CHANGE) {
+                    // note that settings have been changed in the settings activity
+                    // save settings and restart render
+                    // TODO: return bundled changes in the intent
+                    MandelbrotSettings.getInstance().save(this);
+                    GestureSettings.getInstance().save(this);
+                    render_canvas.startRender();
+                }
                 break;
         }
     }
@@ -218,5 +247,38 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private class DialogReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || intent.getAction() == null) {
+                return;
+            }
+
+            if (intent.getAction().equals(IterationsDialog.ITERATIONS_DIALOG_INTENT)) {
+                MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+                switch(intent.getStringExtra(IterationsDialog.INTENT_ACTION)) {
+                    case IterationsDialog.ACTION_SET:
+                        int max_iterations = intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations);
+                        if (max_iterations != mandelbrot_settings.max_iterations) {
+                            mandelbrot_settings.max_iterations = max_iterations;
+                            MainActivity.render_canvas.startRender();
+                        }
+                        break;
+
+                    case IterationsDialog.ACTION_MORE:
+                        Intent settings_intent = new Intent(this_activity, SettingsActivity.class);
+                        settings_intent.putExtra(SettingsActivity.INITIAL_ITERATIONS_VALUE, intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations));
+                        startActivityForResult(settings_intent, SETTINGS_ACTIVITY_ID);
+                        this_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+                        break;
+
+                    default:
+                        Log.wtf(DBG_TAG, "unknown intent in dialog receiver");
+                        break;
+                }
+            }
+        }
     }
 }

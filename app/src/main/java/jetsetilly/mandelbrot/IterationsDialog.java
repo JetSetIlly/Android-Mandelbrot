@@ -6,15 +6,21 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
 
 public class IterationsDialog extends DialogFragment {
     private IterationsSeekBar iterations;
+
+    public static final String ITERATIONS_DIALOG_INTENT = "ITERATIONS_DIALOG";
+    public static final String INTENT_ACTION = "ITERATIONS_DIALOG_SET";
+    public static final String ACTION_SET = "ITERATIONS_DIALOG_SET";
+    public static final String ACTION_MORE = "ITERATIONS_DIALOG_MORE";
+    public static final String SET_VALUE = "SET_ITERATIONS_VALUE";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -26,19 +32,18 @@ public class IterationsDialog extends DialogFragment {
         builder.setPositiveButton(R.string.dialog_max_iterations_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (iterations.hasChanged()) {
-                    MandelbrotSettings.getInstance().max_iterations = iterations.getInteger();
-                    MainActivity.render_canvas.startRender();
+                    Intent intent = new Intent(ITERATIONS_DIALOG_INTENT);
+                    intent.putExtra(INTENT_ACTION, ACTION_SET);
+                    intent.putExtra(SET_VALUE, iterations.getInteger());
+                    LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                 }
             }
         }).setNeutralButton(R.string.dialog_max_iterations_more, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Activity curr_activity = getActivity();
-
-                Intent settings_intent = new Intent(curr_activity, SettingsActivity.class);
-                settings_intent.putExtra(SettingsActivity.ITERATIONS_VALUE_INTENT, iterations.getInteger());
-
-                startActivity(settings_intent);
-                curr_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+                Intent intent = new Intent(ITERATIONS_DIALOG_INTENT);
+                intent.putExtra(INTENT_ACTION, ACTION_MORE);
+                intent.putExtra(SET_VALUE, iterations.getInteger());
+                LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
             }
         }).setNegativeButton(R.string.dialog_max_iterations_cancel, null);
 

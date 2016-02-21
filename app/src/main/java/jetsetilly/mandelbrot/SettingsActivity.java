@@ -18,7 +18,9 @@ import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
-    public final static String ITERATIONS_VALUE_INTENT = "ITERATIONS_VALUE";
+    public final static String INITIAL_ITERATIONS_VALUE = "INITIAL_ITERATIONS_VALUE";
+    public static final Integer ACTIVITY_RESULT_NO_CHANGE = 1;
+    public static final Integer ACTIVITY_RESULT_CHANGE = 2;
 
     private IterationsSeekBar iterations;
     private IterationsRateSeekBar iterations_rate;
@@ -30,6 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
+
+    private int initial_iterations_value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,16 +54,19 @@ public class SettingsActivity extends AppCompatActivity {
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
 
+        // get the max_iterations as passed by intent
+        Intent settings_intent = getIntent();
+        initial_iterations_value = settings_intent.getIntExtra(INITIAL_ITERATIONS_VALUE, mandelbrot_settings.max_iterations);
+
+        setValues();
+    }
+
+    private void setValues() {
         // set values
+        iterations.set(initial_iterations_value);
         bailout.set(mandelbrot_settings.bailout_value);
         double_tap.set(gesture_settings.double_tap_scale);
         num_passes.set(mandelbrot_settings.num_passes);
-
-        /* get the values that wer set on the previous screen
-        they've not been committed yet so we've passed them by intent */
-        Intent settings_intent = getIntent();
-        int iterations_value = settings_intent.getIntExtra(ITERATIONS_VALUE_INTENT, -1);
-        iterations.set(iterations_value);
 
         // set render mode radio button
         if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.TOP_DOWN) {
@@ -81,6 +88,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                // return ACTIVITY_RESULT_NO_CHANGE by default, return ACTIVITY_RESULT_CHANGE under
+                // specific circumstances (see below)
+                setResult(ACTIVITY_RESULT_NO_CHANGE);
+
                 int new_render_mode = render_mode.getCheckedRadioButtonId();
 
                 // check for new render mode
@@ -101,7 +112,7 @@ public class SettingsActivity extends AppCompatActivity {
                 if (iterations.hasChanged() || bailout.hasChanged()) {
                     mandelbrot_settings.max_iterations = iterations.getInteger();
                     mandelbrot_settings.bailout_value = bailout.getDouble();
-                    MainActivity.render_canvas.startRender();
+                    setResult(ACTIVITY_RESULT_CHANGE);
                 }
 
                 // changes to these settings have no effect on rendering
@@ -109,19 +120,12 @@ public class SettingsActivity extends AppCompatActivity {
                 mandelbrot_settings.num_passes = num_passes.getInteger();
                 mandelbrot_settings.iterations_rate = Mandelbrot.IterationsRate.values()[iterations_rate.getProgress()];
 
-                // save settings
-                MandelbrotSettings.getInstance().save(this);
-                GestureSettings.getInstance().save(this);
-
                 finish();
                 setTransitionAnim();
                 return true;
 
             case R.id.settings_action_reset:
-                iterations.reset();
-                bailout.reset();
-                double_tap.reset();
-                num_passes.reset();
+                setValues();
                 return true;
         }
 

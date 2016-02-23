@@ -122,6 +122,44 @@
                     android:id="@+id/rendermode_centre" />
 
             </RadioGroup>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="39dp" />
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/orientation">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                    android:text="@string/settings_orientation_label"
+                    android:id="@+id/label_orientation" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="15dp" />
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_orientation_portrait"
+                    android:id="@+id/orientation_portrait" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_orientation_sensor"
+                    android:id="@+id/orientation_sensor" />
+
+            </RadioGroup>
+
 
         </LinearLayout>
     </ScrollView>

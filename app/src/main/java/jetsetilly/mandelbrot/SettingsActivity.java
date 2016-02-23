@@ -12,6 +12,7 @@ import android.widget.RadioGroup;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
+import jetsetilly.mandelbrot.Settings.SystemSettings;
 import jetsetilly.mandelbrot.Widgets.IterationsRateSeekBar;
 import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
 import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
@@ -29,10 +30,12 @@ public class SettingsActivity extends AppCompatActivity {
     private ReportingSeekBar double_tap;
     private ReportingSeekBar num_passes;
     private RadioGroup render_mode;
+    private RadioGroup orientation;
     private int reference_render_mode;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
+    private final SystemSettings system_settings = SystemSettings.getInstance();
 
     private int initial_iterations_value;
 
@@ -54,6 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
         double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
+        orientation = (RadioGroup) findViewById(R.id.orientation);
 
         // get the max_iterations as passed by intent
         Intent settings_intent = getIntent();
@@ -77,6 +81,13 @@ public class SettingsActivity extends AppCompatActivity {
             render_mode.check(R.id.rendermode_centre);
         }
 
+        // set screen orientation radio button
+        if (system_settings.allow_screen_rotation) {
+            orientation.check(R.id.orientation_sensor);
+        } else {
+            orientation.check(R.id.orientation_portrait);
+        }
+
         // render mode selected at start of activity -- if this changes then
         // we'll stop the current rendering process
         reference_render_mode = render_mode.getCheckedRadioButtonId();
@@ -94,20 +105,23 @@ public class SettingsActivity extends AppCompatActivity {
                 // specific circumstances (see below)
                 setResult(ACTIVITY_RESULT_NO_CHANGE);
 
-                int new_render_mode = render_mode.getCheckedRadioButtonId();
+                switch (render_mode.getCheckedRadioButtonId()) {
+                    case R.id.rendermode_topdown:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
+                        break;
+                    case R.id.rendermode_centre:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
+                        break;
+                }
 
-                // check for new render mode
-                if (new_render_mode != reference_render_mode) {
-                    MainActivity.render_canvas.stopRender();
+                switch(orientation.getCheckedRadioButtonId()) {
+                    case R.id.orientation_portrait:
+                        system_settings.allow_screen_rotation = false;
+                        break;
 
-                    switch (new_render_mode) {
-                        case R.id.rendermode_topdown:
-                            mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
-                            break;
-                        case R.id.rendermode_centre:
-                            mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
-                            break;
-                    }
+                    case R.id.orientation_sensor:
+                        system_settings.allow_screen_rotation = true;
+                        break;
                 }
 
                 // change mandelbrot parameters and re-render as appropriate

@@ -3,12 +3,15 @@ package jetsetilly.mandelbrot.RenderCanvas;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -104,7 +107,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private void clearImage() {
-        Bitmap clear_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         clear_bm.eraseColor(palette_settings.mostFrequentColor());
         setImageBitmap(display_bm = clear_bm);
     }
@@ -130,6 +133,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             main_activity.action_bar.setVisibility(true);
         }
     }
+
 
     /* MandelbrotCanvas implementation */
     public void startDraw(Mandelbrot.RenderMode render_mode) {
@@ -172,8 +176,17 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setBackgroundColor(palette_settings.mostFrequentColor());
     }
 
-    /* using ImageView implementations getWidth() and getHeight() */
+    public int getCanvasWidth() {
+        return getWidth();
+    }
 
+    public int getCanvasHeight() {
+        return getHeight();
+    }
+
+    public boolean isPortraitCanvaVs() {
+        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+    }
     /* end of MandelbrotCanvas implementation */
 
 
@@ -181,7 +194,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void startRender() {
         stopRender();
 
-        render_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        render_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         Canvas render_canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
@@ -282,7 +295,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         // calculate zoom_rate
-        zoom_rate += amount / Math.hypot(getWidth(), getHeight());
+        zoom_rate += amount / Math.hypot(getCanvasWidth(), getCanvasHeight());
 
         // limit zoom_rate between max in/out ranges
         zoom_rate = Math.max(gesture_settings.max_pinch_zoom_out,
@@ -306,7 +319,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
          */
         stopRender();
 
-        Bitmap correction_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap correction_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         Canvas render_canvas = new Canvas(correction_bm);
 
         // fill colour to first colour in current colours
@@ -341,21 +354,21 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // without losing definition
 
         // do offset
-        offset_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         offset_canvas = new Canvas(offset_bm);
         offset_canvas.drawColor(palette_settings.mostFrequentColor());
         offset_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
 
         // do zoom
-        new_left = zoom_rate * getWidth();
-        new_right = getWidth() - new_left;
-        new_top = zoom_rate * getHeight();
-        new_bottom = getHeight() - new_top;
+        new_left = zoom_rate * getCanvasWidth();
+        new_right = getCanvasWidth() - new_left;
+        new_top = zoom_rate * getCanvasHeight();
+        new_bottom = getCanvasHeight() - new_top;
 
-        zoomed_bm = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        zoomed_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         zoom_canvas = new Canvas(zoomed_bm);
 
-        blit_to = new Rect(0, 0, getWidth(), getHeight());
+        blit_to = new Rect(0, 0, getCanvasWidth(), getCanvasHeight());
         blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
         zoom_canvas.drawColor(palette_settings.mostFrequentColor());

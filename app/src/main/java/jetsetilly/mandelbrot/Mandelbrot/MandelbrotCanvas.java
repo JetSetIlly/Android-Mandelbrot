@@ -7,6 +7,6 @@ public interface MandelbrotCanvas {
     void endDraw();
     void cancelDraw();
 
-    int getWidth();
-    int getHeight();
+    int getCanvasWidth();
+    int getCanvasHeight();
 }

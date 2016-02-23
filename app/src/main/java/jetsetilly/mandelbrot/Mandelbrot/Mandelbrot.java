@@ -60,34 +60,33 @@ public class Mandelbrot {
         return info_str;
     }
 
-    /*
-    public void correctCoordinates()
+    private void correct()
     {
-        double padding;
-        double canvas_ratio = (double) canvas.getWidth() / (double) canvas.getHeight();
+        // makes sure the pixel_scale is square when spanning the real and imaginary coordinates
+        // particularly useful if screen dimensions change, which it does if screen is rotated.
 
+        double canvas_ratio = (double) canvas.getCanvasWidth() / (double) canvas.getCanvasHeight();
         double fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
 
         // correct range according to canvas dimensions
         if (fractal_ratio > canvas_ratio) {
             // canvas is taller than fractal - expand fractal vertically
-            padding = ((mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas_ratio) - (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
+            double padding = ((mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas_ratio) - (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
             mandelbrot_settings.imaginary_upper += padding / 2;
             mandelbrot_settings.imaginary_lower -= padding / 2;
         } else if (fractal_ratio < canvas_ratio) {
             // canvas is wider than fractal - expand fractal horizontally
-            padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
+            double padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
             mandelbrot_settings.real_right += padding / 2;
             mandelbrot_settings.real_left -= padding / 2;
         }
 
         // correct pixel scale
-        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
+        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasWidth();
 
         // save settings
         mandelbrot_settings.save(context);
     }
-    */
 
     private void transform(double offset_x, double offset_y, double zoom_factor)
     {
@@ -110,11 +109,7 @@ public class Mandelbrot {
         mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
         mandelbrot_settings.imaginary_lower += offset_y * pixel_scale;
 
-        // new pixel scale
-        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getWidth();
-
-        // save settings
-        mandelbrot_settings.save(context);
+        correct();
     }
 
     /* threading */
@@ -146,7 +141,7 @@ public class Mandelbrot {
         transform(offset_x, offset_y, zoom_factor);
 
         // initialise protected_render_area
-        protected_render_area = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
+        protected_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
         // make sure render mode etc. is set correctly
         rescaling_render = zoom_factor != 0;
@@ -156,13 +151,13 @@ public class Mandelbrot {
             if (offset_x < 0) {
                 protected_render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
-                protected_render_area.left = canvas.getWidth() - (int) offset_x;
+                protected_render_area.left = canvas.getCanvasWidth() - (int) offset_x;
             }
 
             if (offset_y < 0) {
                 protected_render_area.top = (int) -offset_y;
             } else if (offset_y > 0) {
-                protected_render_area.bottom = canvas.getHeight() - (int) offset_y;
+                protected_render_area.bottom = canvas.getCanvasHeight() - (int) offset_y;
             }
         }
 

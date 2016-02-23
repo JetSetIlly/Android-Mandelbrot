@@ -25,10 +25,10 @@ public class BufferPixels implements Buffer {
 
     public BufferPixels(RenderCanvas canvas) {
         render_canvas = canvas;
-        width = canvas.getWidth();
-        height = canvas.getHeight();
+        width = canvas.getCanvasWidth();
+        height = canvas.getCanvasHeight();
 
-        pixels = new int[canvas.getHeight() * width];
+        pixels = new int[canvas.getCanvasHeight() * width];
         pixel_ct = 0;
 
         palette_frequency = new int[

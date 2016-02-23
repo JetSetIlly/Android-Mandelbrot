@@ -57,10 +57,10 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
             /* TODO: rewrite TOP_DOWN so that it uses ignore_x_start/end and canvas_imag_start_end instead of canvas_height/width directly */
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
-                    for (cy = pass; cy < m.canvas.getHeight(); cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
+                    for (cy = pass; cy < m.canvas.getCanvasHeight(); cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
 
                         mx = mandelbrot_settings.real_left;
-                        for (cx = 0; cx < m.canvas.getWidth(); ++cx, mx += m.pixel_scale) {
+                        for (cx = 0; cx < m.canvas.getCanvasWidth(); ++cx, mx += m.pixel_scale) {
                             m.canvas.drawPoint(cx, cy, doIterations(mx, my));
                         }
 
@@ -73,7 +73,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                 break;
 
             case CENTRE:
-                int half_height = m.canvas.getHeight() / 2;
+                int half_height = m.canvas.getCanvasHeight() / 2;
 
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * m.pixel_scale);
@@ -92,7 +92,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                             this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
-                            this_line_end = m.canvas.getWidth();
+                            this_line_end = m.canvas.getCanvasWidth();
                         }
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
@@ -111,7 +111,7 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                             this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
-                            this_line_end = m.canvas.getWidth();
+                            this_line_end = m.canvas.getCanvasWidth();
                         }
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {

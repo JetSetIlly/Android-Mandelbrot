@@ -19,6 +19,7 @@ import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.SystemSettings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // lock orientation to portrait mode
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // set up actionbar
         action_bar = (MandelbrotActionBar) findViewById(R.id.toolbar);
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         MandelbrotSettings.getInstance().restore(this);
         PaletteSettings.getInstance().restore(this);
         GestureSettings.getInstance().restore(this);
+        SystemSettings.getInstance().restore(this);
 
         // generate swatches for palettes
         PaletteSettings.getInstance().createSwatches(this);
@@ -88,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
 
         // create new DialogReceiver
         dialog_receiver = new DialogReceiver();
+
+        // apply any relevant settings
+        completeSetup();
     }
 
     @Override
@@ -202,9 +207,19 @@ public class MainActivity extends AppCompatActivity {
                     // TODO: return bundled changes in the intent
                     MandelbrotSettings.getInstance().save(this);
                     GestureSettings.getInstance().save(this);
+                    SystemSettings.getInstance().save(this);
+                    completeSetup();
                     render_canvas.startRender();
                 }
                 break;
+        }
+    }
+
+    private void completeSetup() {
+        if (SystemSettings.getInstance().allow_screen_rotation) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
 
@@ -231,10 +246,6 @@ public class MainActivity extends AppCompatActivity {
                         settings_intent.putExtra(SettingsActivity.INITIAL_ITERATIONS_VALUE, intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations));
                         startActivityForResult(settings_intent, SETTINGS_ACTIVITY_ID);
                         this_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
-                        break;
-
-                    default:
-                        Log.wtf(DBG_TAG, "unknown intent in dialog receiver");
                         break;
                 }
             }

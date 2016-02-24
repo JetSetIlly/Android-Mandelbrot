@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/static_background"
-        android:contentDescription="static background to stop zooming of fractal view revealing the brick wall at the back of theatre" />
+        android:contentDescription="@string/description_static_background" />
 
     <view
         android:layout_width="match_parent"

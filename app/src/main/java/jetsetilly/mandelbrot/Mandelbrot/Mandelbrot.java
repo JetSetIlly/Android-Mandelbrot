@@ -10,7 +10,7 @@ import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Tools;
 
 public class Mandelbrot {
-    final static public String DBG_TAG = "mandelbrot";
+    private final static String DBG_TAG = "mandelbrot";
 
     public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
     public enum IterationsRate {SLOW, NORMAL, FAST}
@@ -19,25 +19,25 @@ public class Mandelbrot {
     private final int iterations_rate_base = 5;
 
     private final Context context;
-    protected final MandelbrotCanvas canvas;
+    final MandelbrotCanvas canvas;
     private final TextView fractal_info;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
-    protected boolean render_completed = false;
+    boolean render_completed = false;
 
-    protected double pixel_scale;
+    double pixel_scale;
 
     /* protected_render_area is used to define that area of the canvas
     that do not need to be rendered again because those pixels (hopefully)
     already appear on the canvas
      */
-    protected Rect protected_render_area;
+    Rect protected_render_area;
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
-    protected boolean rescaling_render;
+    boolean rescaling_render;
 
     public Mandelbrot(Context context, MandelbrotCanvas canvas, TextView fractal_info) {
         this.context = context;

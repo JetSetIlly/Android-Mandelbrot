@@ -3,15 +3,12 @@ package jetsetilly.mandelbrot.RenderCanvas;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -126,11 +123,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void checkActionBar(float x, float y, boolean show) {
         // returns false if coordinates are in action bar, otherwise true
         if (show) {
-            if (main_activity.action_bar.inActionBar(y)) {
-                main_activity.action_bar.setVisibility(false);
+            if (MainActivity.action_bar.inActionBar(y)) {
+                MainActivity.action_bar.setVisibility(false);
             }
         } else {
-            main_activity.action_bar.setVisibility(true);
+            MainActivity.action_bar.setVisibility(true);
         }
     }
 
@@ -182,10 +179,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public int getCanvasHeight() {
         return getHeight();
-    }
-
-    public boolean isPortraitCanvaVs() {
-        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     }
     /* end of MandelbrotCanvas implementation */
 
@@ -396,6 +389,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         try {
             url = cr.insert(url, values);
+            assert url != null;
             OutputStream output_stream = cr.openOutputStream(url);
             this.display_bm.compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {

@@ -19,9 +19,6 @@ public class MandelbrotSettings {
 
     private final int DEF_NUM_PASSES = 2; // in lines
 
-    MandelbrotSettings() {
-    }
-
     public void reset() {
         real_left = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left;
         real_right = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_right;
@@ -67,11 +64,11 @@ public class MandelbrotSettings {
     }
 
     /* double width float support for SharedPreferences */
-    SharedPreferences.Editor putDouble(final SharedPreferences.Editor edit, final String key, final double value) {
+    private SharedPreferences.Editor putDouble(final SharedPreferences.Editor edit, final String key, final double value) {
         return edit.putLong(key, Double.doubleToRawLongBits(value));
     }
 
-    double getDouble(final SharedPreferences prefs, final String key, final double defaultValue) {
+    private double getDouble(final SharedPreferences prefs, final String key, final double defaultValue) {
         return Double.longBitsToDouble(prefs.getLong(key, Double.doubleToLongBits(defaultValue)));
     }
     /* end of double width float support for SharedPreferences */

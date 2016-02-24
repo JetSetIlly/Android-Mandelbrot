@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Mandelbrot</string>
 
+    <string name="description_static_background">static background to stop zooming of fractal view revealing the brick wall at the back of theatre</string>
+    <string name="description_palette_swatch">palette swatch</string>
+    <string name="description_palette_swatch_selected">palette swatch selected</string>
+
     <string name="action_palette">Palette</string>
     <string name="action_settings">Settings</string>
     <string name="action_save">Save Image</string>
@@ -22,7 +26,6 @@
     <string name="settings_rendermode_label">Render Mode</string>
     <string name="settings_rendermode_topdown">Top/Down</string>
     <string name="settings_rendermode_centre">Centre/Out</string>
-    <string name="settings_parallel_render">Parallel Render (experimental)</string>
 
     <string name="settings_orientation_label">Screen Orientation</string>
     <string name="settings_orientation_portrait">Portrait</string>

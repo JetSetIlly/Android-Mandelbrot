@@ -30,7 +30,6 @@ public class SettingsActivity extends AppCompatActivity {
     private ReportingSeekBar num_passes;
     private RadioGroup render_mode;
     private RadioGroup orientation;
-    private int reference_render_mode;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
@@ -86,10 +85,6 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             orientation.check(R.id.orientation_portrait);
         }
-
-        // render mode selected at start of activity -- if this changes then
-        // we'll stop the current rendering process
-        reference_render_mode = render_mode.getCheckedRadioButtonId();
     }
 
     @Override

@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,19 +32,21 @@ public class MainActivity extends AppCompatActivity {
     // allow other classes to access resources (principally PaletteDefinition)
     // not sure if there is a more elegant way to do this - this seems heavy handed
     static public Resources resources;
+    
+    // reference to render canvas
+    static private RenderCanvas render_canvas;
 
     // declaring these as static so that it is globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     //
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
-    static public RenderCanvas render_canvas;
     static public ProgressView progress;
-
-    public MandelbrotActionBar action_bar;
+    static public MandelbrotActionBar action_bar;
 
     // handler for dialogs
     private DialogReceiver dialog_receiver;
 
+    // reference to this object so that we can reference it inside the dialog receiver
     private AppCompatActivity this_activity;
 
     @Override

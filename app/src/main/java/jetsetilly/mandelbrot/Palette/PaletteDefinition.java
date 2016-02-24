@@ -88,7 +88,7 @@ public class PaletteDefinition {
         return colours;
     }
 
-    public void generatePalettePreview(Context context) {
+    public void generatePalettePreview() {
         int[] swatch_dimensions = paletteDimensions(colours.length - 1);
         int entry_width = swatch_size / swatch_dimensions[0];
         int entry_height = swatch_size / swatch_dimensions[1];

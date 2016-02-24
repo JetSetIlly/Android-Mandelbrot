@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 public class MandelbrotActionBar extends Toolbar {
-    private final String DBG_TAG = "mandelbrotactionbar";
+    private final String DBG_TAG = "mandelbrot actionbar";
 
     private View status_bar;
 

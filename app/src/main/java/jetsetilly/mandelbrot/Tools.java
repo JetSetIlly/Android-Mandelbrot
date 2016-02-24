@@ -14,7 +14,7 @@ public class Tools {
     }
 
     static public void printWTF(String tag, String msg) {
-        printDebug(tag, msg, false);
+        printDebug(tag, msg, true);
     }
 
     static public void printStackTrace(String tag) {
@@ -26,6 +26,10 @@ public class Tools {
     }
 
     static public void printDebug(String tag, String msg, boolean wtf) {
-        Log.d(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
+        if (wtf) {
+            Log.wtf(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
+        } else {
+            Log.d(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
+        }
     }
 }

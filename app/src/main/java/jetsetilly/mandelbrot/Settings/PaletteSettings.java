@@ -2,7 +2,6 @@ package jetsetilly.mandelbrot.Settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import jetsetilly.mandelbrot.Palette.PaletteDefinition;
 import jetsetilly.mandelbrot.Palette.Presets;
@@ -26,9 +25,6 @@ public class PaletteSettings {
     private int colour_cnt[];
     private int colour_cnt_highest;
 
-    public PaletteSettings() {
-    }
-
     /* TODO:
     saving palette_id is not very robust - if the position in the preset list
     changes then the saved palette_id will be wrong. we should save the palette
@@ -50,7 +46,7 @@ public class PaletteSettings {
 
     public void createSwatches(Context context) {
         for (PaletteDefinition swatch : palettes) {
-            swatch.generatePalettePreview(context);
+            swatch.generatePalettePreview();
         }
     }
 

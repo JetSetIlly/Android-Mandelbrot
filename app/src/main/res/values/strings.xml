@@ -26,7 +26,7 @@
 
     <string name="settings_orientation_label">Screen Orientation</string>
     <string name="settings_orientation_portrait">Portrait</string>
-    <string name="settings_orientation_sensor">Follow Phone Rotation</string>
+    <string name="settings_orientation_sensor">Auto-rotate</string>
 
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>

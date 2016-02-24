@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void completeSetup() {
         if (SystemSettings.getInstance().allow_screen_rotation) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }

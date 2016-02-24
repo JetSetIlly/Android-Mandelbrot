@@ -66,20 +66,12 @@ public class Mandelbrot {
         // particularly useful if screen dimensions change, which it does if screen is rotated.
 
         double canvas_ratio = (double) canvas.getCanvasWidth() / (double) canvas.getCanvasHeight();
-        double fractal_ratio = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
 
-        // correct range according to canvas dimensions
-        if (fractal_ratio > canvas_ratio) {
-            // canvas is taller than fractal - expand fractal vertically
-            double padding = ((mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas_ratio) - (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower);
-            mandelbrot_settings.imaginary_upper += padding / 2;
-            mandelbrot_settings.imaginary_lower -= padding / 2;
-        } else if (fractal_ratio < canvas_ratio) {
-            // canvas is wider than fractal - expand fractal horizontally
-            double padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
-            mandelbrot_settings.real_right += padding / 2;
-            mandelbrot_settings.real_left -= padding / 2;
-        }
+        // add padding to real axis
+        // note padding will be negative when correcting from landscape to portrait
+        double padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
+        mandelbrot_settings.real_right += padding / 2;
+        mandelbrot_settings.real_left -= padding / 2;
 
         // correct pixel scale
         pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasWidth();

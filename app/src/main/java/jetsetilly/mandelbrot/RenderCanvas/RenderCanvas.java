@@ -294,7 +294,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         zoom_rate = Math.max(gesture_settings.max_pinch_zoom_out,
                 Math.min(gesture_settings.max_pinch_zoom_in, zoom_rate));
 
-        // TODO: scrolling after zoom doesn't work as expected
         Bitmap zoomed_bm = getScaledImage();
         setImageBitmap(display_bm = zoomed_bm);
         scrollTo(0, 0);

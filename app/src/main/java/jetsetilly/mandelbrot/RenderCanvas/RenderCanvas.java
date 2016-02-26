@@ -55,17 +55,20 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
-    // reciprocal of scale factor
-    // ie. a scale of 2 (doubling in size) has a zoom rate of 1/2. meaning that in instance the
-    // render coordinates are halved
-    private double zoom_rate;
-
     // the amount of deviation (offset) from the current render_bm
     // used when chaining scroll and zoom events
     // reset when render is restarted
     // use getScrollX() and getScrollY() to retrieve current scroll values
     private int rendered_offset_x;
     private int rendered_offset_y;
+
+    // the amount by which the mandelbrot needs to scale in order to match the display
+    // for our purposes, this isn't the same as the scale amount. doubling in size would mean
+    // a scale of 2. this equates to: zoom_rate = (scale - 1) / (2 * scale)
+    // in this class we use scale exclusively to mean this and is only used in zoom animations
+    // where scale is used in this way. the Gestures class uses the word scale more liberally.
+    private double zoom_rate;
+
 
     /* initialisation */
     public RenderCanvas(Context context) {
@@ -280,7 +283,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.start();
     }
 
-    public void scaleBy(float amount) {
+    public void zoomBy(float amount) {
         if (amount == 0)
             return;
 
@@ -299,7 +302,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         scrollTo(0, 0);
     }
 
-    public void scaleCorrection() {
+    public void zoomCorrection() {
         /* this is called by Gestures.onScaleEnd() and is used to correct chaining of pinch-scaling and scrolling
         events, particularly scrolling after scaling.
 

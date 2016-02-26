@@ -142,7 +142,7 @@ public class Gestures implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-        canvas.scaleBy(detector.getCurrentSpan() - detector.getPreviousSpan());
+        canvas.zoomBy(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
     }
@@ -164,7 +164,7 @@ public class Gestures implements
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         touch_state = TouchState.TOUCH;
 
-        canvas.scaleCorrection();
+        canvas.zoomCorrection();
         altered_canvas = true;
     }
     /* END OF implementation of OnScaleGesture interface */

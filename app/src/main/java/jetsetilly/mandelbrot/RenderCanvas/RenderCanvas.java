@@ -198,7 +198,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             scrollTo(0, 0);
         }
 
-        // lose reference to old bitmap(s)
+        // lose reference to old bitmap
         setImageBitmap(display_bm = render_bm);
 
         // reset colours count
@@ -312,20 +312,20 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         Bitmap correction_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        Canvas render_canvas = new Canvas(correction_bm);
+        Canvas correction_canvas = new Canvas(correction_bm);
 
         // fill colour to first colour in current colours
-        render_canvas.drawColor(palette_settings.mostFrequentColor());
+        correction_canvas.drawColor(palette_settings.mostFrequentColor());
 
         if (display_bm != null) {
-            render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
+            correction_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
             scrollTo(0, 0);
         }
 
-        // lose reference to old bitmap(s)
+        // lose reference to old bitmap
         setImageBitmap(display_bm = correction_bm);
 
-        // transform mandelbrot coordinates
+        // transform mandelbrot coordinates - alternative to mandelbrot.startRender()
         mandelbrot.preRender(rendered_offset_x, rendered_offset_y, zoom_rate);
 
         // reset transformation variables

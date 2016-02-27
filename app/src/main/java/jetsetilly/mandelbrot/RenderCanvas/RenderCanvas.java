@@ -29,12 +29,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private final String DBG_TAG = "render canvas";
 
     private MainActivity main_activity;
-    private Gestures gestures;
     private Mandelbrot mandelbrot;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
     private ImageView static_background;
+
+    // special widget used to listen for gestures -- better than listening for gestures
+    // on the RenderCanvas because we want to scale the RenderCanvas and scaling screws up
+    // distance measurements
+    private GestureOverlay gestures;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
     // whenever setImageBitmap() is called we should set display_bm to equal
@@ -88,11 +92,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private void init(Context context) {
         this.main_activity = (MainActivity) context;
-        this.gestures = new Gestures(context, this);
     }
 
     public void initPostLayout() {
         this.static_background = (ImageView) main_activity.findViewById(R.id.static_background);
+        this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gesture_overlay);
+        this.gestures.setup(main_activity, this);
         resetCanvas();
     }
     /* end of initialisation */
@@ -241,9 +246,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private void animatedZoom(float scale, int offset_x, int offset_y) {
         // animation can take a while -- we don't gestures to be honoured
-        // while the animation is taking place. call blockGestures() here
-        // and unblockGestures() in the animation's endAction
-        gestures.blockGestures();
+        // while the animation is taking place. call block() here
+        // and unblock() in the animation's endAction
+        gestures.block();
 
         // stop render to avoid smearing
         stopRender();
@@ -252,7 +257,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         updateOffsets(offset_x, offset_y);
 
         // update zoom rate
-        zoom_rate = (scale - 1) / (2 * scale);
+        zoom_rate = zoomRateFromScale(scale);
 
         // generate final zoomed image
         final Bitmap zoomed_bm = getScaledImage();
@@ -277,7 +282,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 setImageBitmap(display_bm = zoomed_bm);
                 postInvalidate();
                 startRender();
-                gestures.unblockGestures();
+                gestures.unblock();
             }
         });
         anim.start();
@@ -297,9 +302,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         zoom_rate = Math.max(gesture_settings.max_pinch_zoom_out,
                 Math.min(gesture_settings.max_pinch_zoom_in, zoom_rate));
 
+        float scale = scaleFromZoomRate(zoom_rate);
+        setScaleX(scale);
+        setScaleY(scale);
+        scrollTo(0, 0);
+
+        /*
         Bitmap zoomed_bm = getScaledImage();
         setImageBitmap(display_bm = zoomed_bm);
         scrollTo(0, 0);
+        */
     }
 
     public void zoomCorrection() {
@@ -314,19 +326,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
          */
         stopRender();
 
-        Bitmap correction_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        Canvas correction_canvas = new Canvas(correction_bm);
-
-        // fill colour to first colour in current colours
-        correction_canvas.drawColor(palette_settings.mostFrequentColor());
-
-        if (display_bm != null) {
-            correction_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
-            scrollTo(0, 0);
-        }
-
         // lose reference to old bitmap
-        setImageBitmap(display_bm = correction_bm);
+        setImageBitmap(display_bm = getScaledImage());
 
         // transform mandelbrot coordinates - alternative to mandelbrot.startRender()
         mandelbrot.preRender(rendered_offset_x, rendered_offset_y, zoom_rate);
@@ -335,6 +336,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         rendered_offset_x = 0;
         rendered_offset_y = 0;
         zoom_rate = 0;
+
+        scrollTo(0, 0);
+        setScaleX(1f);
+        setScaleY(1f);
     }
 
     private Bitmap getScaledImage() {
@@ -371,6 +376,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         return zoomed_bm;
     }
+    /* end of canvas transformations */
+
+    private float scaleFromZoomRate(double zoom_rate) {
+        return (float) (1 / (1 - (2 * zoom_rate)));
+    }
+
+    private double zoomRateFromScale(float scale) {
+        return (scale - 1) / (2 * scale);
+    }
 
     public boolean saveImage() {
         long curr_time = System.currentTimeMillis();
@@ -403,6 +417,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
 
         return true;
-    }   /* end of canvas transformations */
+    }
 }
 

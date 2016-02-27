@@ -2,45 +2,55 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
+import android.util.AttributeSet;
 import android.view.GestureDetector;
-import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.Tools;
 
-public class Gestures implements
+public class GestureOverlay extends ImageView implements
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener
 {
     private static final String DEBUG_TAG = "touch canvas";
 
-    private enum TouchState {IDLE, TOUCH, DOUBLE_TOUCH, SCROLL, SCALE}
-    private TouchState touch_state = TouchState.IDLE;
-
-    private final RenderCanvas canvas;
+    private RenderCanvas canvas;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
 
+    // used by onScroll() to exit early if it is set to true
+    // scaling == true between calls to onScaleBegin() and onScaleEnd()
+    private boolean scaling;
+
+
     // whether the canvas has been altered somehow (ie. scaled or moved)
     private boolean altered_canvas;
 
+    public GestureOverlay(Context context) {
+        super(context);
+    }
+
+    public GestureOverlay(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
     /* initialisation */
-    public Gestures(Context context, final RenderCanvas canvas) {
+    public void setup(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
         this.blocked = false;
+        this.scaling = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
         scale_detector.setQuickScaleEnabled(false);
-
         gestures_detector.setOnDoubleTapListener(this);
 
-        canvas.setOnTouchListener(new View.OnTouchListener() {
+        this.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 /* onGestureListener doesn't handle or expose ACTION_UP events!!
@@ -48,15 +58,13 @@ public class Gestures implements
                 so that we can kick-start canvas rendering.
 
                 note that onSingleTapUp() is not the same thing because it is not
-                called after a ACTION_MOVE
+                after a scroll event
                 */
-                if (event.getActionMasked() == MotionEvent.ACTION_UP ) {
+                if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                     if (altered_canvas) {
                         Tools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
                         canvas.startRender();
                     }
-
-                    touch_state = TouchState.IDLE;
                 }
 
                 boolean scale_ret = scale_detector.onTouchEvent(event);
@@ -65,11 +73,11 @@ public class Gestures implements
         });
     }
 
-    public void blockGestures() {
+    public void block() {
         blocked = true;
     }
 
-    public void unblockGestures() {
+    public void unblock() {
         blocked = false;
     }
 
@@ -80,7 +88,6 @@ public class Gestures implements
 
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY(), false);
-        touch_state = TouchState.TOUCH;
         altered_canvas = false;
         return true;
     }
@@ -88,13 +95,10 @@ public class Gestures implements
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (blocked) return false;
-
-        if (touch_state != TouchState.TOUCH && touch_state != TouchState.SCROLL)
-            return true;
+        if (scaling) return true;
 
         Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         canvas.scrollBy((int) distanceX, (int) distanceY);
-        touch_state = TouchState.SCROLL;
         altered_canvas = true;
         return true;
     }
@@ -119,12 +123,9 @@ public class Gestures implements
 
         Tools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
-        canvas.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.LONG_PRESS);
-
         int offset_x = (int) (event.getX() - (canvas.getCanvasWidth() /2));
         int offset_y = (int) (event.getY() - (canvas.getCanvasHeight() / 2));
 
-        touch_state = TouchState.DOUBLE_TOUCH;
         canvas.doubleTouchZoom(offset_x, offset_y);
 
         // not setting altered_canvas to true because we need to
@@ -138,6 +139,15 @@ public class Gestures implements
 
     /* implementation of OnScaleGestureListener interface */
     @Override
+    public boolean onScaleBegin(ScaleGestureDetector detector) {
+        if (blocked) return false;
+
+        Tools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+        scaling = true;
+        return true;
+    }
+
+    @Override
     public boolean onScale(ScaleGestureDetector detector) {
         if (blocked) return false;
 
@@ -148,24 +158,13 @@ public class Gestures implements
     }
 
     @Override
-    public boolean onScaleBegin(ScaleGestureDetector detector) {
-        if (blocked) return false;
-
-        Tools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
-
-        touch_state = TouchState.SCALE;
-        return true;
-    }
-
-    @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         if (blocked) return;
 
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
-        touch_state = TouchState.TOUCH;
-
         canvas.zoomCorrection();
         altered_canvas = true;
+        scaling = false;
     }
     /* END OF implementation of OnScaleGesture interface */
 

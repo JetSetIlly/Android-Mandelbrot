@@ -15,18 +15,22 @@
         android:id="@+id/static_background"
         android:contentDescription="@string/description_static_background" />
 
-    <view
+    <jetsetilly.mandelbrot.RenderCanvas.RenderCanvas
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="jetsetilly.mandelbrot.RenderCanvas.RenderCanvas"
         android:id="@+id/fractalView"
         android:cropToPadding="false"
         />
 
-    <view
+    <jetsetilly.mandelbrot.RenderCanvas.GestureOverlay
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/gesture_overlay"
+        android:contentDescription="@string/description_gesture_overlay" />
+
+    <jetsetilly.mandelbrot.ProgressView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        class="jetsetilly.mandelbrot.ProgressView"
         android:src="@mipmap/ic_progress"
         android:id="@+id/progressView"
         android:layout_gravity="end|bottom"
@@ -41,10 +45,9 @@
         android:adjustViewBounds="false"
         />
 
-    <view
+    <jetsetilly.mandelbrot.MandelbrotActionBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        class="jetsetilly.mandelbrot.MandelbrotActionBar"
         android:id="@+id/toolbar"
         android:layout_gravity="start|top"
         android:minHeight="?attr/actionBarSize"

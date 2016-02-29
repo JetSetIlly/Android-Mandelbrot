@@ -30,6 +30,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private MainActivity main_activity;
     private Mandelbrot mandelbrot;
+    protected RenderCache render_cache;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
@@ -113,7 +114,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        clear_bm.eraseColor(palette_settings.mostFrequentColor());
+        clear_bm.eraseColor(render_cache.mostFrequentColor());
         setImageBitmap(display_bm = clear_bm);
     }
 
@@ -122,8 +123,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         clearImage();
 
         // set base color
-        setBackgroundColor(palette_settings.mostFrequentColor());
+        setBackgroundColor(render_cache.mostFrequentColor());
 
+        render_cache = new RenderCache();
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
         startRender();
     }
@@ -174,11 +176,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             buffer.flush(true);
             buffer = null;
         }
-        setBackgroundColor(palette_settings.mostFrequentColor());
+        setBackgroundColor(render_cache.mostFrequentColor());
     }
 
     public void cancelDraw() {
-        setBackgroundColor(palette_settings.mostFrequentColor());
+        setBackgroundColor(render_cache.mostFrequentColor());
     }
 
     public int getCanvasWidth() {
@@ -199,7 +201,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         Canvas render_canvas = new Canvas(render_bm);
 
         // fill colour to first colour in current colours
-        render_canvas.drawColor(palette_settings.mostFrequentColor());
+        render_canvas.drawColor(render_cache.mostFrequentColor());
 
         if (display_bm != null) {
             render_canvas.drawBitmap(display_bm, -getScrollX(), -getScrollY(), null);
@@ -210,7 +212,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(display_bm = render_bm);
 
         // reset colours count
-        palette_settings.resetCount();
+        render_cache.colourCountReset();
 
         // start render thread
         mandelbrot.startRender(rendered_offset_x, rendered_offset_y, zoom_rate);
@@ -342,7 +344,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // do offset
         offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         offset_canvas = new Canvas(offset_bm);
-        offset_canvas.drawColor(palette_settings.mostFrequentColor());
+        offset_canvas.drawColor(render_cache.mostFrequentColor());
 
         // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
         // in any order. the image may lose definition after several cycles of this but
@@ -361,7 +363,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         blit_to = new Rect(0, 0, getCanvasWidth(), getCanvasHeight());
         blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
-        zoom_canvas.drawColor(palette_settings.mostFrequentColor());
+        zoom_canvas.drawColor(render_cache.mostFrequentColor());
         zoom_canvas.drawBitmap(offset_bm, blit_from, blit_to, null);
 
         return zoomed_bm;

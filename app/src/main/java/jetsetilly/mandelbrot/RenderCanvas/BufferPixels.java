@@ -48,7 +48,7 @@ public class BufferPixels implements Buffer {
     @Override
     public void flush(Boolean final_flush) {
         if (final_flush || pixel_ct > 10000) {
-            palette_settings.updateCount(most_frequent_palette_entry);
+            render_canvas.render_cache.colourCountUpdate(most_frequent_palette_entry);
             pixel_ct = 0;
 
             if (final_flush) {

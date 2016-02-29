@@ -126,10 +126,10 @@ public class GestureOverlay extends ImageView implements
         int offset_x = (int) (event.getX() - (canvas.getCanvasWidth() /2));
         int offset_y = (int) (event.getY() - (canvas.getCanvasHeight() / 2));
 
-        canvas.doubleTouchZoom(offset_x, offset_y);
+        canvas.animatedZoom(offset_x, offset_y);
 
         // not setting altered_canvas to true because we need to
-        // restart the render via canvas.doubleTouchZoom method instead
+        // restart the render via canvas.animatedZoom method instead
         // see the anim.withEndAction() in animatedZoom()
 
         return true;

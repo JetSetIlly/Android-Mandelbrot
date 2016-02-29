@@ -240,15 +240,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         super.scrollBy(x, y);
     }
 
-    public void doubleTouchZoom(int offset_x, int offset_y) {
-        animatedZoom(gesture_settings.double_tap_scale, offset_x, offset_y);
-    }
-
-    private void animatedZoom(float scale, int offset_x, int offset_y) {
+    public void animatedZoom(int offset_x, int offset_y) {
         // animation can take a while -- we don't gestures to be honoured
         // while the animation is taking place. call block() here
         // and unblock() in the animation's endAction
         gestures.block();
+
+        float scale = gesture_settings.double_tap_scale;
 
         // stop render to avoid smearing
         stopRender();
@@ -305,13 +303,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         float scale = scaleFromZoomRate(zoom_rate);
         setScaleX(scale);
         setScaleY(scale);
-        scrollTo(0, 0);
-
-        /*
-        Bitmap zoomed_bm = getScaledImage();
-        setImageBitmap(display_bm = zoomed_bm);
-        scrollTo(0, 0);
-        */
     }
 
     public void zoomCorrection() {
@@ -337,27 +328,26 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         rendered_offset_y = 0;
         zoom_rate = 0;
 
-        scrollTo(0, 0);
         setScaleX(1f);
         setScaleY(1f);
+        scrollTo(0, 0);
     }
 
     private Bitmap getScaledImage() {
-        // TODO: make this more efficient
-
         double new_left, new_right, new_top, new_bottom;
         Canvas offset_canvas, zoom_canvas;
         Bitmap offset_bm, zoomed_bm;
         Rect blit_to, blit_from;
 
-        // use render bitmap to do the zoom - this allows us to chain calls to the zoom routine
-        // without losing definition
-
         // do offset
         offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         offset_canvas = new Canvas(offset_bm);
         offset_canvas.drawColor(palette_settings.mostFrequentColor());
-        offset_canvas.drawBitmap(render_bm, -rendered_offset_x, -rendered_offset_y, null);
+
+        // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
+        // in any order. the image may lose definition after several cycles of this but
+        // it shouldn't be too noticeable
+        offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
 
         // do zoom
         new_left = zoom_rate * getCanvasWidth();

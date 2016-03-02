@@ -119,13 +119,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void resetCanvas() {
+        // new render cache
+        render_cache = new RenderCache();
+
         // kill any existing image
         clearImage();
 
         // set base color
         setBackgroundColor(render_cache.mostFrequentColor());
 
-        render_cache = new RenderCache();
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
         startRender();
     }
@@ -211,8 +213,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // lose reference to old bitmap
         setImageBitmap(display_bm = render_bm);
 
-        // reset colours count
-        render_cache.colourCountReset();
+        // reset render cache
+        render_cache.reset();
 
         // start render thread
         mandelbrot.startRender(rendered_offset_x, rendered_offset_y, zoom_rate);
@@ -266,7 +268,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         ViewPropertyAnimator anim = animate();
 
         anim.withLayer();
-        anim.setDuration(1000);
+        anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * scale);
         anim.y(-offset_y * scale);
         anim.scaleX(scale);

@@ -10,7 +10,12 @@ public class RenderCache {
 
     PaletteSettings palette_settings = PaletteSettings.getInstance();
 
-    public void colourCountReset() {
+    public RenderCache() {
+        reset();
+    }
+
+    public void reset() {
+        // reset colour count
         colour_cnt = new int[palette_settings.selected_palette.colours.length];
         colour_cnt_highest = 1;
     }

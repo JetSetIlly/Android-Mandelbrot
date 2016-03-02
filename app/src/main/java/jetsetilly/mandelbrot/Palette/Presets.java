@@ -1,9 +1,8 @@
 package jetsetilly.mandelbrot.Palette;
 
 public class Presets {
-    /* first colour is the color used for zero space. it is not used for any other
-    iteration. see MandelbrotQueue() for details.
-     */
+    // first colour is the color used for zero space. it is not used for any other
+    //iteration. see MandelbrotQueue() for details.
 
     static public final PaletteDefinition[] presets = {
             new PaletteDefinition("Candied Stripes", PaletteDefinition.PaletteMode.INDEX,
@@ -20,8 +19,7 @@ public class Presets {
             new PaletteDefinition("Red/Grey", PaletteDefinition.PaletteMode.INTERPOLATE,
                     new int[] { 0xFF000000,
                             0xFFFF4444, 0xFF114444, 32
-                    },
-                    true),
+                    }),
 
             new PaletteDefinition("Sunnydale", PaletteDefinition.PaletteMode.INDEX,
                     new int[]{       0xFF000000,

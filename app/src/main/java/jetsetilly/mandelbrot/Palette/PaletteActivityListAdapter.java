@@ -52,7 +52,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
         ((TextView) view.findViewById(R.id.palette_label)).setText(item.name);
         ((TextView) view.findViewById(R.id.palette_id)).setText(String.format("%d", position));
-        ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(item.swatch);
+        ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(item.getSwatch(context).bitmap);
 
         // tick this view if this is the currently selected palette
         if (position == selected_palette_id) {

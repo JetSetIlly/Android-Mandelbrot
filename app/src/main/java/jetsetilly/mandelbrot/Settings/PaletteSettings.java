@@ -10,14 +10,14 @@ public class PaletteSettings {
     private final String DBG_TAG = "palette settings";
 
     // colours definitions
-    public final int DEF_PALETTE_ID = 0;
+    private final int DEF_PALETTE_ID = 0;
 
     // for simplicity, use palettes as defined in PalettePresets
     // TODO: store/retrieve definitions on disk
     public final PaletteDefinition[] palettes = Presets.presets;
 
-    public int selected_id;
     public PaletteDefinition selected_palette;
+    public int selected_id;
 
     // TODO: make palette saving more robust (order of list might change)
 
@@ -31,11 +31,6 @@ public class PaletteSettings {
     public void restore(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         setColours(prefs.getInt("palette_id", DEF_PALETTE_ID));
-
-        // create swatches
-        for (PaletteDefinition swatch : palettes) {
-            swatch.generatePalettePreview();
-        }
     }
 
     /* helper functions */

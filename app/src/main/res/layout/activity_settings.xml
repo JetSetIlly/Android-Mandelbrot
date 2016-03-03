@@ -43,7 +43,7 @@
                 android:id="@+id/iterations_rate"
                 app:label="@string/settings_iterations_rate_label"
                 app:label_appearance="?android:attr/textAppearanceListItemSmall"
-                app:thumb_size="@dimen/seekbar_thumb_width_wide" />
+                app:thumb_width="@dimen/seekbar_thumb_width_wide" />
 
             <Space
                 android:layout_width="match_parent"

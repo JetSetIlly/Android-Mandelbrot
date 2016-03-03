@@ -9,4 +9,5 @@
     <integer name="action_bar_show">200</integer>
     <integer name="animated_zoom_duration_fast">500</integer>
     <integer name="animated_zoom_duration_slow">1000</integer>
+    <integer name="palette_smoothness_control_fade">500</integer>
 </resources>

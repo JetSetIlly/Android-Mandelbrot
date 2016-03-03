@@ -21,6 +21,10 @@ public class Tools {
         printDebug(tag, Log.getStackTraceString(new Exception()));
     }
 
+    static public void printDebug(String tag, int num) {
+        printDebug(tag, String.format("%d", num));
+    }
+
     static public void printDebug(String tag, String msg) {
        printDebug(tag, msg, false);
     }

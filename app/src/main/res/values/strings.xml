@@ -32,6 +32,8 @@
     <string name="settings_orientation_portrait">Portrait</string>
     <string name="settings_orientation_sensor">Auto-rotate</string>
 
+    <string name="palette_action_smoothness">Smoothness</string>
+
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
 

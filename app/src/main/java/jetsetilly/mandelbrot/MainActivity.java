@@ -185,11 +185,16 @@ public class MainActivity extends AppCompatActivity {
                     if (intent == null)
                         return;
 
-                    int palette_id = intent.getIntExtra(PaletteActivity.ACTIVITY_RESULT_PALETTE_ID, -1);
-                    if (palette_id >= 0) {
+                    PaletteSettings palette_settings = PaletteSettings.getInstance();
+
+                    int num_steps = intent.getIntExtra(PaletteActivity.ACTIVITY_RESULT_PALETTE_SMOOTHNESS, palette_settings.smoothness);
+                    int palette_id = intent.getIntExtra(PaletteActivity.ACTIVITY_RESULT_PALETTE_ID, palette_settings.selected_id);
+
+                    // stop/start render if any palette setting has changed
+                    if (palette_id != palette_settings.selected_id || num_steps != palette_settings.smoothness ) {
                         render_canvas.stopRender();
 
-                        PaletteSettings palette_settings = PaletteSettings.getInstance();
+                        palette_settings.smoothness = num_steps;
                         palette_settings.setColours(palette_id);
                         palette_settings.save(this);
 

@@ -7,6 +7,8 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,6 +26,13 @@ public class ReportingSeekBar extends LinearLayout {
     private int start_value;
     private int base_value;
     private int scale;
+
+    // runnable launched when seekbar has changed - does nothing by default
+    public Runnable onSeekBarChange = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
 
     public ReportingSeekBar(Context context) {
         this(context, null);
@@ -60,9 +69,9 @@ public class ReportingSeekBar extends LinearLayout {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                onSeekBarChange.run();
             }
         });
-
 
         // set attributes
         TypedArray s_attrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ReportingSeekBar, 0, 0);
@@ -74,22 +83,23 @@ public class ReportingSeekBar extends LinearLayout {
                 label.setTextAppearance(context, s_attrs.getResourceId(R.styleable.ReportingSeekBar_label_appearance, 0));
             }
 
+            // min/max values and scaling
             int scale = s_attrs.getInteger(R.styleable.ReportingSeekBar_value_scale, 1);
             float min = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_min, 0);
             float max = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_max, 100);
             float val = s_attrs.getFloat(R.styleable.ReportingSeekBar_value_initial, min);
             set(val, min, max, scale);
 
-            int thumb_width = s_attrs.getDimensionPixelSize(R.styleable.ReportingSeekBar_thumb_size,
-                    getResources().getDimensionPixelSize(R.dimen.seekbar_thumb_width));
+            // thumb dimensions
+            int thumb_width = s_attrs.getDimensionPixelSize(R.styleable.ReportingSeekBar_thumb_width, getResources().getDimensionPixelSize(R.dimen.seekbar_thumb_width));
+            int thumb_height = s_attrs.getDimensionPixelSize(R.styleable.ReportingSeekBar_thumb_height, getResources().getDimensionPixelSize(R.dimen.seekbar_thumb_height));
 
             // add thumb to slider
             ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
-            thumb.setIntrinsicHeight(resources.getDimensionPixelSize(R.dimen.seekbar_thumb_height));
+            thumb.setIntrinsicHeight(thumb_height);
             thumb.setIntrinsicWidth(thumb_width);
             thumb.getPaint().setColor(resources.getColor(R.color.seekbar_thumb_colour));
             slider.setThumb(thumb);
-
         } finally {
             s_attrs.recycle();
         }

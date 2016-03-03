@@ -4,20 +4,26 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.GridView;
 
 import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
 
+    public static final Integer ACTIVITY_RESULT_CHANGE = 1;
     public static final String ACTIVITY_RESULT_PALETTE_ID = "PALETTE_ID";
-    public static final Integer ACTIVITY_RESULT_NO_CHANGE = 1;
-    public static final Integer ACTIVITY_RESULT_CHANGE = 2;
+    public static final String ACTIVITY_RESULT_PALETTE_SMOOTHNESS = "PALETTE_SMOOTHNESS";
 
     private GridView palette_entries;
+    private ReportingSeekBar smoothness;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +39,43 @@ public class PaletteActivity extends AppCompatActivity {
 
         palette_entries = (GridView) findViewById(R.id.palette_entries);
         palette_entries.setAdapter(new PaletteActivityListAdapter(this));
+
+        smoothness = (ReportingSeekBar) findViewById(R.id.smoothness);
+        smoothness.set(PaletteSettings.getInstance().smoothness);
+
+        smoothness.onSeekBarChange = new Runnable() {
+            @Override
+            public void run() {
+                smoothnessSeekbarVisibility(false);
+            }
+        };
+    }
+
+    private void smoothnessSeekbarVisibility(final boolean visible){
+        if ((visible && smoothness.getVisibility() == View.VISIBLE) ||(!visible && smoothness.getVisibility() == View.INVISIBLE))
+            return;
+
+        ViewPropertyAnimator anim = smoothness.animate();
+        anim.withLayer();
+        anim.setDuration(getResources().getInteger(R.integer.palette_smoothness_control_fade));
+
+        if (visible) {
+            smoothness.setAlpha(0f);
+            smoothness.setVisibility(View.VISIBLE);
+            anim.alpha(1f);
+
+        } else {
+            anim.alpha(0f);
+            anim.withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    smoothness.setAlpha(1f);
+                    smoothness.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
+
+        anim.start();
     }
 
     @Override
@@ -42,21 +85,20 @@ public class PaletteActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
+            case R.id.palette_action_smoothness:
+                if (smoothness.getVisibility() == View.VISIBLE)
+                    smoothnessSeekbarVisibility(false);
+                else
+                    smoothnessSeekbarVisibility(true);
+                break;
+
             case android.R.id.home:
-                // get selected palette id
-                int palette_id = ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID();
-
-                // check to see if palette has changed
-                if (PaletteSettings.getInstance().selected_id != palette_id) {
-                    // build palette change intent
-                    Intent activity_result_intent = new Intent(this, MainActivity.class);
-                    activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_ID, palette_id);
-
-                    // set result
-                    setResult(ACTIVITY_RESULT_CHANGE, activity_result_intent);
-                } else {
-                    setResult(ACTIVITY_RESULT_NO_CHANGE);
-                }
+                Intent activity_result_intent = new Intent(this, MainActivity.class);
+                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_SMOOTHNESS,
+                        smoothness.getInteger());
+                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_ID,
+                    ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID());
+                setResult(ACTIVITY_RESULT_CHANGE, activity_result_intent);
 
                 finish();
                 setTransitionAnim();
@@ -75,6 +117,13 @@ public class PaletteActivity extends AppCompatActivity {
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
         overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_palette_activity, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /* called whenever an entry has been added - used to fix flaw in Android where animations

@@ -32,7 +32,7 @@ public class BufferPixels implements Buffer {
         pixel_ct = 0;
 
         palette_frequency = new int[
-                Math.min(palette_settings.selected_palette.num_colours,
+                Math.min(palette_settings.numColors(),
                         MandelbrotSettings.getInstance().max_iterations) + 1
                 ];
 
@@ -68,7 +68,7 @@ public class BufferPixels implements Buffer {
             palette_entry = (iteration % (palette_settings.numColors() - 1)) + 1;
         }
 
-        pixels[((int)cy * width) + (int)cx] = palette_settings.selected_palette.colours[palette_entry];
+        pixels[((int)cy * width) + (int)cx] = palette_settings.colours[palette_entry];
 
         palette_frequency[palette_entry] ++;
         if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {

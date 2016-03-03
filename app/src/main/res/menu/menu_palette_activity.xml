@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:canvas=".PaletteActivity">
+
+    <item
+        android:id="@+id/palette_action_smoothness"
+        android:title="@string/palette_action_smoothness"
+        android:icon="@drawable/ic_equalizer_24dp"
+        app:showAsAction="always"
+        />
+</menu>

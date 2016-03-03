@@ -16,7 +16,7 @@ public class RenderCache {
 
     public void reset() {
         // reset colour count
-        colour_cnt = new int[palette_settings.selected_palette.colours.length];
+        colour_cnt = new int[palette_settings.numColors()];
         colour_cnt_highest = 1;
     }
 
@@ -34,6 +34,6 @@ public class RenderCache {
     }
 
     public int mostFrequentColor() {
-        return palette_settings.selected_palette.colours[colour_cnt_highest];
+        return palette_settings.colours[colour_cnt_highest];
     }
 }

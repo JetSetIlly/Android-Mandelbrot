@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
@@ -13,12 +15,38 @@
         android:title="@string/action_palette"
         android:visibility="visible" />
 
-    <GridView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/palette_entries"
-        android:nestedScrollingEnabled="false"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="@dimen/palette_grid_spacing"
-        android:columnWidth="@dimen/palette_grid_size" />
+        android:layout_height="match_parent"
+        android:id="@+id/palette_frame_layout">
+
+        <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/smoothness"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/palette_settings_smoothness_padding"
+            android:layout_margin="@dimen/palette_settings_smoothness_margin"
+            android:translationZ="@dimen/palette_setting_smoothness_z"
+            android:background="?attr/colorPrimary"
+            android:clickable="true"
+            app:label="@string/palette_action_smoothness"
+            app:value_min="1"
+            app:value_max="12"
+            android:visibility="invisible"
+            />
+
+        <GridView
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/palette_entries"
+            android:nestedScrollingEnabled="false"
+            android:numColumns="auto_fit"
+            android:verticalSpacing="@dimen/palette_grid_spacing"
+            android:columnWidth="@dimen/palette_grid_size"
+            android:stackFromBottom="false"
+            android:elevation="-1dp" />
+
+    </FrameLayout>
+
 </LinearLayout>

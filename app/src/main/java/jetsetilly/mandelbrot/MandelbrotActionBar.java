@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 
 public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "mandelbrot actionbar";
@@ -44,7 +45,7 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.VISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
-                        .translationXBy(getWidth())
+                        .x(getWidth())
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
@@ -57,7 +58,7 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.INVISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
-                        .translationXBy(-getWidth())
+                        .x(0)
                         .withStartAction(new Runnable() {
                             @Override
                             public void run() {

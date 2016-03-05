@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- main activity -->
+    <integer name="action_bar_hide">500</integer>
+    <integer name="action_bar_show">200</integer>
+    <integer name="info_pane_fade">250</integer>
+    <integer name="animated_zoom_duration_fast">500</integer>
+    <integer name="animated_zoom_duration_slow">1000</integer>
+
+    <!-- palette activity -->
     <integer name="palette_selected_tick_duration">500</integer>
     <integer name="palette_selected_untick_duration">250</integer>
     <integer name="palette_selected_spin_duration">250</integer>
     <integer name="palette_selected_pulse_duration">125</integer>
-    <integer name="info_pane_fade">250</integer>
-    <integer name="action_bar_hide">500</integer>
-    <integer name="action_bar_show">200</integer>
-    <integer name="animated_zoom_duration_fast">500</integer>
-    <integer name="animated_zoom_duration_slow">1000</integer>
     <integer name="palette_smoothness_control_fade">500</integer>
 </resources>

@@ -27,7 +27,6 @@ public class GestureOverlay extends ImageView implements
     // scaling == true between calls to onScaleBegin() and onScaleEnd()
     private boolean scaling;
 
-
     // whether the canvas has been altered somehow (ie. scaled or moved)
     private boolean altered_canvas;
 

@@ -114,23 +114,17 @@ public class Mandelbrot {
         render_thr = null;
     }
 
-    public void preRender(double offset_x, double offset_y, double zoom_factor) {
-        /* this function updates the mandelbrot co-ordinates. stopping any current threads.
-        note that it also sets render_completed to false. this forces startRender to not create
-        a protected area and will force the entire defined mandelbrot space to be recalculated.
-
-        this is used to support RenderCanvas.zoomCorrection(). this is a clumsy way of allowing
-        for the chaining of pinch-zoom and scrolling. we can remove this method once a simpler way is
-        figured out.
-        */
+    public void transformMandelbrot(double offset_x, double offset_y, double zoom_factor, boolean mark_render_incomplete) {
+        // this function updates the mandelbrot co-ordinates. stopping any current threads.
         stopRender();
         transform(offset_x, offset_y, zoom_factor);
-        render_completed = false;
+
+        if (mark_render_incomplete)
+            render_completed = false;
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
-        stopRender();
-        transform(offset_x, offset_y, zoom_factor);
+        transformMandelbrot(offset_x, offset_y, zoom_factor, false);
 
         // initialise protected_render_area
         protected_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());

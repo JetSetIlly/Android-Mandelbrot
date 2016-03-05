@@ -61,9 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // lock orientation to portrait mode
-        //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         // set up actionbar
         action_bar = (MandelbrotActionBar) findViewById(R.id.toolbar);
         action_bar.completeSetup(this, getResources().getString(R.string.app_name));
@@ -123,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_palette:
                 Intent palette_intent = new Intent(this, PaletteActivity.class);
                 startActivityForResult(palette_intent, PALETTE_ACTIVITY_ID);
-                overridePendingTransition(R.anim.from_right_nofade, R.anim.from_right_fade_out);
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_from_right_with_fade);
                 return true;
 
             case R.id.action_settings:
@@ -248,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                         Intent settings_intent = new Intent(this_activity, SettingsActivity.class);
                         settings_intent.putExtra(SettingsActivity.INITIAL_ITERATIONS_VALUE, intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations));
                         startActivityForResult(settings_intent, SETTINGS_ACTIVITY_ID);
-                        this_activity.overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+                        this_activity.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_from_left_wifth_fade);
                         break;
                 }
             }

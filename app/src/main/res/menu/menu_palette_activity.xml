@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/palette_action_smoothness"
-        android:title="@string/palette_action_smoothness"
+        android:title="@string/palette_smoothness_label"
         android:icon="@drawable/ic_equalizer_24dp"
         app:showAsAction="always"
         />

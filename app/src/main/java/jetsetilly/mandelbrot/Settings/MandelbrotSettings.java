@@ -7,6 +7,8 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.Bookmarks;
 
 public class MandelbrotSettings {
+    private final int DEF_NUM_PASSES = 2; // in lines
+
     public double real_left;
     public double real_right;
     public double imaginary_upper;
@@ -16,8 +18,6 @@ public class MandelbrotSettings {
     public Mandelbrot.IterationsRate iterations_rate;
     public int num_passes;
     public Mandelbrot.RenderMode render_mode;
-
-    private final int DEF_NUM_PASSES = 2; // in lines
 
     public void reset() {
         real_left = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left;

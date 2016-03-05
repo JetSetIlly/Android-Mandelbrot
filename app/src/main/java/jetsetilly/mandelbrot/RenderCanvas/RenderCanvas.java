@@ -317,9 +317,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void zoomCorrection() {
         // called by gestures.onScaleEnd()
 
-        // don't rescale image if we've zoomed in. this allows
-        // the zoomed image to be scrolled about without losing
-        // any of the image when we rescale
+        // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
+        // and without losing any of the image after the image has been rescaled
         if (mandelbrot_zoom_factor >= 0) {
             return;
         }

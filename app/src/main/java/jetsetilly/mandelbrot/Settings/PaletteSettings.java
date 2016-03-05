@@ -10,12 +10,8 @@ import jetsetilly.mandelbrot.Palette.Presets;
 // TODO: make palette saving more robust (order of list might change)
 
 public class PaletteSettings {
-    private final String DBG_TAG = "palette settings";
-
-    // defaults
     private final int DEF_PALETTE_ID = 0;
-    private final int DEF_NUM_STEPS = 4;
-
+    public final int DEF_SMOOTHNESS = 4;
 
     // for simplicity, use palettes as defined in PalettePresets
     public final PaletteDefinition[] palettes = Presets.presets;
@@ -35,7 +31,7 @@ public class PaletteSettings {
     public void restore(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         setColours(prefs.getInt("palette_id", DEF_PALETTE_ID));
-        smoothness = (prefs.getInt("smoothness", DEF_NUM_STEPS));
+        smoothness = (prefs.getInt("smoothness", DEF_SMOOTHNESS));
     }
 
     /* helper functions */

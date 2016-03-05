@@ -7,6 +7,7 @@ public class GestureSettings {
     private final float DEF_DOUBLE_TAP_SCALE = 3.0f;
     private final float DEF_MAX_PINCH_ZOOM_IN = 0.35f;
     private final float DEF_MAX_PINCH_ZOOM_OUT = -0.35f;
+
     public float double_tap_scale;
     public float max_pinch_zoom_in;
     public float max_pinch_zoom_out;

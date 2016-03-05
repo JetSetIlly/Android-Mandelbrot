@@ -19,14 +19,15 @@
     <style name="SettingsActivityTheme" parent="@style/AppTheme">
     </style>
 
-    <!-- theme for iterations dialog -->
 
-    <style name="Iteration_Dialog_Theme" parent="@style/Theme.AppCompat.Light.Dialog">
-        <item name="android:windowAnimationStyle">@style/Iteration_Dialog_Theme.Window</item>
+    <!-- theme for dialogs -->
+
+    <style name="Dialog_Theme" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:windowAnimationStyle">@style/Dialog_Theme.Window</item>
     </style>
 
-    <style name="Iteration_Dialog_Theme.Window" parent="@android:style/Animation.Activity">
-        <item name="android:windowEnterAnimation">@anim/up_quick_nofade</item>
-        <item name="android:windowExitAnimation">@anim/down_quick_nofade</item>
+    <style name="Dialog_Theme.Window" parent="@android:style/Animation.Activity">
+        <item name="android:windowEnterAnimation">@anim/dialog_appear</item>
+        <item name="android:windowExitAnimation">@anim/dialog_disappear</item>
     </style>
 </resources>

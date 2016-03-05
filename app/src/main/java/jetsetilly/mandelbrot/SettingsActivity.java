@@ -151,7 +151,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
-        overridePendingTransition(R.anim.from_right_nofade, R.anim.from_right_fade_out);
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_from_right_with_fade);
     }
 
     @Override

@@ -1,18 +1,19 @@
 package jetsetilly.mandelbrot;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewPropertyAnimator;
 import android.widget.GridView;
 
 import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
 
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
@@ -22,7 +23,9 @@ public class PaletteActivity extends AppCompatActivity {
     public static final String ACTIVITY_RESULT_PALETTE_SMOOTHNESS = "PALETTE_SMOOTHNESS";
 
     private GridView palette_entries;
-    private ReportingSeekBar smoothness;
+    private int smoothness;
+
+    private DialogReceiver dialog_receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,42 +42,21 @@ public class PaletteActivity extends AppCompatActivity {
         palette_entries = (GridView) findViewById(R.id.palette_entries);
         palette_entries.setAdapter(new PaletteActivityListAdapter(this));
 
-        smoothness = (ReportingSeekBar) findViewById(R.id.smoothness);
-        smoothness.set(PaletteSettings.getInstance().smoothness);
+        smoothness = PaletteSettings.getInstance().smoothness;
 
-        smoothness.onSeekBarChange = new Runnable() {
-            @Override
-            public void run() {
-                smoothnessSeekbarVisibility(false);
-            }
-        };
+        // create new DialogReceiver
+        dialog_receiver = new DialogReceiver();
     }
 
-    private void smoothnessSeekbarVisibility(final boolean visible){
-        if ((visible && smoothness.getVisibility() == View.VISIBLE) ||(!visible && smoothness.getVisibility() == View.INVISIBLE))
-            return;
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(dialog_receiver);
+    }
 
-        ViewPropertyAnimator anim = smoothness.animate();
-        anim.withLayer();
-        anim.setDuration(getResources().getInteger(R.integer.palette_smoothness_control_fade));
-
-        if (visible) {
-            smoothness.setAlpha(0f);
-            smoothness.setVisibility(View.VISIBLE);
-            anim.alpha(1f);
-
-        } else {
-            anim.alpha(0f);
-            anim.withEndAction(new Runnable() {
-                @Override
-                public void run() {
-                    smoothness.setAlpha(1f);
-                    smoothness.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
-
-        anim.start();
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(dialog_receiver, new IntentFilter(SmoothnessDialog.SMOOTHNESS_DIALOG_INTENT));
     }
 
     @Override
@@ -85,16 +67,16 @@ public class PaletteActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.palette_action_smoothness:
-                if (smoothness.getVisibility() == View.VISIBLE)
-                    smoothnessSeekbarVisibility(false);
-                else
-                    smoothnessSeekbarVisibility(true);
+                SmoothnessDialog smoothness_dialog = new SmoothnessDialog();
+                Bundle args = new Bundle();
+                args.putInt(SmoothnessDialog.SET_VALUE, smoothness);
+                smoothness_dialog.setArguments(args);
+                smoothness_dialog.show(getFragmentManager(), null);
                 break;
 
             case android.R.id.home:
                 Intent activity_result_intent = new Intent(this, MainActivity.class);
-                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_SMOOTHNESS,
-                        smoothness.getInteger());
+                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_SMOOTHNESS, smoothness);
                 activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_ID,
                     ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID());
                 setResult(ACTIVITY_RESULT_CHANGE, activity_result_intent);
@@ -115,7 +97,7 @@ public class PaletteActivity extends AppCompatActivity {
 
     /* sets animation for going back to main activity*/
     private void setTransitionAnim() {
-        overridePendingTransition(R.anim.from_left_nofade, R.anim.from_left_fade_out);
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_from_left_wifth_fade);
     }
 
     @Override
@@ -123,6 +105,23 @@ public class PaletteActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_palette_activity, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private class DialogReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || intent.getAction() == null) {
+                return;
+            }
+
+            if (intent.getAction().equals(SmoothnessDialog.SMOOTHNESS_DIALOG_INTENT)) {
+                switch(intent.getStringExtra(SmoothnessDialog.INTENT_ACTION)) {
+                    case SmoothnessDialog.ACTION_SET:
+                        smoothness = intent.getIntExtra(SmoothnessDialog.SET_VALUE, smoothness);
+                        break;
+                }
+            }
+        }
     }
 
     /* called whenever an entry has been added - used to fix flaw in Android where animations

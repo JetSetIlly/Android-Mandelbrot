@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import android.widget.GridView;
 
 import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.SystemSettings;
 
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
@@ -46,6 +48,17 @@ public class PaletteActivity extends AppCompatActivity {
 
         // create new DialogReceiver
         dialog_receiver = new DialogReceiver();
+
+        // apply orientation settings
+        applyOrientation();
+    }
+
+    private void applyOrientation() {
+        if (SystemSettings.getInstance().allow_screen_rotation) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
     }
 
     @Override

@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         dialog_receiver = new DialogReceiver();
 
         // apply any relevant settings
-        completeSetup();
+        applyOrientation();
     }
 
     @Override
@@ -208,14 +208,14 @@ public class MainActivity extends AppCompatActivity {
                     MandelbrotSettings.getInstance().save(this);
                     GestureSettings.getInstance().save(this);
                     SystemSettings.getInstance().save(this);
-                    completeSetup();
+                    applyOrientation();
                     render_canvas.startRender();
                 }
                 break;
         }
     }
 
-    private void completeSetup() {
+    private void applyOrientation() {
         if (SystemSettings.getInstance().allow_screen_rotation) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
         } else {

@@ -1,11 +1,13 @@
 package jetsetilly.mandelbrot;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -61,7 +63,31 @@ public class SettingsActivity extends AppCompatActivity {
         Intent settings_intent = getIntent();
         initial_iterations_value = settings_intent.getIntExtra(INITIAL_ITERATIONS_VALUE, mandelbrot_settings.max_iterations);
 
+        // set values and apply settings
         setValues();
+
+        // if orientation option changes, call apply settings to immediately
+        // reflect the change for this activity
+        orientation.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                applyOrientation();
+            }
+        });
+
+        applyOrientation();
+    }
+
+    private void applyOrientation() {
+        switch(orientation.getCheckedRadioButtonId()) {
+            case R.id.orientation_portrait:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                break;
+
+            case R.id.orientation_sensor:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+                break;
+        }
     }
 
     private void setValues() {

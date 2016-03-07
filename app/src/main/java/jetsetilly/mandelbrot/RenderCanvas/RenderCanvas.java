@@ -244,7 +244,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     @Override
     public void scrollBy(int x, int y) {
-        stopRender(); // stop render to avoid smearing
+        // no need to stop rendering
+        // but there is currently an odd effect where the dominant
+        // background colour will change while the existing render is ongoing
+        stopRender();
+
         x /= scaleFromZoomFactor(mandelbrot_zoom_factor);
         y /= scaleFromZoomFactor(mandelbrot_zoom_factor);
         updateOffsets(x, y);
@@ -255,6 +259,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // animation can take a while -- we don't gestures to be honoured
         // while the animation is taking place. call block() here
         // and unblock() in the animation's endAction
+        // this also has the effect of delaying the call to startRender() until
+        // after the animation has finished
         gestures.block();
 
         float scale = gesture_settings.double_tap_scale;
@@ -284,12 +290,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
-                setScaleX(1f);
-                setScaleY(1f);
-                setX(0f);
-                setY(0f);
-                gestures.unblock();
-                startRender();
+                gestures.unblock(new Runnable() {
+                    @Override
+                    public void run() {
+                        setScaleX(1f);
+                        setScaleY(1f);
+                        setX(0f);
+                        setY(0f);
+                    }
+                });
             }
         });
         anim.start();

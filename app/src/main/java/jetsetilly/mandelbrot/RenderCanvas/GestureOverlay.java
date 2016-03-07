@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -8,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
+
+import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.Tools;
 
@@ -17,11 +20,15 @@ public class GestureOverlay extends ImageView implements
         ScaleGestureDetector.OnScaleGestureListener
 {
     private static final String DEBUG_TAG = "touch canvas";
+    private static final long ON_UP_DELAY = 400;
 
     private RenderCanvas canvas;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
+    private Semaphore up_delay_sem;
+    private Runnable up_delay_runnable;
+    private AsyncTask up_delay_thr;
 
     // used by onScroll() to exit early if it is set to true
     // scaling == true between calls to onScaleBegin() and onScaleEnd()
@@ -42,6 +49,9 @@ public class GestureOverlay extends ImageView implements
     public void setup(Context context, final RenderCanvas canvas) {
         this.canvas = canvas;
         this.blocked = false;
+        this.up_delay_sem = new Semaphore(1);
+        this.up_delay_runnable = null;
+        this.up_delay_thr = null;
         this.scaling = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
@@ -52,7 +62,8 @@ public class GestureOverlay extends ImageView implements
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                /* onGestureListener doesn't handle or expose ACTION_UP events!!
+                /*
+                onGestureListener doesn't handle or expose ACTION_UP events!!
                 this is necessary because we need to detect when a TouchState.SCROLL event ends
                 so that we can kick-start canvas rendering.
 
@@ -62,7 +73,59 @@ public class GestureOverlay extends ImageView implements
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                     if (altered_canvas) {
                         Tools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
-                        canvas.startRender();
+
+                        // make sure any previous threads have finished
+                        // (shouldn't really happen)
+                        if (up_delay_thr != null) {
+                            if (up_delay_thr.getStatus() == AsyncTask.Status.RUNNING) {
+                                Tools.printDebug(DEBUG_TAG, "cancelling a running up_delay_thr");
+                                up_delay_thr.cancel(true);
+                            }
+                        }
+
+                        // separate thread to test for delay
+                        // allows animated zoom to finish before running canvas.startRender()
+                        up_delay_thr = new AsyncTask() {
+                            @Override
+                            protected Object doInBackground(Object[] params) {
+                                try {
+                                    up_delay_sem.acquire();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                up_delay_sem.release();
+
+                                // sleep for ON_UP_DELAY milliseconds
+                                synchronized (this) {
+                                    try {
+                                        wait(ON_UP_DELAY);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Object o) {
+                                super.onPostExecute(o);
+                                if (up_delay_runnable != null) {
+                                    up_delay_runnable.run();
+                                    up_delay_runnable = null;
+                                }
+
+                                canvas.startRender();
+                            }
+
+                            @Override
+                            protected void onCancelled() {
+                                super.onCancelled();
+                                Tools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
+                            }
+                        };
+
+                        up_delay_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     }
                 }
 
@@ -74,16 +137,27 @@ public class GestureOverlay extends ImageView implements
 
     public void block() {
         blocked = true;
+        try {
+            up_delay_sem.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void unblock() {
+    public void unblock(Runnable runnable) {
         blocked = false;
+        up_delay_runnable = runnable;
+        up_delay_sem.release();
     }
 
     /* implementation of onGesturesListener */
     @Override
     public boolean onDown(MotionEvent event) {
         if (blocked) return false;
+
+        if (up_delay_thr != null) {
+            up_delay_thr.cancel(true);
+        }
 
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         canvas.checkActionBar(event.getX(), event.getY(), false);
@@ -126,10 +200,7 @@ public class GestureOverlay extends ImageView implements
         int offset_y = (int) (event.getY() - (canvas.getCanvasHeight() / 2));
 
         canvas.animatedZoom(offset_x, offset_y);
-
-        // not setting altered_canvas to true because we need to
-        // restart the render via canvas.animatedZoom method instead
-        // see the anim.withEndAction() in animatedZoom()
+        altered_canvas = true;
 
         return true;
     }

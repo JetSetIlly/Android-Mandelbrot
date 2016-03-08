@@ -82,6 +82,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // in GestureOverlay
     private boolean scrolled_since_last_normalise;
 
+
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
@@ -222,12 +223,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_canvas.drawColor(render_cache.mostFrequentColor());
 
         if (display_bm != null) {
-            render_bm = getVisibleImage();
-            normaliseCanvas();
+            render_bm = fixateVisibleImage();
+        } else {
+            setImageBitmap(display_bm = render_bm);
         }
-
-        // lose reference to old bitmap
-        setImageBitmap(display_bm = render_bm);
 
         // reset render cache
         render_cache.reset();
@@ -319,6 +318,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.start();
 
         scrolled_since_last_normalise = true;
+
     }
 
     public void pinchZoom(float amount) {
@@ -360,15 +360,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             return;
         }
 
-        // rescale display_bm
-        setImageBitmap(display_bm = getVisibleImage());
-        normaliseCanvas();
+        fixateVisibleImage();
 
         // we've reset the image transformation so we need to reset the mandelbrot transformation
         mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor, true);
         mandelbrot_zoom_factor = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;
+    }
+
+    private Bitmap fixateVisibleImage() {
+        setImageBitmap(display_bm = getVisibleImage());
+        normaliseCanvas();
+        return display_bm;
     }
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
@@ -441,7 +445,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             url = cr.insert(url, values);
             assert url != null;
             OutputStream output_stream = cr.openOutputStream(url);
-            this.display_bm.compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
+            getVisibleImage().compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {
             if (url != null) {
                 cr.delete(url, null, null);

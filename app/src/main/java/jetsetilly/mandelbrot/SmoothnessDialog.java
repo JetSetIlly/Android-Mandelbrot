@@ -29,12 +29,18 @@ public class SmoothnessDialog extends DialogFragment {
         builder.setTitle(R.string.palette_smoothness_label);
         builder.setView(createView());
 
-        Bundle args = getArguments();
+        final Bundle args = getArguments();
         smoothness.set(args.getInt(SET_VALUE));
 
         builder.setPositiveButton(R.string.dialog_ok, null);
+        builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                smoothness.set(args.getInt(SET_VALUE));
+            }
+        });
 
-        builder.setNegativeButton(R.string.dialog_default, new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(R.string.dialog_default, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 smoothness.set(PaletteSettings.getInstance().DEF_SMOOTHNESS);
             }

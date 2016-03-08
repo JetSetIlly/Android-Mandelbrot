@@ -36,6 +36,14 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
     public int getSelectedPaletteID() {
         return selected_palette_id;
+
+    }
+
+    public float getRandomDeviation() {
+        // used to produce a slightly off-rotated swatch
+        final int MIN = -2;
+        final int MAX = 2;
+        return MIN + (float) Math.random() * (MAX - MIN + 1);
     }
 
     @Override
@@ -52,7 +60,10 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
         ((TextView) view.findViewById(R.id.palette_label)).setText(item.name);
         ((TextView) view.findViewById(R.id.palette_id)).setText(String.format("%d", position));
-        ((ImageView) view.findViewById(R.id.palette_swatch)).setImageBitmap(item.getSwatch(context).bitmap);
+
+        ImageView swatch = (ImageView) view.findViewById(R.id.palette_swatch);
+        swatch.setImageBitmap(item.getSwatch(context).bitmap);
+        swatch.setRotation(getRandomDeviation());
 
         // tick this view if this is the currently selected palette
         if (position == selected_palette_id) {

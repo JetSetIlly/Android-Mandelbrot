@@ -64,7 +64,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // the amount of deviation (offset) from the current render_bm
     // used when chaining scroll and zoom events
     // reset when render is restarted
-    // use getScrollX() and getScrollY() to retrieve current scroll values
+    // use getX() and getY() to retrieve current scroll values
     private int rendered_offset_x;
     private int rendered_offset_y;
 
@@ -75,6 +75,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // where scale is used in this way. the Gestures class uses the word scale more liberally.
     private double mandelbrot_zoom_factor;
 
+    // hack solution to the problem of pinch zooming after a image move (which includes animated
+    // zoom). i think that the problem has something to do with pivot points but i couldn't
+    // figure it out properly. it's such a fringe case however that this hack seems reasonable.
+    // plus, once we have properly stitched bitmaps we can remove the artificial ON_UP_DELAY
+    // in GestureOverlay
+    private boolean scrolled_since_last_normalise;
 
     /* initialisation */
     public RenderCanvas(Context context) {
@@ -198,6 +204,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* render control */
+    private void normaliseCanvas() {
+        setScaleX(1f);
+        setScaleY(1f);
+        setX(0);
+        setY(0);
+        scrolled_since_last_normalise = false;
+    }
+
     public void startRender() {
         stopRender();
 
@@ -209,10 +223,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         if (display_bm != null) {
             render_bm = getVisibleImage();
-
-            scrollTo(0, 0);
-            setScaleX(1f);
-            setScaleY(1f);
+            normaliseCanvas();
         }
 
         // lose reference to old bitmap
@@ -237,11 +248,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* canvas transformations */
-    private void updateOffsets(int offset_x, int offset_y) {
-        rendered_offset_x += offset_x;
-        rendered_offset_y += offset_y;
-    }
-
     @Override
     public void scrollBy(int x, int y) {
         // no need to stop rendering
@@ -249,10 +255,17 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // background colour will change while the existing render is ongoing
         stopRender();
 
-        x /= scaleFromZoomFactor(mandelbrot_zoom_factor);
-        y /= scaleFromZoomFactor(mandelbrot_zoom_factor);
-        updateOffsets(x, y);
-        super.scrollBy(x, y);
+        float scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+        x /= scale;
+        y /= scale;
+        rendered_offset_x += x;
+        rendered_offset_y += y;
+
+        // offset entire image view rather than using the scrolling ability
+        setX(getX() - (x * scale));
+        setY(getY() - (y * scale));
+
+        scrolled_since_last_normalise = true;
     }
 
     public void animatedZoom(int offset_x, int offset_y) {
@@ -263,23 +276,26 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // after the animation has finished
         gestures.block();
 
-        float scale = gesture_settings.double_tap_scale;
-
         // stop render to avoid smearing
         stopRender();
 
-        // update offsets ready for the new render
-        updateOffsets(offset_x, offset_y);
+        // transform offsets by current scroll/scale state
+        float old_scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+        offset_x -= getX();
+        offset_y -= getY();
+        offset_x /= old_scale;
+        offset_y /= old_scale;
 
-        // update zoom rate
-        mandelbrot_zoom_factor = zoomRateFromScale(scale);
+        // get new scale value - old_scale will be 1 if this is the first scale in the sequence
+        float scale = old_scale * gesture_settings.double_tap_scale;
 
-        // generate final zoomed image
-        final Bitmap zoomed_bm = getVisibleImage();
+        // set zoom_factor and offsets ready for the new render
+        mandelbrot_zoom_factor = zoomFactorFromScale(scale);
+        rendered_offset_x = offset_x;
+        rendered_offset_y = offset_y;
 
         // do animation
         ViewPropertyAnimator anim = animate();
-
         anim.withLayer();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * scale);
@@ -287,26 +303,33 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.scaleX(scale);
         anim.scaleY(scale);
 
+        anim.withStartAction(new Runnable() {
+            @Override
+            public void run() {
+                normaliseCanvas();
+            }
+        });
+
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
-                gestures.unblock(new Runnable() {
-                    @Override
-                    public void run() {
-                        setScaleX(1f);
-                        setScaleY(1f);
-                        setX(0f);
-                        setY(0f);
-                    }
-                });
+                gestures.unblock(null);
             }
         });
         anim.start();
+
+        scrolled_since_last_normalise = true;
     }
 
-    public void zoomBy(float amount) {
+    public void pinchZoom(float amount) {
+        // WARNING: This doesn't work correctly in certain combination of zoom/move chains
+        // unless the canvas is reset (as it is in zoomCorrection() and startRender() methods)
+
         if (amount == 0)
             return;
+
+        if (scrolled_since_last_normalise)
+            zoomCorrection(true);
 
         // stop render to avoid smearing
         stopRender();
@@ -325,24 +348,27 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void zoomCorrection() {
         // called by gestures.onScaleEnd()
+        zoomCorrection(false);
+    }
+
+    public void zoomCorrection(boolean force) {
+        // called by pinchZoom() if scrolled_since_last_normalise is true
 
         // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
         // and without losing any of the image after the image has been rescaled
-        if (mandelbrot_zoom_factor >= 0) {
+        if (!force && mandelbrot_zoom_factor >= 0) {
             return;
         }
 
         // rescale display_bm
         setImageBitmap(display_bm = getVisibleImage());
-        setScaleX(1f);
-        setScaleY(1f);
-        scrollTo(0, 0);
+        normaliseCanvas();
 
         // we've reset the image transformation so we need to reset the mandelbrot transformation
         mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor, true);
+        mandelbrot_zoom_factor = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;
-        mandelbrot_zoom_factor = 0;
     }
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
@@ -390,7 +416,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         return (float) (1 / (1 - (2 * zoom_factor)));
     }
 
-    private double zoomRateFromScale(float scale) {
+    private double zoomFactorFromScale(float scale) {
         return (scale - 1) / (2 * scale);
     }
 

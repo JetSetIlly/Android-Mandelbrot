@@ -222,7 +222,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-        canvas.zoomBy(detector.getCurrentSpan() - detector.getPreviousSpan());
+        canvas.pinchZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
     }

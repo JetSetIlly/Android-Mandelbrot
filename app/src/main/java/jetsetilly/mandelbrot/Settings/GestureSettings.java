@@ -5,8 +5,8 @@ import android.content.SharedPreferences;
 
 public class GestureSettings {
     private final float DEF_DOUBLE_TAP_SCALE = 3.0f;
-    private final float DEF_MAX_PINCH_ZOOM_IN = 0.35f;
-    private final float DEF_MAX_PINCH_ZOOM_OUT = -0.35f;
+    private final float DEF_MAX_PINCH_ZOOM_IN = 0.33f;
+    private final float DEF_MAX_PINCH_ZOOM_OUT = -0.33f;
 
     public float double_tap_scale;
     public float max_pinch_zoom_in;

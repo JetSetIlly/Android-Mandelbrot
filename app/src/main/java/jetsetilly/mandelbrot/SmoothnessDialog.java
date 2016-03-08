@@ -39,7 +39,6 @@ public class SmoothnessDialog extends DialogFragment {
                 smoothness.set(args.getInt(SET_VALUE));
             }
         });
-
         builder.setNeutralButton(R.string.dialog_default, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 smoothness.set(PaletteSettings.getInstance().DEF_SMOOTHNESS);

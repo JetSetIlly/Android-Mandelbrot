@@ -3,10 +3,6 @@ package jetsetilly.mandelbrot.Palette;
 import android.content.Context;
 import android.graphics.Color;
 
-import java.util.Arrays;
-
-import jetsetilly.mandelbrot.Tools;
-
 public class PaletteDefinition {
     private static final String DBG_TAG = "palette definition";
 

@@ -22,7 +22,6 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -41,6 +40,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // on the RenderCanvas because we want to scale the RenderCanvas and scaling screws up
     // distance measurements
     private GestureOverlay gestures;
+    private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
     // whenever setImageBitmap() is called we should set display_bm to equal
@@ -51,15 +51,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Bitmap display_bm;
 
     // render_bm is sometimes equal to display_bm sometimes not.
-    // 1. on startRender() the current  display_bm is used to copy into the new render_bm by the
-    // correct offset (resetting the scroll  of the ImageView afterwards)
-    // 2. when pinch zooming the zoom amount is applied to the render_bm and not the display_bm. this
-    // prevents exponential zooming of the image
     private Bitmap render_bm;
+
+    // buffer implementation
     private Buffer buffer;
 
-    private final PaletteSettings palette_settings = PaletteSettings.getInstance();
-    private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the amount of deviation (offset) from the current render_bm
     // used when chaining scroll and zoom events
@@ -223,7 +219,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         render_canvas.drawColor(render_cache.mostFrequentColor());
 
         if (display_bm != null) {
-            render_bm = fixateVisibleImage();
+            render_bm = fixateVisibleImage(); // method sets display_bm
         } else {
             setImageBitmap(display_bm = render_bm);
         }

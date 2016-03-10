@@ -342,13 +342,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setScaleY(scale);
     }
 
-    public void zoomCorrection() {
-        // called by gestures.onScaleEnd()
-        zoomCorrection(false);
-    }
-
     public void zoomCorrection(boolean force) {
-        // called by pinchZoom() if scrolled_since_last_normalise is true
+        // force == true -> called by pinchZoom() when scrolled_since_last_normalise is true
+        // force == false -> called by GestureOverlay().onScaleEnd()
 
         // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
         // and without losing any of the image after the image has been rescaled

@@ -232,7 +232,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return;
 
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
-        canvas.zoomCorrection();
+        canvas.zoomCorrection(false);
         altered_canvas = true;
         scaling = false;
     }

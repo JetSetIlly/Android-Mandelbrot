@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 
-import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
+import jetsetilly.mandelbrot.Gadgets.IterationsSeekBar;
 
 public class IterationsDialog extends DialogFragment {
     private IterationsSeekBar iterations;

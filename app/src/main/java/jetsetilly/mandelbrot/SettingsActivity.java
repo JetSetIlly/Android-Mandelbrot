@@ -7,16 +7,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.SystemSettings;
-import jetsetilly.mandelbrot.Widgets.IterationsRateSeekBar;
-import jetsetilly.mandelbrot.Widgets.IterationsSeekBar;
-import jetsetilly.mandelbrot.Widgets.ReportingSeekBar;
+import jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar;
+import jetsetilly.mandelbrot.Gadgets.IterationsSeekBar;
+import jetsetilly.mandelbrot.Gadgets.ReportingSeekBar;
 
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";

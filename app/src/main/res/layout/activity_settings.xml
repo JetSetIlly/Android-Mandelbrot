@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <jetsetilly.mandelbrot.Widgets.IterationsSeekBar
+            <jetsetilly.mandelbrot.Gadgets.IterationsSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/iterations"
@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <jetsetilly.mandelbrot.Widgets.IterationsRateSeekBar
+            <jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/iterations_rate"
@@ -49,7 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
+            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/bailout"
@@ -63,7 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
+            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/doubletap"
@@ -76,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="39dp" />
 
-            <jetsetilly.mandelbrot.Widgets.ReportingSeekBar
+            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/num_passes"

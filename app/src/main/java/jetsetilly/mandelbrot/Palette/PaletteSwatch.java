@@ -19,7 +19,7 @@ public class PaletteSwatch {
         int entry_width = swatch_size / swatch_dimensions[0];
         int entry_height = swatch_size / swatch_dimensions[1];
 
-        Bitmap bm = Bitmap.createBitmap(entry_width * swatch_dimensions[0], entry_height * swatch_dimensions[1], Bitmap.Config.ARGB_8888);
+        Bitmap bm = Bitmap.createBitmap(swatch_size, swatch_size, Bitmap.Config.ARGB_8888);
         Canvas cnv = new Canvas(bm);
         Paint pnt = new Paint();
 
@@ -94,8 +94,7 @@ public class PaletteSwatch {
 
         Canvas canvas = new Canvas(circular_bitmap);
         canvas.drawARGB(0, 0, 0, 0);
-        canvas.drawCircle(scaled_bitmap.getWidth() / 2+0.7f, scaled_bitmap.getHeight() / 2+0.7f,
-                scaled_bitmap.getWidth() / 2+0.1f, paint);
+        canvas.drawCircle(scaled_bitmap.getWidth() / 2, scaled_bitmap.getHeight() / 2, scaled_bitmap.getWidth() / 2, paint);
 
         // apply mask to the swatch
         Rect rect = new Rect(0, 0, scaled_bitmap.getWidth(), scaled_bitmap.getHeight());

@@ -54,6 +54,7 @@ public class IterationsDialog extends DialogFragment {
         WindowManager.LayoutParams layout = new WindowManager.LayoutParams();
         layout.copyFrom(dialog.getWindow().getAttributes());
         layout.width = WindowManager.LayoutParams.MATCH_PARENT;
+        layout.height = WindowManager.LayoutParams.WRAP_CONTENT;
         dialog.show();
         dialog.getWindow().setAttributes(layout);
 

@@ -20,7 +20,7 @@ public class GestureOverlay extends ImageView implements
         ScaleGestureDetector.OnScaleGestureListener
 {
     private static final String DEBUG_TAG = "touch canvas";
-    private static final long ON_UP_DELAY = 400;
+    private static final long ADDITIONAL_ON_UP_DELAY = 0;
 
     private RenderCanvas canvas;
 
@@ -95,10 +95,11 @@ public class GestureOverlay extends ImageView implements
                                 }
                                 up_delay_sem.release();
 
-                                // sleep for ON_UP_DELAY milliseconds
+                                // sleep for ADDITIONAL_ON_UP_DELAY milliseconds
                                 synchronized (this) {
                                     try {
-                                        wait(ON_UP_DELAY);
+                                        if (ADDITIONAL_ON_UP_DELAY > 0)
+                                            wait(ADDITIONAL_ON_UP_DELAY);
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
                                     }

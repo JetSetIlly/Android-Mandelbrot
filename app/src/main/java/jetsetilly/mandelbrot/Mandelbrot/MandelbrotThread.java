@@ -52,15 +52,35 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
 
         m.render_completed = false;
 
+        int canvas_width = m.canvas.getCanvasWidth();
+        int canvas_height = m.canvas.getCanvasHeight();
+
+        // protected area accounting
+        int this_line_start;
+        int this_line_end;
+        int y_line;
+
         switch (mandelbrot_settings.render_mode) {
+
             case TOP_DOWN:
-                /* TODO: handle protected_render_area (render_mode==CENTRE already does this) */
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
-                    for (cy = pass; cy < m.canvas.getCanvasHeight(); cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
+                    for (cy = pass; cy < canvas_height; cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
+                        y_line = cy;
 
+                        // PROTECTED AREA ACCOUNTING
                         mx = mandelbrot_settings.real_left;
-                        for (cx = 0; cx < m.canvas.getCanvasWidth(); ++cx, mx += m.pixel_scale) {
+                        if (y_line > m.protected_render_area.top && y_line < m.protected_render_area.bottom) {
+                            mx += (m.pixel_scale * m.protected_render_area.left);
+                            this_line_start = m.protected_render_area.left;
+                            this_line_end = m.protected_render_area.right;
+                        } else {
+                            this_line_start = 0;
+                            this_line_end = canvas_width;
+                        }
+
+                        // END OF PROTECTED AREA ACCOUNTING
+                        for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             m.canvas.drawPoint(cx, cy, doIterations(mx, my));
                         }
 
@@ -73,18 +93,18 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                 break;
 
             case CENTRE:
-                int half_height = m.canvas.getCanvasHeight() / 2;
+                int num_iterations;
+                int half_height = canvas_height / 2;
 
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * m.pixel_scale);
                     myb = mandelbrot_settings.imaginary_lower + ((half_height - mandelbrot_settings.num_passes + pass) * m.pixel_scale);
                     for (cy = pass, cyb = mandelbrot_settings.num_passes - pass; cy < half_height; cy += mandelbrot_settings.num_passes, cyb += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes), myb -= (m.pixel_scale * mandelbrot_settings.num_passes)) {
-                        int this_line_start;
-                        int this_line_end;
-                        int y_line;
 
                         // bottom half of image
                         y_line = half_height + cy;
+
+                        // PROTECTED AREA ACCOUNTING
                         mx = mandelbrot_settings.real_left;
                         if (y_line > m.protected_render_area.top && y_line < m.protected_render_area.bottom) {
                             mx += (m.pixel_scale * m.protected_render_area.left);
@@ -92,18 +112,21 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                             this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
-                            this_line_end = m.canvas.getCanvasWidth();
+                            this_line_end = canvas_width;
                         }
+                        // END OF PROTECTED AREA ACCOUNTING
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
-                            int i = doIterations(mx, my);
-                            if (i >= 0) {
-                                m.canvas.drawPoint(cx, y_line, i);
+                            num_iterations = doIterations(mx, my);
+                            if (num_iterations >= 0) {
+                                m.canvas.drawPoint(cx, y_line, num_iterations);
                             }
                         }
 
                         // top half of image
                         y_line = half_height - cyb;
+
+                        // PROTECTED AREA ACCOUNTING
                         mx = mandelbrot_settings.real_left;
                         if (y_line > m.protected_render_area.top && y_line < m.protected_render_area.bottom) {
                             mx += (m.pixel_scale * m.protected_render_area.left);
@@ -111,13 +134,14 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
                             this_line_end = m.protected_render_area.right;
                         } else {
                             this_line_start = 0;
-                            this_line_end = m.canvas.getCanvasWidth();
+                            this_line_end = canvas_width;
                         }
+                        // END OF PROTECTED AREA ACCOUNTING
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
-                            int i = doIterations(mx, myb);
-                            if (i >= 0) {
-                                m.canvas.drawPoint(cx, y_line, i);
+                            num_iterations = doIterations(mx, myb);
+                            if (num_iterations >= 0) {
+                                m.canvas.drawPoint(cx, y_line, num_iterations);
                             }
                         }
 

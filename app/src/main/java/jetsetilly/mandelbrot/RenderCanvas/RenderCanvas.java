@@ -125,6 +125,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void resetCanvas() {
         // new render cache
+        stopRender();
         render_cache = new RenderCache();
 
         // kill any existing image
@@ -151,6 +152,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     /* MandelbrotCanvas implementation */
     public void startDraw(Mandelbrot.RenderMode render_mode) {
+        // UI thread
+
         /* flush buffer here whether we need to or not. this is a hacky solution to the problem of
          cancelling the Mandelbrot thread and restarting it before ASyncTask.onCancelled()
          has run. the scheduling of onCancelled() is unreliable and the new thread may have started
@@ -169,16 +172,18 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer.primeBuffer(display_bm);
     }
 
-    public void drawPoint(float dx, float dy, int iteration)
-    {
+    public void drawPoint(float dx, float dy, int iteration) {
+        // Mandelbrot Thread
         buffer.pushDraw(dx, dy, iteration);
     }
 
     public void update() {
+        // UI thread
         buffer.flush(false);
     }
 
     public void endDraw() {
+        // UI thread
         if (buffer != null) {
             buffer.flush(true);
             buffer = null;
@@ -187,6 +192,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void cancelDraw() {
+        // UI thread
         setBackgroundColor(render_cache.mostFrequentColor());
     }
 
@@ -237,7 +243,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void stopRender() {
-        mandelbrot.stopRender();
+        if (mandelbrot != null)
+            mandelbrot.stopRender();
     }
     /* end of render control */
 

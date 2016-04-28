@@ -201,16 +201,19 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case SETTINGS_ACTIVITY_ID:
-                if (result_code == SettingsActivity.ACTIVITY_RESULT_CHANGE) {
+                if (result_code == SettingsActivity.ACTIVITY_RESULT_RENDER || result_code == SettingsActivity.ACTIVITY_RESULT_NO_RENDER) {
                     // note that settings have been changed in the settings activity
                     // save settings and restart render
-                    // TODO: return bundled changes in the intent
                     MandelbrotSettings.getInstance().save(this);
                     GestureSettings.getInstance().save(this);
                     SystemSettings.getInstance().save(this);
                     applyOrientation();
+                }
+
+                if (result_code == SettingsActivity.ACTIVITY_RESULT_RENDER) {
                     render_canvas.startRender();
                 }
+
                 break;
         }
     }

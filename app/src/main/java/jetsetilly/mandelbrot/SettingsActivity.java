@@ -21,8 +21,8 @@ public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
     public final static String INITIAL_ITERATIONS_VALUE = "INITIAL_ITERATIONS_VALUE";
-    public static final Integer ACTIVITY_RESULT_NO_CHANGE = 1;
-    public static final Integer ACTIVITY_RESULT_CHANGE = 2;
+    public static final Integer ACTIVITY_RESULT_NO_RENDER = 1;
+    public static final Integer ACTIVITY_RESULT_RENDER = 2;
 
     private IterationsSeekBar iterations;
     private IterationsRateSeekBar iterations_rate;
@@ -120,10 +120,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                // return ACTIVITY_RESULT_NO_CHANGE by default, return ACTIVITY_RESULT_CHANGE under
+                // return ACTIVITY_RESULT_NO_RENDER by default, return ACTIVITY_RESULT_RENDER under
                 // specific circumstances (see below)
-                setResult(ACTIVITY_RESULT_NO_CHANGE);
+                setResult(ACTIVITY_RESULT_NO_RENDER);
 
+                // changes to these settings have no effect on final render image
                 switch (render_mode.getCheckedRadioButtonId()) {
                     case R.id.rendermode_topdown:
                         mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
@@ -143,17 +144,16 @@ public class SettingsActivity extends AppCompatActivity {
                         break;
                 }
 
-                // change mandelbrot parameters and re-render as appropriate
-                if (iterations.hasChanged() || bailout.hasChanged()) {
-                    mandelbrot_settings.max_iterations = iterations.getInteger();
-                    mandelbrot_settings.bailout_value = bailout.getDouble();
-                    setResult(ACTIVITY_RESULT_CHANGE);
-                }
-
-                // changes to these settings have no effect on rendering
                 gesture_settings.double_tap_scale = double_tap.getFloat();
                 mandelbrot_settings.num_passes = num_passes.getInteger();
                 mandelbrot_settings.iterations_rate = Mandelbrot.IterationsRate.values()[iterations_rate.getProgress()];
+
+                // changes to these settings DO have an effect on final render image
+                if (iterations.hasChanged() || bailout.hasChanged()) {
+                    mandelbrot_settings.max_iterations = iterations.getInteger();
+                    mandelbrot_settings.bailout_value = bailout.getDouble();
+                    setResult(ACTIVITY_RESULT_RENDER);
+                }
 
                 finish();
                 setTransitionAnim();

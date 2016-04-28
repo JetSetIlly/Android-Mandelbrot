@@ -63,7 +63,9 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
         ImageView swatch = (ImageView) view.findViewById(R.id.palette_swatch);
         swatch.setImageBitmap(item.getSwatch(context).bitmap);
-        swatch.setRotation(getRandomDeviation());
+
+        // rotate the swatch by a small, random amount
+        //swatch.setRotation(getRandomDeviation());
 
         // tick this view if this is the currently selected palette
         if (position == selected_palette_id) {

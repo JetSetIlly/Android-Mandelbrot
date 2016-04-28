@@ -25,6 +25,8 @@ public class ReportingSeekBar extends LinearLayout {
     private int base_value;
     private int scale;
 
+    private boolean has_changed;
+
     // runnable launched when seekbar has changed - does nothing by default
     public Runnable onSeekBarChange = new Runnable() {
         @Override
@@ -51,6 +53,8 @@ public class ReportingSeekBar extends LinearLayout {
         slider = new SeekBar(context);
         this.addView(slider);
 
+        this.has_changed = false;
+
         slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -59,6 +63,7 @@ public class ReportingSeekBar extends LinearLayout {
                 } else {
                     value.setText(translateValue((double) (slider.getProgress() + base_value) / scale));
                 }
+                has_changed = true;
             }
 
             @Override
@@ -138,10 +143,12 @@ public class ReportingSeekBar extends LinearLayout {
 
     public void set(int val) {
         slider.setProgress(val - base_value);
+        has_changed = false;
     }
 
     public void set(double val) {
         slider.setProgress((int) (val * scale) - base_value);
+        has_changed = false;
     }
 
     public void set(float val) {
@@ -149,7 +156,7 @@ public class ReportingSeekBar extends LinearLayout {
     }
 
     public boolean hasChanged() {
-        return start_progress != this.getProgress();
+        return has_changed;
     }
 
     public String translateValue(Object value) {

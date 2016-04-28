@@ -62,14 +62,17 @@ public class BufferPixels implements Buffer {
 
     @Override
     public void pushDraw(float cx, float cy, int iteration) {
+        // figure out which colour to use
         int palette_entry = iteration;
 
         if (iteration >= palette_settings.numColors()) {
             palette_entry = (iteration % (palette_settings.numColors() - 1)) + 1;
         }
 
+        // put coloured pixel into pixel buffer - ready for flushing
         pixels[((int)cy * width) + (int)cx] = palette_settings.colours[palette_entry];
 
+       // update palette frequency
         palette_frequency[palette_entry] ++;
         if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
             most_frequent_palette_entry = palette_entry;

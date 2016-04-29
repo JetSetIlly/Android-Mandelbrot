@@ -45,18 +45,22 @@ public class SmoothnessDialog extends DialogFragment {
             }
         });
 
-        // Create the AlertDialog object and return it
-        Dialog dialog = builder.create();
+        // create the AlertDialog object and return it
+        return builder.create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Dialog dialog = getDialog();
 
         // set width to match parent (setting this in the layout file does not work as expected)
         WindowManager.LayoutParams layout = new WindowManager.LayoutParams();
         layout.copyFrom(dialog.getWindow().getAttributes());
         layout.width = WindowManager.LayoutParams.MATCH_PARENT;
         layout.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        dialog.show();
         dialog.getWindow().setAttributes(layout);
-
-        return dialog;
     }
 
     @Override

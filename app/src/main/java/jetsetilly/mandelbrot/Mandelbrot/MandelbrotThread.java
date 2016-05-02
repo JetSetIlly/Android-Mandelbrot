@@ -45,32 +45,6 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
         return 0;
     }
 
-    private int doIterations_integer(double x, double y) {
-        final long SCALE = 1;
-        long U, V, A, B;
-        long lx = (long) x * SCALE;
-        long ly = (long) y * SCALE;
-        long bv = (long) mandelbrot_settings.bailout_value * SCALE;
-
-        U = (A = lx) * A;
-        V = (B = ly) * B;
-
-        int i;
-
-        for (i = 1; i <= mandelbrot_settings.max_iterations; ++ i) {
-            B = 2 * A * B + ly;
-            A = U - V + lx;
-            U = A * A;
-            V = B * B;
-
-            if (U + V > bv) {
-                return i;
-            }
-        }
-
-        return 0;
-    }
-
     @Override
     protected Void doInBackground(Void... v) {
         int cx, cy, cyb;

@@ -26,7 +26,7 @@ public class BufferPixels implements Buffer {
     final static long PIXEL_THRESHOLD = 10000;
     private long pixel_ct;
 
-    final static long PIXEL_UPDATE_FREQ = 100; // 100 == 10fps
+    final static long PIXEL_UPDATE_FREQ = 100; // in milliseconds; 100 == 10fps
     Timer pixel_scheduler = new Timer();
     TimerTask pixel_scheduler_task = new TimerTask() {
         @Override

@@ -172,9 +172,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer.primeBuffer(display_bm);
     }
 
-    public void drawPoint(float dx, float dy, int iteration) {
+    public void drawPoint(int cx, int cy, int iteration) {
         // Mandelbrot Thread
-        buffer.pushDraw(dx, dy, iteration);
+        buffer.pushDraw(cx, cy, iteration);
     }
 
     public void update() {

@@ -51,7 +51,7 @@ public class BufferPixels_non_threaded implements Buffer {
     }
 
     @Override
-    public void pushDraw(float cx, float cy, int iteration) {
+    public void pushDraw(int cx, int cy, int iteration) {
         // figure out which colour to use
         int palette_entry = iteration;
 

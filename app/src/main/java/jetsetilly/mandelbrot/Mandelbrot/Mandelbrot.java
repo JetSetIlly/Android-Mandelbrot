@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
+import android.support.v8.renderscript.RenderScript;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -19,7 +20,7 @@ public class Mandelbrot {
     private final int iterations_rate_base = 5;
 
     private final Context context;
-    final MandelbrotCanvas canvas;
+    protected final MandelbrotCanvas canvas;
     private final TextView fractal_info;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();

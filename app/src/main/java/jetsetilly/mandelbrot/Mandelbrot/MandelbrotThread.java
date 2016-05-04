@@ -61,7 +61,6 @@ class MandelbrotThread extends AsyncTask<Void, Integer, Void> {
         int y_line;
 
         switch (mandelbrot_settings.render_mode) {
-
             case TOP_DOWN:
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);

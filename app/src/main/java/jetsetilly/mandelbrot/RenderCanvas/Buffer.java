@@ -2,8 +2,19 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.graphics.Bitmap;
 
-interface Buffer {
-    void primeBuffer(Bitmap bitmap);
-    void flush(Boolean final_flush);
-    void pushDraw(int cx, int cy, int iteration);
+abstract class Buffer {
+    protected RenderCanvas render_canvas;
+    protected int width, height;
+
+    public Buffer(RenderCanvas canvas) {
+        render_canvas = canvas;
+        width = canvas.getCanvasWidth();
+        height = canvas.getCanvasHeight();
+    }
+
+    abstract void primeBuffer(Bitmap bitmap);
+    abstract void flush(Boolean final_flush);
+
+    abstract void scheduleDraw(int cx, int cy, int iteration);
+    abstract void scheduleDraw(int iterations[]);
 }

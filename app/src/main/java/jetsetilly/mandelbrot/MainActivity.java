@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v8.renderscript.RenderScript;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     static public ProgressView progress;
     static public MandelbrotActionBar action_bar;
 
+    static public RenderScript render_script;
+
     // handler for dialogs
     private DialogReceiver dialog_receiver;
 
@@ -74,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
+
+        // render script instance -- alive for the entire lifespan of the app
+        render_script = RenderScript.create(this, RenderScript.ContextType.NORMAL);
 
         // set render running as soon as possible
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);

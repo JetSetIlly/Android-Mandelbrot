@@ -13,7 +13,7 @@ import jetsetilly.mandelbrot.Tools;
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
 
-    public enum RenderMode {TOP_DOWN, CENTRE, MIN_TO_MAX}
+    public enum RenderMode {SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, HARDWARE}
     public enum IterationsRate {SLOW, NORMAL, FAST}
 
     // with the current algorithm, this value is the value of the fastest IterationsRate
@@ -30,11 +30,15 @@ public class Mandelbrot {
 
     double pixel_scale;
 
-    /* protected_render_area is used to define that area of the canvas
-    that do not need to be rendered again because those pixels (hopefully)
-    already appear on the canvas
-     */
-    Rect protected_render_area;
+    // render_area is used to define that area of the canvas
+    // that needs to be rendered again. pixels outside this area
+    // already appear on the canvas
+    //
+    // if ((pixel.x >= protected_left && pixel.x <= protected_right) || (pixel.y >= protected_top && pixel.y <= protected_bottom))
+    // then
+    //      render pixel
+    // end if
+    Rect render_area;
 
     // is this render a rescaling render (ie. has the zoom level changed)
     // we use this so that progress view is shown immediately
@@ -127,24 +131,24 @@ public class Mandelbrot {
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
         transformMandelbrot(offset_x, offset_y, zoom_factor, false);
 
-        // initialise protected_render_area
-        protected_render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
+        // initialise render_area
+        render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
         // make sure render mode etc. is set correctly
         rescaling_render = zoom_factor != 0;
 
-        // define protected_render_area
+        // define render_area
         if (zoom_factor == 0 && render_completed) {
             if (offset_x < 0) {
-                protected_render_area.right = (int) -offset_x;
+                render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
-                protected_render_area.left = canvas.getCanvasWidth() - (int) offset_x;
+                render_area.left = canvas.getCanvasWidth() - (int) offset_x;
             }
 
-            if (offset_y < 0) {
-                protected_render_area.top = (int) -offset_y;
-            } else if (offset_y > 0) {
-                protected_render_area.bottom = canvas.getCanvasHeight() - (int) offset_y;
+            if (offset_y < 0) { // moving down
+                render_area.bottom = (int) -offset_y;
+            } else if (offset_y > 0) { // moving up
+                render_area.top = canvas.getCanvasHeight() - (int) offset_y;
             }
         }
 
@@ -154,7 +158,13 @@ public class Mandelbrot {
 
         // start render
         MainActivity.progress.startSession();
-        render_thr = new MandelbrotThread(this);
+
+        if (mandelbrot_settings.render_mode == RenderMode.HARDWARE) {
+            render_thr = new MandelbrotThread_renderscript(this);
+        } else {
+            render_thr = new MandelbrotThread_dalvik(this);
+        }
+
         render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     /* end of threading */

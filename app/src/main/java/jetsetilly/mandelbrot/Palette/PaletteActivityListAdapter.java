@@ -39,13 +39,6 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
     }
 
-    public float getRandomDeviation() {
-        // used to produce a slightly off-rotated swatch
-        final int MIN = -2;
-        final int MAX = 2;
-        return MIN + (float) Math.random() * (MAX - MIN + 1);
-    }
-
     @Override
     public View getView(int position, View convert_view, ViewGroup parent) {
         final View view;

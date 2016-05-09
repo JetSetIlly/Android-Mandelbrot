@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v8.renderscript.Allocation;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
@@ -108,12 +110,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
     /* end of initialisation */
 
-    @Override
+    @Override // View
     public void setBackgroundColor(int color) {
         super.setBackgroundColor(color);
 
         // color static_background at the same time -- static_background only comes into play
-        // when zooming but there's no performance loss so we set it here for convenience and neatness
+        // when zooming. set it here for convenience and neatness
         static_background.setBackgroundColor(color);
     }
 
@@ -161,9 +163,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
          buffer. worse, if it does run it will kill the buffer leaving the new task nothing to
          work with
          */
-        if (buffer != null) buffer.flush(true);
+        if (buffer != null)
+            buffer.flush(true);
 
-        if (render_mode == Mandelbrot.RenderMode.MIN_TO_MAX) {
+        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferPixels(this);
         } else {
             buffer = new BufferPixels(this);
@@ -172,9 +175,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer.primeBuffer(display_bm);
     }
 
+    public void drawPoints(int iterations[]) {
+        // Mandelbrot Thread
+        buffer.scheduleDraw(iterations);
+    }
+
     public void drawPoint(int cx, int cy, int iteration) {
         // Mandelbrot Thread
-        buffer.pushDraw(cx, cy, iteration);
+        buffer.scheduleDraw(cx, cy, iteration);
     }
 
     public void update() {
@@ -250,7 +258,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* canvas transformations */
-    @Override
+    @Override // View
     public void scrollBy(int x, int y) {
         // no need to stop rendering
         // but there is currently an odd effect where the dominant

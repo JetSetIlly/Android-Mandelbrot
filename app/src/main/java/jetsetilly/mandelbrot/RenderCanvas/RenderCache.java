@@ -6,7 +6,7 @@ public class RenderCache {
     // count the frequency at which each colour is used
     // used to change the background colour of the RenderCanvas
     private int colour_cnt[];
-    private int colour_cnt_highest;
+    private int colour_cnt_highest = 1;
 
     PaletteSettings palette_settings = PaletteSettings.getInstance();
 
@@ -17,7 +17,9 @@ public class RenderCache {
     public void reset() {
         // reset colour count
         colour_cnt = new int[palette_settings.numColors()];
-        colour_cnt_highest = 1;
+
+        // not updating colour_cnt_highest. preserving value from previous updates
+        // value set initially in declaration
     }
 
     public void colourCountUpdate(int palette_entry)

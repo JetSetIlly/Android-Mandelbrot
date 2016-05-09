@@ -25,8 +25,9 @@
     <string name="settings_iterations_rate_slow">Slow</string>
 
     <string name="settings_rendermode_label">Render Mode</string>
-    <string name="settings_rendermode_topdown">Top/Down</string>
-    <string name="settings_rendermode_centre">Centre/Out</string>
+    <string name="settings_rendermode_topdown">Top/Down (software)</string>
+    <string name="settings_rendermode_centre">Centre/Out (software)</string>
+    <string name="settings_rendermode_hardware">Hardware</string>
 
     <string name="settings_orientation_label">Screen Orientation</string>
     <string name="settings_orientation_portrait">Portrait</string>

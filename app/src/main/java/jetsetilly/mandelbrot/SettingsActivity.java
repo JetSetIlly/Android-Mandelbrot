@@ -98,10 +98,12 @@ public class SettingsActivity extends AppCompatActivity {
         num_passes.set(mandelbrot_settings.num_passes);
 
         // set render mode radio button
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.TOP_DOWN) {
+        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN) {
             render_mode.check(R.id.rendermode_topdown);
-        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.CENTRE) {
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_CENTRE) {
             render_mode.check(R.id.rendermode_centre);
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
+            render_mode.check(R.id.rendermode_hardware);
         }
 
         // set screen orientation radio button
@@ -127,10 +129,13 @@ public class SettingsActivity extends AppCompatActivity {
                 // changes to these settings have no effect on final render image
                 switch (render_mode.getCheckedRadioButtonId()) {
                     case R.id.rendermode_topdown:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.TOP_DOWN;
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN;
                         break;
                     case R.id.rendermode_centre:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.CENTRE;
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_CENTRE;
+                        break;
+                    case R.id.rendermode_hardware:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.HARDWARE;
                         break;
                 }
 

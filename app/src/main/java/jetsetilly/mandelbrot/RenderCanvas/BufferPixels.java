@@ -7,15 +7,14 @@ import java.util.TimerTask;
 
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Tools;
 
-public class BufferPixels implements Buffer {
+public class BufferPixels extends Buffer {
     final static public String DBG_TAG = "buffer pixels";
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
-    private RenderCanvas render_canvas;
     private Bitmap bitmap;
-    private int width, height;
 
     private int[] palette_frequency;
     private int most_frequent_palette_entry;
@@ -38,15 +37,10 @@ public class BufferPixels implements Buffer {
     };
 
     public BufferPixels(RenderCanvas canvas) {
-        render_canvas = canvas;
-        width = canvas.getCanvasWidth();
-        height = canvas.getCanvasHeight();
+        super(canvas);
 
         pixels = new int[height * width];
-        palette_frequency = new int[
-                Math.min(palette_settings.numColors(),
-                        MandelbrotSettings.getInstance().max_iterations) + 1
-                ];
+        palette_frequency = new int[palette_settings.numColors() + 1];
     }
 
     @Override
@@ -70,7 +64,10 @@ public class BufferPixels implements Buffer {
     }
 
     @Override
-    public void pushDraw(int cx, int cy, int iteration) {
+    public void scheduleDraw(int cx, int cy, int iteration) {
+        if (iteration < 0)
+            return;
+
         // figure out which colour to use
         int palette_entry = iteration;
 
@@ -79,14 +76,25 @@ public class BufferPixels implements Buffer {
         }
 
         // put coloured pixel into pixel buffer - ready for flushing
-        pixels[((int)cy * width) + (int)cx] = palette_settings.colours[palette_entry];
+        pixels[(cy * width) + cx] = palette_settings.colours[palette_entry];
 
-       // update palette frequency
-        palette_frequency[palette_entry] ++;
+        // update palette frequency
+        palette_frequency[palette_entry]++;
         if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
             most_frequent_palette_entry = palette_entry;
         }
 
         pixel_ct ++;
+    }
+
+    @Override
+    public void scheduleDraw(int iterations[]) {
+        int cx, cy;
+
+        for (int i = 0; i < iterations.length; ++ i) {
+            cy = i / width;
+            cx = i - (cy * width);
+            scheduleDraw(cx, cy, iterations[i]);
+        }
     }
 }

@@ -5,9 +5,7 @@ import android.graphics.Bitmap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Tools;
 
 public class BufferPixels extends Buffer {
     final static public String DBG_TAG = "buffer pixels";
@@ -53,24 +51,24 @@ public class BufferPixels extends Buffer {
 
     @Override
     public void flush(Boolean final_flush) {
-        render_canvas.invalidate();
-
         if (final_flush) {
             pixel_scheduler.cancel();
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+            render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
         }
 
-        render_canvas.render_cache.colourCountUpdate(most_frequent_palette_entry);
+        render_canvas.invalidate();
     }
 
     @Override
     public void scheduleDraw(int cx, int cy, int iteration) {
+        // do nothing if iteration is less than zero. -1 is used as
+        // a place holder to indicate that no iterations have taken place
         if (iteration < 0)
             return;
 
         // figure out which colour to use
         int palette_entry = iteration;
-
         if (iteration >= palette_settings.numColors()) {
             palette_entry = (iteration % (palette_settings.numColors() - 1)) + 1;
         }
@@ -79,9 +77,13 @@ public class BufferPixels extends Buffer {
         pixels[(cy * width) + cx] = palette_settings.colours[palette_entry];
 
         // update palette frequency
-        palette_frequency[palette_entry]++;
-        if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
-            most_frequent_palette_entry = palette_entry;
+        // we don't want to consider colours[0] for the colour_cnt_highest
+        // it's the zero space color it's not really a color
+        if (palette_entry > 0) {
+            palette_frequency[palette_entry]++;
+            if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
+                most_frequent_palette_entry = palette_entry;
+            }
         }
 
         pixel_ct ++;

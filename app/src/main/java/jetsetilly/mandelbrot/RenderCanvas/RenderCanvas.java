@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v8.renderscript.Allocation;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
@@ -32,7 +31,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private MainActivity main_activity;
     private Mandelbrot mandelbrot;
-    protected RenderCache render_cache;
+    protected ColourCache colour_cache;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
@@ -58,7 +57,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // buffer implementation
     private Buffer buffer;
 
-
     // the amount of deviation (offset) from the current render_bm
     // used when chaining scroll and zoom events
     // reset when render is restarted
@@ -79,6 +77,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // plus, once we have properly stitched bitmaps we can remove the artificial ON_UP_DELAY
     // in GestureOverlay
     private boolean scrolled_since_last_normalise;
+
+    // completed render is true if last render was finished to completion. set to true
+    // if render was interrupted prematurely (call to cancelDraw())
+    private boolean completed_render;
 
 
     /* initialisation */
@@ -121,20 +123,20 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        clear_bm.eraseColor(render_cache.mostFrequentColor());
+        clear_bm.eraseColor(colour_cache.mostFrequentColor());
         setImageBitmap(display_bm = clear_bm);
     }
 
     public void resetCanvas() {
         // new render cache
         stopRender();
-        render_cache = new RenderCache();
+        colour_cache = new ColourCache();
 
         // kill any existing image
         clearImage();
 
         // set base color
-        setBackgroundColor(render_cache.mostFrequentColor());
+        setBackgroundColor(colour_cache.mostFrequentColor());
 
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
         startRender();
@@ -173,6 +175,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
 
         buffer.primeBuffer(display_bm);
+
+        completed_render = false;
     }
 
     public void drawPoints(int iterations[]) {
@@ -196,12 +200,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             buffer.flush(true);
             buffer = null;
         }
-        setBackgroundColor(render_cache.mostFrequentColor());
+        setBackgroundColor(colour_cache.mostFrequentColor());
+        completed_render = true;
     }
 
     public void cancelDraw() {
         // UI thread
-        setBackgroundColor(render_cache.mostFrequentColor());
+        setBackgroundColor(colour_cache.mostFrequentColor());
     }
 
     public int getCanvasWidth() {
@@ -210,6 +215,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public int getCanvasHeight() {
         return getHeight();
+    }
+
+    public boolean isCompleteRender() {
+        return completed_render;
     }
     /* end of MandelbrotCanvas implementation */
 
@@ -226,20 +235,20 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void startRender() {
         stopRender();
 
-        render_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        Canvas render_canvas = new Canvas(render_bm);
-
-        // fill colour to first colour in current colours
-        render_canvas.drawColor(render_cache.mostFrequentColor());
-
         if (display_bm != null) {
             render_bm = fixateVisibleImage(); // method sets display_bm
         } else {
+            render_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+            Canvas render_canvas = new Canvas(render_bm);
+
+            // fill colour to first colour in current colours
+            render_canvas.drawColor(colour_cache.mostFrequentColor());
+
             setImageBitmap(display_bm = render_bm);
         }
 
         // reset render cache
-        render_cache.reset();
+        colour_cache.reset();
 
         // start render thread
         mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
@@ -370,7 +379,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         fixateVisibleImage();
 
         // we've reset the image transformation so we need to reset the mandelbrot transformation
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor, true);
+        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
         mandelbrot_zoom_factor = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;
@@ -393,7 +402,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // do offset
         offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         offset_canvas = new Canvas(offset_bm);
-        offset_canvas.drawColor(render_cache.mostFrequentColor());
+        offset_canvas.drawColor(colour_cache.mostFrequentColor());
 
         // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
         // in any order. the image may lose definition after several cycles of this but
@@ -416,7 +425,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         scale_paint.setAntiAlias(true);
         scale_paint.setDither(true);
 
-        scale_canvas.drawColor(render_cache.mostFrequentColor());
+        scale_canvas.drawColor(colour_cache.mostFrequentColor());
         scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_paint);
 
         return scaled_bm;

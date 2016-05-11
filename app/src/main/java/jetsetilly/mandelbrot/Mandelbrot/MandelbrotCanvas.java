@@ -10,4 +10,6 @@ public interface MandelbrotCanvas {
 
     int getCanvasWidth();
     int getCanvasHeight();
+
+    boolean isCompleteRender();
 }

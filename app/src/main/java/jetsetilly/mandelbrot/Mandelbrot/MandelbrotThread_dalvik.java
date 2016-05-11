@@ -34,8 +34,6 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
         int cx, cy, cyb;
         double mx, my, myb;
 
-        m.render_completed = false;
-
         int canvas_width = m.canvas.getCanvasWidth();
         int canvas_height = m.canvas.getCanvasHeight();
 

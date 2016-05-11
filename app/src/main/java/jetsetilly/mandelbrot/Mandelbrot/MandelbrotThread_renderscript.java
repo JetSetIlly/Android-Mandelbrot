@@ -15,8 +15,6 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
 
     @Override
     protected Void doInBackground(Void... params) {
-        m.render_completed = false;
-
         int canvas_width = m.canvas.getCanvasWidth();
         int canvas_height = m.canvas.getCanvasHeight();
 

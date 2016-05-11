@@ -26,7 +26,6 @@ public class Mandelbrot {
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
 
     private MandelbrotThread render_thr;
-    boolean render_completed = false;
 
     double pixel_scale;
 
@@ -119,17 +118,14 @@ public class Mandelbrot {
         render_thr = null;
     }
 
-    public void transformMandelbrot(double offset_x, double offset_y, double zoom_factor, boolean mark_render_incomplete) {
+    public void transformMandelbrot(double offset_x, double offset_y, double zoom_factor) {
         // this function updates the mandelbrot co-ordinates. stopping any current threads.
         stopRender();
         transform(offset_x, offset_y, zoom_factor);
-
-        if (mark_render_incomplete)
-            render_completed = false;
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
-        transformMandelbrot(offset_x, offset_y, zoom_factor, false);
+        transformMandelbrot(offset_x, offset_y, zoom_factor);
 
         // initialise render_area
         render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
@@ -138,7 +134,7 @@ public class Mandelbrot {
         rescaling_render = zoom_factor != 0;
 
         // define render_area
-        if (zoom_factor == 0 && render_completed) {
+        if (zoom_factor == 0 && canvas.isCompleteRender()) {
             if (offset_x < 0) {
                 render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {

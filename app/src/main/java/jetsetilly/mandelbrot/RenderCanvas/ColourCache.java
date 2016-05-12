@@ -6,7 +6,7 @@ public class ColourCache {
     // count the frequency at which each colour is used
     // used to change the background colour of the RenderCanvas
     private int colour_cnt[];
-    private int colour_cnt_highest;
+    private int colour_cnt_highest = 1;
 
     PaletteSettings palette_settings = PaletteSettings.getInstance();
 
@@ -17,7 +17,12 @@ public class ColourCache {
     public void reset() {
         // reset colour count
         colour_cnt = new int[palette_settings.numColors()];
-        colour_cnt_highest = 1;
+
+        // not resetting colour_cnt_highest. this way we preserve the highest
+        // colour index until colourCountUpdate() is called again. this is better
+        // because it means we don't get a boring colour index if the cache has
+        // been reset but colour_cnt_highest is needed before a new colour profile
+        // has been started
     }
 
     public void colourCountUpdate(int palette_entry)

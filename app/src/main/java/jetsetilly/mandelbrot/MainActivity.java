@@ -98,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        // TODO: universal setting to allow background rendering
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(dialog_receiver);
     }

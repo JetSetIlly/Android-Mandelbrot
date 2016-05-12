@@ -167,9 +167,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             buffer.flush(true);
 
         if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
-            buffer = new BufferPixels(this);
+            buffer = new BufferSimple(this);
         } else {
-            buffer = new BufferPixels(this);
+            buffer = new BufferTimer(this);
         }
 
         buffer.primeBuffer(display_bm);

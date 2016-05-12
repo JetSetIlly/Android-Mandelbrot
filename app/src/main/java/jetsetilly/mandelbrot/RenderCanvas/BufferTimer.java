@@ -7,22 +7,21 @@ import java.util.TimerTask;
 
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
-public class BufferPixels extends Buffer {
+public class BufferTimer extends Buffer {
     final static public String DBG_TAG = "buffer pixels";
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
     private Bitmap bitmap;
+    private int[] pixels;
+    private long pixel_ct;
+
+    final static long PIXEL_THRESHOLD = 10000;
+    final static long PIXEL_UPDATE_FREQ = 100; // in milliseconds; 100 == 10fps
 
     private int[] palette_frequency;
     private int most_frequent_palette_entry;
 
-    private int[] pixels;
-
-    final static long PIXEL_THRESHOLD = 10000;
-    private long pixel_ct;
-
-    final static long PIXEL_UPDATE_FREQ = 100; // in milliseconds; 100 == 10fps
     Timer pixel_scheduler = new Timer();
     TimerTask pixel_scheduler_task = new TimerTask() {
         @Override
@@ -34,9 +33,8 @@ public class BufferPixels extends Buffer {
         }
     };
 
-    public BufferPixels(RenderCanvas canvas) {
+    public BufferTimer(RenderCanvas canvas) {
         super(canvas);
-
         pixels = new int[height * width];
         palette_frequency = new int[palette_settings.numColors() + 1];
     }

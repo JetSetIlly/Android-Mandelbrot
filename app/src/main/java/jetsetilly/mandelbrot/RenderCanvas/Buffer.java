@@ -13,7 +13,8 @@ abstract class Buffer {
     }
 
     abstract void primeBuffer(Bitmap bitmap);
-    abstract void flush(Boolean final_flush);
+    abstract void flush();
+    abstract void endBuffer(boolean cancelled);
 
     void scheduleDraw(int cx, int cy, int iteration) {}
     void scheduleDraw(int iterations[]) {}

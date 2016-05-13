@@ -2663,11 +2663,13 @@ containing a value of this type.
         public static final int palette_selected_tick_duration=0x7f0a0013;
         public static final int palette_selected_untick_duration=0x7f0a0014;
         public static final int palette_smoothness_control_fade=0x7f0a0015;
-        public static final int reveal_changes_duration_fast=0x7f0a0016;
-        public static final int reveal_changes_duration_slow=0x7f0a0017;
-        public static final int smoothness_max=0x7f0a0018;
-        public static final int smoothness_min=0x7f0a0019;
-        public static final int status_bar_notification_info_maxnum=0x7f0a001a;
+        public static final int smoothness_max=0x7f0a0016;
+        public static final int smoothness_min=0x7f0a0017;
+        public static final int status_bar_notification_info_maxnum=0x7f0a0018;
+        public static final int transition_duration_fast=0x7f0a0019;
+        public static final int transition_duration_faster=0x7f0a001a;
+        public static final int transition_duration_slow=0x7f0a001b;
+        public static final int transition_duration_slower=0x7f0a001c;
     }
     public static final class layout {
         public static final int abc_action_bar_title_item=0x7f040000;

@@ -1,7 +1,5 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,7 +11,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -82,6 +79,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean completed_render;
 
+    public enum TransitionType {NONE, FADE}
+    public enum TransitionSpeed {FASTER, FAST, SLOW, SLOWER}
+    private final TransitionType def_transition_type = TransitionType.FADE;
+    private final TransitionSpeed def_transition_speed= TransitionSpeed.SLOW;
+    private TransitionType transition_type = def_transition_type;
+    private TransitionSpeed transition_speed = def_transition_speed;
+
 
     /* initialisation */
     public RenderCanvas(Context context) {
@@ -118,29 +122,52 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(bm, false);
     }
 
-    public void setImageBitmap(Bitmap bm, boolean animate) {
-        if (animate) {
+    public void setImageBitmap(Bitmap bm, boolean transition) {
+        if (transition || transition_type == TransitionType.NONE) {
+            // prepare foreground. this is the image we transition from
             static_foreground.setImageBitmap(display_bm);
+
+            // prepare final image. the image we transition to
             super.setImageBitmap(display_bm = bm);
 
-            ViewPropertyAnimator reveal_anim = static_foreground.animate();
-            reveal_anim.setDuration(getResources().getInteger(R.integer.reveal_changes_duration_slow));
-            reveal_anim.alpha(0.0f);
-            reveal_anim.setListener(new AnimatorListenerAdapter() {
+            // set up animation
+            ViewPropertyAnimator transition_anim = static_foreground.animate();
+            static_foreground.setAlpha(1.0f);
+
+            transition_anim.withStartAction(new Runnable() {
                 @Override
-                public void onAnimationStart(Animator animation) {
-                    super.onAnimationStart(animation);
+                public void run() {
                     static_foreground.setVisibility(VISIBLE);
                 }
+            });
 
+            transition_anim.withEndAction(new Runnable() {
                 @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
+                public void run() {
                     static_foreground.setVisibility(INVISIBLE);
-                    static_foreground.setAlpha(1.0f);
                 }
             });
-            reveal_anim.start();
+
+            // set up speed of animation
+            int speed;
+            switch (transition_speed) {
+                case SLOWER: speed = R.integer.transition_duration_slower; break;
+                case SLOW: speed = R.integer.transition_duration_slow; break;
+                case FASTER: speed = R.integer.transition_duration_faster; break;
+                default: case FAST: speed = R.integer.transition_duration_fast; break;
+            }
+            transition_anim.setDuration(getResources().getInteger(speed));
+
+            // set up of type of animation
+            switch (transition_type) {
+                case FADE: transition_anim.alpha(0.0f); break;
+            }
+
+            transition_anim.start();
+
+            // reset transition type/speed - until next call to changeNextTransition()
+            transition_type = def_transition_type;
+            transition_speed = def_transition_speed;
         }
         else {
             super.setImageBitmap(display_bm = bm);
@@ -159,7 +186,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         clear_bm.eraseColor(colour_cache.mostFrequentColor());
-        setImageBitmap(clear_bm);
+        setNextTransition(TransitionType.FADE, TransitionSpeed.FAST);
+        setImageBitmap(clear_bm, true);
     }
 
     public void resetCanvas() {
@@ -201,8 +229,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
          buffer. worse, if it does run it will kill the buffer leaving the new task nothing to
          work with
          */
-        if (buffer != null)
-            buffer.flush(true);
+        if (buffer != null) {
+            buffer.endBuffer(false);
+            buffer = null;
+        }
 
         if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
@@ -216,23 +246,29 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void drawPoints(int iterations[]) {
         // Mandelbrot Thread
-        buffer.scheduleDraw(iterations);
+        if (buffer != null) {
+            buffer.scheduleDraw(iterations);
+        }
     }
 
     public void drawPoint(int cx, int cy, int iteration) {
         // Mandelbrot Thread
-        buffer.scheduleDraw(cx, cy, iteration);
+        if (buffer != null) {
+            buffer.scheduleDraw(cx, cy, iteration);
+        }
     }
 
     public void update() {
         // UI thread
-        buffer.flush(false);
+        if (buffer != null) {
+            buffer.flush();
+        }
     }
 
     public void endDraw() {
         // UI thread
         if (buffer != null) {
-            buffer.flush(true);
+            buffer.endBuffer(false);
             buffer = null;
         }
         setBackgroundColor(colour_cache.mostFrequentColor());
@@ -241,6 +277,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void cancelDraw() {
         // UI thread
+        if (buffer != null) {
+            buffer.endBuffer(true);
+            buffer = null;
+        }
+        setBackgroundColor(colour_cache.mostFrequentColor());
         completed_render = false;
     }
 
@@ -265,6 +306,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setX(0);
         setY(0);
         scrolled_since_last_normalise = false;
+    }
+
+    public void setNextTransition(TransitionType type, TransitionSpeed speed) {
+        transition_type = type;
+        transition_speed = speed;
     }
 
     public void startRender() {
@@ -362,7 +408,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.start();
 
         scrolled_since_last_normalise = true;
-
     }
 
     public void pinchZoom(float amount) {

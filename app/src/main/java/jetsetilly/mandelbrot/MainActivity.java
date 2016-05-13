@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         palette_settings.setColours(palette_id);
                         palette_settings.save(this);
 
+                        render_canvas.setNextTransition(RenderCanvas.TransitionType.FADE, RenderCanvas.TransitionSpeed.SLOWER);
                         render_canvas.startRender();
                     }
                 }

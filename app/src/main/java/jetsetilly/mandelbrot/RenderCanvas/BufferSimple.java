@@ -23,20 +23,20 @@ public class BufferSimple extends Buffer {
 
     @Override
     void primeBuffer(Bitmap bitmap) {
-        //this.buffer_bitmap = bitmap;
         this.buffer_bitmap = bitmap.copy(bitmap.getConfig(), true);
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     }
 
     @Override
-    void flush(Boolean final_flush) {
+    void flush() {
         buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+    }
 
-        if (final_flush) {
-            render_canvas.setImageBitmap(buffer_bitmap, true);
-            render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
-            render_canvas.invalidate();
-        }
+    @Override void endBuffer(boolean cancelled) {
+        buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
+        render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
+        render_canvas.invalidate();
     }
 
     @Override

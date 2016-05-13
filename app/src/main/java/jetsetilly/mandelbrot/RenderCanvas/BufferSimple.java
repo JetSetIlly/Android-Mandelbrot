@@ -9,7 +9,7 @@ public class BufferSimple extends Buffer {
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
-    private Bitmap bitmap;
+    private Bitmap buffer_bitmap;
     private int[] pixels;
 
     private int[] palette_frequency;
@@ -23,15 +23,20 @@ public class BufferSimple extends Buffer {
 
     @Override
     void primeBuffer(Bitmap bitmap) {
-        this.bitmap = bitmap;
+        //this.buffer_bitmap = bitmap;
+        this.buffer_bitmap = bitmap.copy(bitmap.getConfig(), true);
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     }
 
     @Override
     void flush(Boolean final_flush) {
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
-        render_canvas.invalidate();
+        buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+
+        if (final_flush) {
+            render_canvas.setImageBitmap(buffer_bitmap, true);
+            render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
+            render_canvas.invalidate();
+        }
     }
 
     @Override

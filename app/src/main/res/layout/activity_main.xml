@@ -18,8 +18,13 @@
     <jetsetilly.mandelbrot.RenderCanvas.RenderCanvas
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fractalView"
-        />
+        android:id="@+id/fractalView" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/static_foreground"
+        android:contentDescription="@string/description_static_foreground" />
 
     <jetsetilly.mandelbrot.RenderCanvas.GestureOverlay
         android:layout_width="match_parent"

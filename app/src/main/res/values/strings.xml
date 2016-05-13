@@ -2,6 +2,7 @@
     <string name="app_name">Mandelbrot</string>
 
     <string name="description_static_background">static background to stop zooming of fractal view revealing the brick wall at the back of theatre</string>
+    <string name="description_static_foreground">static foreground used to animate changes to main RenderCanvas</string>
     <string name="description_gesture_overlay">static overlay used to listed for gestures</string>
     <string name="description_palette_swatch">palette swatch</string>
     <string name="description_palette_swatch_selected">palette swatch selected</string>

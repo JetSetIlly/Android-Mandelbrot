@@ -1,5 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -37,6 +40,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
     private ImageView static_background;
 
+    // that ImageView that sits in front of RenderCanvas in the layout. used to disguise changes
+    // to main RenderCanvas and allows us to animate changes
+    private ImageView static_foreground;
+
     // special widget used to listen for gestures -- better than listening for gestures
     // on the RenderCanvas because we want to scale the RenderCanvas and scaling screws up
     // distance measurements
@@ -44,11 +51,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
-    // whenever setImageBitmap() is called we should set display_bm to equal
-    // whatever the Bitmap is being sent
-    // the idiosyncratic ways to do this is setImageBitmap(display_bm = bm)
-    // I considered overloading the setImageBitmap() method but that's too clumsy
-    // a solution IMO
+    // setImageBitmap() is over-ridden and will assign appropriately
     private Bitmap display_bm;
 
     // buffer implementation
@@ -103,11 +106,46 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void initPostLayout() {
         this.static_background = (ImageView) main_activity.findViewById(R.id.static_background);
+        this.static_foreground = (ImageView) main_activity.findViewById(R.id.static_foreground);
         this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gesture_overlay);
         this.gestures.setup(main_activity, this);
         resetCanvas();
     }
     /* end of initialisation */
+
+    @Override // View
+    public void setImageBitmap(Bitmap bm) {
+        setImageBitmap(bm, false);
+    }
+
+    public void setImageBitmap(Bitmap bm, boolean animate) {
+        if (animate) {
+            static_foreground.setImageBitmap(display_bm);
+            super.setImageBitmap(display_bm = bm);
+
+            ViewPropertyAnimator reveal_anim = static_foreground.animate();
+            reveal_anim.setDuration(getResources().getInteger(R.integer.reveal_changes_duration_slow));
+            reveal_anim.alpha(0.0f);
+            reveal_anim.setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    super.onAnimationStart(animation);
+                    static_foreground.setVisibility(VISIBLE);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    static_foreground.setVisibility(INVISIBLE);
+                    static_foreground.setAlpha(1.0f);
+                }
+            });
+            reveal_anim.start();
+        }
+        else {
+            super.setImageBitmap(display_bm = bm);
+        }
+    }
 
     @Override // View
     public void setBackgroundColor(int color) {
@@ -121,7 +159,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         clear_bm.eraseColor(colour_cache.mostFrequentColor());
-        setImageBitmap(display_bm = clear_bm);
+        setImageBitmap(clear_bm);
     }
 
     public void resetCanvas() {
@@ -233,7 +271,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         // use whatever image is currently visible as the basis for the new render
-        fixateVisibleImage(); // method sets display_bm
+        fixateVisibleImage();
 
         colour_cache.reset();
 
@@ -376,7 +414,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     private Bitmap fixateVisibleImage() {
-        setImageBitmap(display_bm = getVisibleImage());
+        setImageBitmap(getVisibleImage());
         normaliseCanvas();
         return display_bm;
     }
@@ -391,7 +429,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         // do offset
         offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        //offset_bm.eraseColor(colour_cache.mostFrequentColor());
 
         // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
         // in any order. the image may lose definition after several cycles of this but
@@ -406,7 +443,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         new_bottom = getCanvasHeight() - new_top;
 
         scaled_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        //scaled_bm.eraseColor(colour_cache.mostFrequentColor());
+
+        // in case the source image has been offset (we won't check for it, it's not worth it) we
+        // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
+        // reveals with setImageBitmap() may not work as expected
+        scaled_bm.eraseColor(colour_cache.mostFrequentColor());
 
         blit_to = new Rect(0, 0, getCanvasWidth(), getCanvasHeight());
         blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);

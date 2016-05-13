@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi-v4/ic_swatch_selected.png",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-xxxhdpi/ic_swatch_selected.png"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi-v4/ic_launcher_me.png",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-xxxhdpi/ic_launcher_me.png"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi-v4/ic_progress.png",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-xxxhdpi/ic_progress.png"
+    }
+]

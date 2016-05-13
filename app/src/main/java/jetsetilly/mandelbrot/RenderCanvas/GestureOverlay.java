@@ -74,59 +74,53 @@ public class GestureOverlay extends ImageView implements
                     if (altered_canvas) {
                         Tools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
 
-                        // make sure any previous threads have finished
-                        // (shouldn't really happen)
-                        if (up_delay_thr != null) {
-                            if (up_delay_thr.getStatus() == AsyncTask.Status.RUNNING) {
-                                Tools.printDebug(DEBUG_TAG, "cancelling a running up_delay_thr");
-                                up_delay_thr.cancel(true);
-                            }
-                        }
-
-                        // separate thread to test for delay
-                        // allows animated zoom to finish before running canvas.startRender()
-                        up_delay_thr = new AsyncTask() {
-                            @Override
-                            protected Object doInBackground(Object[] params) {
-                                try {
-                                    up_delay_sem.acquire();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                up_delay_sem.release();
-
-                                // sleep for ADDITIONAL_ON_UP_DELAY milliseconds
-                                synchronized (this) {
+                        if (up_delay_thr == null || up_delay_thr.getStatus() != AsyncTask.Status.RUNNING) {
+                            // separate thread to test for delay
+                            // allows animated zoom to finish before running canvas.startRender()
+                            up_delay_thr = new AsyncTask() {
+                                @Override
+                                protected Object doInBackground(Object[] params) {
                                     try {
-                                        if (ADDITIONAL_ON_UP_DELAY > 0)
-                                            wait(ADDITIONAL_ON_UP_DELAY);
+                                        up_delay_sem.acquire();
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
                                     }
+                                    up_delay_sem.release();
+
+                                    // sleep for ADDITIONAL_ON_UP_DELAY milliseconds
+                                    synchronized (this) {
+                                        try {
+                                            if (ADDITIONAL_ON_UP_DELAY > 0)
+                                                wait(ADDITIONAL_ON_UP_DELAY);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    return null;
                                 }
 
-                                return null;
-                            }
+                                @Override
+                                protected void onPostExecute(Object o) {
+                                    super.onPostExecute(o);
+                                    if (up_delay_runnable != null) {
+                                        up_delay_runnable.run();
+                                        up_delay_runnable = null;
+                                    }
 
-                            @Override
-                            protected void onPostExecute(Object o) {
-                                super.onPostExecute(o);
-                                if (up_delay_runnable != null) {
-                                    up_delay_runnable.run();
-                                    up_delay_runnable = null;
+                                    canvas.startRender();
                                 }
 
-                                canvas.startRender();
-                            }
+                                @Override
+                                protected void onCancelled() {
+                                    super.onCancelled();
+                                    Tools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
+                                }
+                            };
 
-                            @Override
-                            protected void onCancelled() {
-                                super.onCancelled();
-                                Tools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
-                            }
-                        };
+                            up_delay_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
 
-                        up_delay_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     }
                 }
 

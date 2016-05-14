@@ -35,8 +35,8 @@ public class BufferSimple extends Buffer {
     @Override void endBuffer(boolean cancelled) {
         buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
-        render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
         render_canvas.invalidate();
+        render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
     }
 
     @Override

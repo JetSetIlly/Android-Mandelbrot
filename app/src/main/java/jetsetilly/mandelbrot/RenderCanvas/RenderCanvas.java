@@ -23,7 +23,7 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Tools;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
@@ -53,6 +53,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     // buffer implementation
     private Buffer buffer;
+
+    // canvas_id of most recent thread that has called MandelbrotCanvas.startDraw()
+    private final long NO_CANVAS_ID = -1;
+    private long this_canvas_id = NO_CANVAS_ID;
 
     // the amount of deviation (offset) from the current display_bm
     // used when chaining scroll and zoom events
@@ -219,22 +223,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* MandelbrotCanvas implementation */
-    public void startDraw(Mandelbrot.RenderMode render_mode) {
+    public void startDraw(long canvas_id, Mandelbrot.RenderMode render_mode) {
         // UI thread
 
-        /* flush buffer here whether we need to or not. this is a hacky solution to the problem of
-         cancelling the Mandelbrot thread and restarting it before ASyncTask.onCancelled()
-         has run. the scheduling of onCancelled() is unreliable and the new thread may have started
-         in the meantime. calling buffer.flush() from onCancelled() may try to write to a non-existing
-         buffer. worse, if it does run it will kill the buffer leaving the new task nothing to
-         work with
-         */
-        if (buffer != null) {
-            buffer.endBuffer(false);
-            buffer = null;
+        if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
+            Tools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
+        this_canvas_id = canvas_id;
 
-        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -244,45 +241,48 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         completed_render = false;
     }
 
-    public void drawPoints(int iterations[]) {
+    public void drawPoints(long canvas_id, int iterations[]) {
         // Mandelbrot Thread
-        if (buffer != null) {
-            buffer.scheduleDraw(iterations);
-        }
+        if (this_canvas_id != canvas_id || buffer == null) return;
+
+        buffer.scheduleDraw(iterations);
     }
 
-    public void drawPoint(int cx, int cy, int iteration) {
+    public void drawPoint(long canvas_id, int cx, int cy, int iteration) {
         // Mandelbrot Thread
-        if (buffer != null) {
-            buffer.scheduleDraw(cx, cy, iteration);
-        }
+        if (this_canvas_id != canvas_id || buffer == null) return;
+
+        buffer.scheduleDraw(cx, cy, iteration);
     }
 
-    public void update() {
+    public void update(long canvas_id) {
         // UI thread
-        if (buffer != null) {
-            buffer.flush();
-        }
+        if (this_canvas_id != canvas_id || buffer == null) return;
+
+        buffer.flush();
     }
 
-    public void endDraw() {
+    public void endDraw(long canvas_id) {
         // UI thread
-        if (buffer != null) {
-            buffer.endBuffer(false);
-            buffer = null;
-        }
+        if (this_canvas_id != canvas_id || buffer == null) return;
+
+        buffer.endBuffer(false);
+        buffer = null;
         setBackgroundColor(colour_cache.mostFrequentColor());
         completed_render = true;
+        this_canvas_id = NO_CANVAS_ID;
     }
 
-    public void cancelDraw() {
+    public void cancelDraw(long canvas_id) {
         // UI thread
-        if (buffer != null) {
-            buffer.endBuffer(true);
-            buffer = null;
-        }
+        if (this_canvas_id != canvas_id || buffer == null) return;
+        Tools.printDebug(DBG_TAG, "wobble: cancelling");
+
+        buffer.endBuffer(true);
+        buffer = null;
         setBackgroundColor(colour_cache.mostFrequentColor());
         completed_render = false;
+        this_canvas_id = NO_CANVAS_ID;
     }
 
     public int getCanvasWidth() {

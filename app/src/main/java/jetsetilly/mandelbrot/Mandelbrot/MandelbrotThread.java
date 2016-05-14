@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
+import android.provider.Settings;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -14,6 +15,8 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Integer, Void> {
     ThreadPoolExecutor and FutureTask.
      */
 
+    protected long canvas_id;
+
     protected final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     protected final Mandelbrot m;
 
@@ -22,26 +25,37 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Integer, Void> {
     }
 
     @Override
+    protected Void doInBackground(Void... params) {
+        // Mandelbrot Thread
+        return null;
+    }
+
+    @Override
     protected void onProgressUpdate(Integer... pass) {
+        // UI Thread
         MainActivity.progress.kick(pass[0], mandelbrot_settings.num_passes, m.rescaling_render);
-        m.canvas.update();
+        m.canvas.update(canvas_id);
     }
 
     @Override
     protected void onPreExecute() {
+        // UI Thread
         MainActivity.progress.register();
-        m.canvas.startDraw(mandelbrot_settings.render_mode);
+        canvas_id = System.currentTimeMillis();
+        m.canvas.startDraw(canvas_id, mandelbrot_settings.render_mode);
     }
 
     @Override
     protected void onPostExecute(Void v) {
+        // UI Thread
         MainActivity.progress.unregister();
-        m.canvas.endDraw();
+        m.canvas.endDraw(canvas_id);
     }
 
     @Override
     protected void onCancelled() {
+        // UI Thread
         MainActivity.progress.unregister();
-        m.canvas.cancelDraw();
+        m.canvas.cancelDraw(canvas_id);
     }
 }

@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
@@ -23,6 +24,7 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Tools;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -54,6 +56,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // buffer implementation
     private Buffer buffer;
 
+    // the iterations array that was last sent to plotIterations()
+    // we use this to quickly redraw a render with different colours
+    private int[] cached_iterations;
+
     // canvas_id of most recent thread that has called MandelbrotCanvas.startDraw()
     private final long NO_CANVAS_ID = -1;
     private long this_canvas_id = NO_CANVAS_ID;
@@ -83,9 +89,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean completed_render;
 
-    public enum TransitionType {NONE, FADE}
-    public enum TransitionSpeed {FASTER, FAST, SLOW, SLOWER}
-    private final TransitionType def_transition_type = TransitionType.FADE;
+    public enum TransitionType {NONE, CROSS_FADE}
+    public enum TransitionSpeed {FAST, SLOW, SLOWER}
+    private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
     private final TransitionSpeed def_transition_speed= TransitionSpeed.SLOW;
     private TransitionType transition_type = def_transition_type;
     private TransitionSpeed transition_speed = def_transition_speed;
@@ -156,15 +162,14 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             int speed;
             switch (transition_speed) {
                 case SLOWER: speed = R.integer.transition_duration_slower; break;
-                case SLOW: speed = R.integer.transition_duration_slow; break;
-                case FASTER: speed = R.integer.transition_duration_faster; break;
-                default: case FAST: speed = R.integer.transition_duration_fast; break;
+                default: case SLOW: speed = R.integer.transition_duration_slow; break;
+                case FAST: speed = R.integer.transition_duration_fast; break;
             }
             transition_anim.setDuration(getResources().getInteger(speed));
 
             // set up of type of animation
             switch (transition_type) {
-                case FADE: transition_anim.alpha(0.0f); break;
+                case CROSS_FADE: transition_anim.alpha(0.0f); break;
             }
 
             transition_anim.start();
@@ -190,7 +195,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         clear_bm.eraseColor(colour_cache.mostFrequentColor());
-        setNextTransition(TransitionType.FADE, TransitionSpeed.FAST);
+        setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
         setImageBitmap(clear_bm, true);
     }
 
@@ -223,7 +228,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* MandelbrotCanvas implementation */
-    public void startDraw(long canvas_id, Mandelbrot.RenderMode render_mode) {
+    public void startDraw(long canvas_id) {
         // UI thread
 
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
@@ -231,7 +236,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
         this_canvas_id = canvas_id;
 
-        if (render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -241,18 +246,26 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         completed_render = false;
     }
 
-    public void drawPoints(long canvas_id, int iterations[]) {
+    public void plotIterations(long canvas_id, int iterations[]) {
         // Mandelbrot Thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.scheduleDraw(iterations);
+        // plot iterations and if the set of iterations is complete
+        // (ie. every iteration has resulted in a new pixel) then
+        // store iterations for future calls to reRender()
+        if (buffer.plotIterations(iterations)) {
+            cached_iterations = iterations;
+        } else {
+            cached_iterations = null;
+        }
     }
 
-    public void drawPoint(long canvas_id, int cx, int cy, int iteration) {
+    public void plotIteration(long canvas_id, int cx, int cy, int iteration) {
         // Mandelbrot Thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.scheduleDraw(cx, cy, iteration);
+        cached_iterations = null;
+        buffer.plotIteration(cx, cy, iteration);
     }
 
     public void update(long canvas_id) {
@@ -275,6 +288,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     public void cancelDraw(long canvas_id) {
         // UI thread
+        Tools.printDebug(DBG_TAG, "wobble: c" + this_canvas_id + " "+ canvas_id);
         if (this_canvas_id != canvas_id || buffer == null) return;
         Tools.printDebug(DBG_TAG, "wobble: cancelling");
 
@@ -311,6 +325,37 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void setNextTransition(TransitionType type, TransitionSpeed speed) {
         transition_type = type;
         transition_speed = speed;
+    }
+
+    public void reRender() {
+        if (cached_iterations == null) {
+            startRender();
+            return;
+        }
+
+        stopRender();
+        colour_cache.reset();
+
+        // direct calls to MandelbrotCanvas methods doesn't work (transitions don't work)
+        // we need to encase the calls inside an AsyncTask sequence, just like a real render
+        // TODO: think about this and figure out why we can't call the methods directly
+        final MandelbrotCanvas canvas = this;
+        class ReRenderTask extends AsyncTask<Void, Void, Void> {
+            long canvas_id = System.currentTimeMillis();
+            @Override protected Void doInBackground(Void... v) {
+                canvas.plotIterations(canvas_id, cached_iterations);
+                return null;
+            }
+            @Override protected void onPreExecute() {
+                canvas.startDraw(canvas_id);
+            }
+            @Override protected void onPostExecute(Void v) {
+                canvas.endDraw(canvas_id);
+            }
+        }
+
+        ReRenderTask task = new ReRenderTask();
+        task.execute();
     }
 
     public void startRender() {

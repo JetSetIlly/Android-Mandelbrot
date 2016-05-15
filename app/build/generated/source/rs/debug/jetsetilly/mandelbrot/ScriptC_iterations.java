@@ -88,7 +88,22 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_max_iterations, null);
     }
 
-    private final static int mExportVarIdx_bailout_value = 3;
+    private final static int mExportVarIdx_null_iteration = 3;
+    private int mExportVar_null_iteration;
+    public synchronized void set_null_iteration(int v) {
+        setVar(mExportVarIdx_null_iteration, v);
+        mExportVar_null_iteration = v;
+    }
+
+    public int get_null_iteration() {
+        return mExportVar_null_iteration;
+    }
+
+    public Script.FieldID getFieldID_null_iteration() {
+        return createFieldID(mExportVarIdx_null_iteration, null);
+    }
+
+    private final static int mExportVarIdx_bailout_value = 4;
     private double mExportVar_bailout_value;
     public synchronized void set_bailout_value(double v) {
         setVar(mExportVarIdx_bailout_value, v);
@@ -103,7 +118,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_bailout_value, null);
     }
 
-    private final static int mExportVarIdx_imaginary_lower = 4;
+    private final static int mExportVarIdx_imaginary_lower = 5;
     private double mExportVar_imaginary_lower;
     public synchronized void set_imaginary_lower(double v) {
         setVar(mExportVarIdx_imaginary_lower, v);
@@ -118,7 +133,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_imaginary_lower, null);
     }
 
-    private final static int mExportVarIdx_imaginary_upper = 5;
+    private final static int mExportVarIdx_imaginary_upper = 6;
     private double mExportVar_imaginary_upper;
     public synchronized void set_imaginary_upper(double v) {
         setVar(mExportVarIdx_imaginary_upper, v);
@@ -133,7 +148,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_imaginary_upper, null);
     }
 
-    private final static int mExportVarIdx_real_left = 6;
+    private final static int mExportVarIdx_real_left = 7;
     private double mExportVar_real_left;
     public synchronized void set_real_left(double v) {
         setVar(mExportVarIdx_real_left, v);
@@ -148,7 +163,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_real_left, null);
     }
 
-    private final static int mExportVarIdx_real_right = 7;
+    private final static int mExportVarIdx_real_right = 8;
     private double mExportVar_real_right;
     public synchronized void set_real_right(double v) {
         setVar(mExportVarIdx_real_right, v);
@@ -163,7 +178,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_real_right, null);
     }
 
-    private final static int mExportVarIdx_pixel_scale = 8;
+    private final static int mExportVarIdx_pixel_scale = 9;
     private double mExportVar_pixel_scale;
     public synchronized void set_pixel_scale(double v) {
         setVar(mExportVarIdx_pixel_scale, v);
@@ -178,7 +193,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_pixel_scale, null);
     }
 
-    private final static int mExportVarIdx_render_left = 9;
+    private final static int mExportVarIdx_render_left = 10;
     private int mExportVar_render_left;
     public synchronized void set_render_left(int v) {
         setVar(mExportVarIdx_render_left, v);
@@ -193,7 +208,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_render_left, null);
     }
 
-    private final static int mExportVarIdx_render_right = 10;
+    private final static int mExportVarIdx_render_right = 11;
     private int mExportVar_render_right;
     public synchronized void set_render_right(int v) {
         setVar(mExportVarIdx_render_right, v);
@@ -208,7 +223,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_render_right, null);
     }
 
-    private final static int mExportVarIdx_render_top = 11;
+    private final static int mExportVarIdx_render_top = 12;
     private int mExportVar_render_top;
     public synchronized void set_render_top(int v) {
         setVar(mExportVarIdx_render_top, v);
@@ -223,7 +238,7 @@ public class ScriptC_iterations extends ScriptC {
         return createFieldID(mExportVarIdx_render_top, null);
     }
 
-    private final static int mExportVarIdx_render_bottom = 12;
+    private final static int mExportVarIdx_render_bottom = 13;
     private int mExportVar_render_bottom;
     public synchronized void set_render_bottom(int v) {
         setVar(mExportVarIdx_render_bottom, v);

@@ -63,7 +63,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         // END OF PROTECTED AREA ACCOUNTING
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
-                            m.canvas.drawPoint(canvas_id, cx, cy, doIterations(mx, my));
+                            m.canvas.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
                         }
 
                         publishProgress(pass);
@@ -101,7 +101,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, my);
                             if (num_iterations >= 0) {
-                                m.canvas.drawPoint(canvas_id, cx, y_line, num_iterations);
+                                m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
                             }
                         }
 
@@ -123,7 +123,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, myb);
                             if (num_iterations >= 0) {
-                                m.canvas.drawPoint(canvas_id, cx, y_line, num_iterations);
+                                m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
                             }
                         }
 

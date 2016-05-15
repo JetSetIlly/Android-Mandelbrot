@@ -6,6 +6,7 @@ static const char * DBG_TAG = "iteration.rs";
 
 int canvas_height, canvas_width;
 int max_iterations;
+int null_iteration;
 double bailout_value;
 double imaginary_lower, imaginary_upper;
 double real_left, real_right;
@@ -50,5 +51,5 @@ int32_t __attribute__((kernel)) pixel(uint32_t x) {
         );
     }
 
-    return -1;
+    return null_iteration;
 }

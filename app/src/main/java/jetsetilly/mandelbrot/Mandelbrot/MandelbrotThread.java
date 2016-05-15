@@ -42,7 +42,7 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Integer, Void> {
         // UI Thread
         MainActivity.progress.register();
         canvas_id = System.currentTimeMillis();
-        m.canvas.startDraw(canvas_id, mandelbrot_settings.render_mode);
+        m.canvas.startDraw(canvas_id);
     }
 
     @Override

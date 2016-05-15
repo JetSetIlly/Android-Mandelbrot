@@ -61,7 +61,7 @@ public class BufferTimer extends Buffer {
     }
 
     @Override
-    public void scheduleDraw(int cx, int cy, int iteration) {
+    public void plotIteration(int cx, int cy, int iteration) {
         // do nothing if iteration is less than zero. -1 is used as
         // a place holder to indicate that no iterations have taken place
         if (iteration < 0)
@@ -87,16 +87,5 @@ public class BufferTimer extends Buffer {
         }
 
         pixel_ct ++;
-    }
-
-    @Override
-    public void scheduleDraw(int iterations[]) {
-        int cx, cy;
-
-        for (int i = 0; i < iterations.length; ++ i) {
-            cy = i / width;
-            cx = i - (cy * width);
-            scheduleDraw(cx, cy, iterations[i]);
-        }
     }
 }

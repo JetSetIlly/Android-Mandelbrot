@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.graphics.Bitmap;
 
+import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 
 public class BufferSimple extends Buffer {
@@ -40,10 +41,12 @@ public class BufferSimple extends Buffer {
     }
 
     @Override
-    public void scheduleDraw(int iterations[]) {
+    public boolean plotIterations(int iterations[]) {
+        boolean complete_set_of_iterations = true;
+
         for (int i = 0; i < iterations.length; ++ i) {
             int iteration = iterations[i];
-            if (iteration >= 0) {
+            if (iteration != Mandelbrot.NULL_ITERATIONS) {
                 // figure out which colour to use
                 int palette_entry = iteration;
                 if (iteration >= palette_settings.numColors()) {
@@ -62,7 +65,11 @@ public class BufferSimple extends Buffer {
                         most_frequent_palette_entry = palette_entry;
                     }
                 }
+            } else {
+                complete_set_of_iterations = false;
             }
         }
+
+        return complete_set_of_iterations;
     }
 }

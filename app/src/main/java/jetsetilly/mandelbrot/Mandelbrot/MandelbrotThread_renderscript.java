@@ -29,6 +29,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         script.set_canvas_height(canvas_height);
         script.set_canvas_width(canvas_width);
         script.set_max_iterations(mandelbrot_settings.max_iterations);
+        script.set_null_iteration(Mandelbrot.NULL_ITERATIONS);
         script.set_bailout_value(mandelbrot_settings.bailout_value);
         script.set_imaginary_lower(mandelbrot_settings.imaginary_lower);
         script.set_imaginary_upper(mandelbrot_settings.imaginary_upper);
@@ -56,7 +57,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         if (isCancelled()) return null;
 
         // ... and draw
-        m.canvas.drawPoints(canvas_id, iterations);
+        m.canvas.plotIterations(canvas_id, iterations);
 
         return null;
     }

@@ -16,6 +16,11 @@ abstract class Buffer {
     abstract void flush();
     abstract void endBuffer(boolean cancelled);
 
-    void scheduleDraw(int cx, int cy, int iteration) {}
-    void scheduleDraw(int iterations[]) {}
+    void plotIteration(int cx, int cy, int iteration) {}
+
+    // return whether every iteration has resulted in a new pixel
+    // iteration entries of Mandelbrot.NULL_ITERATION should not result in a new pixel
+    boolean plotIterations(int iterations[]) {
+        return false;
+    }
 }

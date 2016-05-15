@@ -7,10 +7,9 @@
     <integer name="animated_zoom_duration_fast">500</integer>
     <integer name="animated_zoom_duration_slow">1000</integer>
 
-    <integer name="transition_duration_faster">100</integer>
     <integer name="transition_duration_fast">250</integer>
     <integer name="transition_duration_slow">500</integer>
-    <integer name="transition_duration_slower">750</integer>
+    <integer name="transition_duration_slower">1500</integer>
 
     <!-- palette activity -->
     <integer name="palette_selected_tick_duration">500</integer>

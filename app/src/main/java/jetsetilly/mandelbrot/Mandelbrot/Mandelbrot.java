@@ -12,6 +12,8 @@ import jetsetilly.mandelbrot.Tools;
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
 
+    public static final int NULL_ITERATIONS = -1;
+
     public enum RenderMode {SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, HARDWARE}
     public enum IterationsRate {SLOW, NORMAL, FAST}
 

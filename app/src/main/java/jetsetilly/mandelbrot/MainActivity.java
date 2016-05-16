@@ -8,7 +8,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
@@ -208,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                         h.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                render_canvas.setNextTransition(RenderCanvas.TransitionType.CROSS_FADE, RenderCanvas.TransitionSpeed.SLOWER);
+                                render_canvas.setNextTransition(RenderCanvas.TransitionType.CROSS_FADE, RenderCanvas.TransitionSpeed.SLOW);
                                 render_canvas.reRender();
                             }
                         }, getResources().getInteger(R.integer.activity_transition_duration));

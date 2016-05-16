@@ -1,5 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,17 +10,16 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
+import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.concurrent.RunnableFuture;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -94,10 +95,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     // controls the transition between bitmaps when using this class's setBitmap() with
     // the transition flag set
-    public enum TransitionType {NONE, CROSS_FADE}
-    public enum TransitionSpeed {FAST, SLOW, SLOWER}
+    public enum TransitionType {NONE, CROSS_FADE, CIRCLE}
+    public enum TransitionSpeed {FAST, NORMAL, SLOW}
     private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
-    private final TransitionSpeed def_transition_speed= TransitionSpeed.SLOW;
+    private final TransitionSpeed def_transition_speed= TransitionSpeed.NORMAL;
     private TransitionType transition_type = def_transition_type;
     private TransitionSpeed transition_speed = def_transition_speed;
 
@@ -141,43 +142,59 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         if (transition || transition_type == TransitionType.NONE) {
             // prepare foreground. this is the image we transition from
             static_foreground.setImageBitmap(display_bm);
+            static_foreground.setVisibility(VISIBLE);
+            static_foreground.setAlpha(1.0f);
 
             // prepare final image. the image we transition to
             super.setImageBitmap(display_bm = bm);
 
-            // set up animation
-            ViewPropertyAnimator transition_anim = static_foreground.animate();
-            static_foreground.setAlpha(1.0f);
 
-            transition_anim.withStartAction(new Runnable() {
-                @Override
-                public void run() {
-                    static_foreground.setVisibility(VISIBLE);
-                }
-            });
-
-            transition_anim.withEndAction(new Runnable() {
-                @Override
-                public void run() {
-                    static_foreground.setVisibility(INVISIBLE);
-                }
-            });
-
-            // set up speed of animation
+            // get speed of animation (we'll actually set the speed later)
             int speed;
             switch (transition_speed) {
-                case SLOWER: speed = R.integer.transition_duration_slower; break;
-                default: case SLOW: speed = R.integer.transition_duration_slow; break;
-                case FAST: speed = R.integer.transition_duration_fast; break;
+                case FAST:
+                    speed = R.integer.transition_duration_fast;
+                    break;
+                case SLOW:
+                    speed = R.integer.transition_duration_slower;
+                    break;
+                default:
+                case NORMAL:
+                    speed = R.integer.transition_duration_slow;
+                    break;
             }
-            transition_anim.setDuration(getResources().getInteger(speed));
+            speed = getResources().getInteger(speed);
 
-            // set up of type of animation
-            switch (transition_type) {
-                case CROSS_FADE: transition_anim.alpha(0.0f); break;
+            // set up animation based on type
+            if (transition_type == TransitionType.CROSS_FADE) {
+                ViewPropertyAnimator transition_anim = static_foreground.animate();
+
+                transition_anim.withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        static_foreground.setVisibility(INVISIBLE);
+                    }
+                });
+
+                transition_anim.setDuration(speed);
+                transition_anim.alpha(0.0f);
+                transition_anim.start();
+
+            } else if (transition_type == TransitionType.CIRCLE) {
+                Animator transition_anim = ViewAnimationUtils.createCircularReveal(static_foreground,
+                        getCanvasWidth()/2, getCanvasHeight()/2, getCanvasWidth(), 0);
+
+                transition_anim.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        static_foreground.setVisibility(INVISIBLE);
+                    }
+                });
+
+                transition_anim.setDuration(speed);
+                transition_anim.start();
             }
-
-            transition_anim.start();
 
             // reset transition type/speed - until next call to changeNextTransition()
             transition_type = def_transition_type;

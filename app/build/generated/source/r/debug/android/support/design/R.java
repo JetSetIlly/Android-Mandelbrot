@@ -723,10 +723,10 @@ public final class R {
 		public static final int abc_config_activityDefaultDur = 0x7f0a0002;
 		public static final int abc_config_activityShortDur = 0x7f0a0003;
 		public static final int abc_max_action_buttons = 0x7f0a0000;
-		public static final int bottom_sheet_slide_duration = 0x7f0a000a;
-		public static final int cancel_button_image_alpha = 0x7f0a000b;
+		public static final int bottom_sheet_slide_duration = 0x7f0a000b;
+		public static final int cancel_button_image_alpha = 0x7f0a000c;
 		public static final int design_snackbar_text_max_lines = 0x7f0a0001;
-		public static final int status_bar_notification_info_maxnum = 0x7f0a0018;
+		public static final int status_bar_notification_info_maxnum = 0x7f0a0019;
 	}
 	public static final class layout {
 		public static final int abc_action_bar_title_item = 0x7f040000;

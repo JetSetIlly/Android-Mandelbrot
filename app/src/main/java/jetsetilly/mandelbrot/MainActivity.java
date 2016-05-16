@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
@@ -200,8 +202,16 @@ public class MainActivity extends AppCompatActivity {
                         palette_settings.setColours(palette_id);
                         palette_settings.save(this);
 
-                        render_canvas.setNextTransition(RenderCanvas.TransitionType.CROSS_FADE, RenderCanvas.TransitionSpeed.SLOWER);
-                        render_canvas.reRender();
+                        // wait for transition from palette activity to this activity to complete
+                        // we do this simply by waiting an equivalent amount of time as the transition
+                        Handler h = new Handler();
+                        h.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                render_canvas.setNextTransition(RenderCanvas.TransitionType.CROSS_FADE, RenderCanvas.TransitionSpeed.SLOWER);
+                                render_canvas.reRender();
+                            }
+                        }, getResources().getInteger(R.integer.activity_transition_duration));
                     }
                 }
                 break;

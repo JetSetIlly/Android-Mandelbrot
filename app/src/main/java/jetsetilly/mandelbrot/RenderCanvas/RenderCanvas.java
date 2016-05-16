@@ -18,6 +18,7 @@ import android.widget.TextView;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.concurrent.RunnableFuture;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -58,6 +59,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     // the iterations array that was last sent to plotIterations()
     // we use this to quickly redraw a render with different colours
+    // may prove useful in other scenarios (although we may need to make
+    // the mechanism more flexible)
     private int[] cached_iterations;
 
     // canvas_id of most recent thread that has called MandelbrotCanvas.startDraw()
@@ -89,6 +92,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean completed_render;
 
+    // controls the transition between bitmaps when using this class's setBitmap() with
+    // the transition flag set
     public enum TransitionType {NONE, CROSS_FADE}
     public enum TransitionSpeed {FAST, SLOW, SLOWER}
     private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
@@ -336,26 +341,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
         colour_cache.reset();
 
-        // direct calls to MandelbrotCanvas methods doesn't work (transitions don't work)
-        // we need to encase the calls inside an AsyncTask sequence, just like a real render
-        // TODO: think about this and figure out why we can't call the methods directly
-        final MandelbrotCanvas canvas = this;
-        class ReRenderTask extends AsyncTask<Void, Void, Void> {
-            long canvas_id = System.currentTimeMillis();
-            @Override protected Void doInBackground(Void... v) {
-                canvas.plotIterations(canvas_id, cached_iterations);
-                return null;
-            }
-            @Override protected void onPreExecute() {
-                canvas.startDraw(canvas_id);
-            }
-            @Override protected void onPostExecute(Void v) {
-                canvas.endDraw(canvas_id);
-            }
-        }
-
-        ReRenderTask task = new ReRenderTask();
-        task.execute();
+        long canvas_id = System.currentTimeMillis();
+        startDraw(canvas_id);
+        plotIterations(canvas_id, cached_iterations);
+        endDraw(canvas_id);
     }
 
     public void startRender() {

@@ -83,6 +83,11 @@ public class Mandelbrot {
 
         // save settings
         mandelbrot_settings.save(context);
+
+        // restore straight away - forcing any errors to manifest immediately
+        Tools.printDebug(DBG_TAG, "before restore: " + toString());
+        mandelbrot_settings.restore(context);
+        Tools.printDebug(DBG_TAG, "after restore: " + toString());
     }
 
     private void transform(double offset_x, double offset_y, double zoom_factor)
@@ -151,7 +156,6 @@ public class Mandelbrot {
 
         // display mandelbrot info
         fractal_info.setText(this.toString());
-        Tools.printDebug(DBG_TAG, this.toString());
 
         // start render
         MainActivity.progress.startSession();

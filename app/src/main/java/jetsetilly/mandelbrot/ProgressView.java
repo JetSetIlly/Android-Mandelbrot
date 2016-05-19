@@ -43,7 +43,7 @@ public class ProgressView extends ImageView {
         busy_ct.incrementAndGet();
     }
 
-    public void kick(int pass, int num_passes, boolean show_immediately) {
+    public void kick(boolean show_immediately) {
         kick_time = System.currentTimeMillis();
 
         // quick exit if progress is already visible
@@ -52,7 +52,7 @@ public class ProgressView extends ImageView {
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
-            if (!(System.currentTimeMillis() - start_time > PROGRESS_WAIT && pass <= num_passes * PROGRESS_DELAY)) {
+            if (System.currentTimeMillis() - start_time < PROGRESS_WAIT) {
                 return;
             }
         }

@@ -47,7 +47,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         // exit early if necessary
         if (isCancelled()) return null;
 
-        publishProgress(1);
+        publishProgress();
 
         // get result ...
         int iterations[] = new int[canvas_height * canvas_width];

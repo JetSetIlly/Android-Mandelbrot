@@ -66,7 +66,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                             m.canvas.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
                         }
 
-                        publishProgress(pass);
+                        publishProgress();
 
                         // exit early if necessary
                         if (isCancelled()) return null;
@@ -127,7 +127,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                             }
                         }
 
-                        publishProgress(pass);
+                        publishProgress();
 
                         // exit early if necessary
                         if (isCancelled()) return null;

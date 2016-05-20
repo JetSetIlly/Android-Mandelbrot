@@ -14,7 +14,7 @@ public class Mandelbrot {
 
     public static final int NULL_ITERATIONS = -1;
 
-    public enum RenderMode {SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, HARDWARE}
+    public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE}
     public enum IterationsRate {SLOW, NORMAL, FAST}
 
     // with the current algorithm, this value is the value of the fastest IterationsRate

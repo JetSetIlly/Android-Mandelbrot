@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RadioGroup;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
@@ -62,9 +63,6 @@ public class SettingsActivity extends AppCompatActivity {
         Intent settings_intent = getIntent();
         initial_iterations_value = settings_intent.getIntExtra(INITIAL_ITERATIONS_VALUE, mandelbrot_settings.max_iterations);
 
-        // set values and apply settings
-        setValues();
-
         // if orientation option changes, call apply settings to immediately
         // reflect the change for this activity
         orientation.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -74,6 +72,24 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // add/remove additional settings if rendermode changes
+        render_mode.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // TODO: animate visibility
+                switch (checkedId) {
+                    case R.id.rendermode_hardware:
+                        num_passes.setVisibility(View.GONE);
+                        break;
+                    default:
+                        num_passes.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+        });
+
+        // set values and apply settings
+        setValues();
         applyOrientation();
     }
 

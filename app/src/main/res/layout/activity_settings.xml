@@ -26,150 +26,196 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <jetsetilly.mandelbrot.Gadgets.IterationsSeekBar
+            <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/iterations"
-                app:label="@string/settings_max_iterations_label"
-                app:label_appearance="?android:attr/textAppearanceListItemSmall" />
+                app:cardBackgroundColor="@color/cardview_light_background">
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="39dp" />
-
-            <jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/iterations_rate"
-                app:label="@string/settings_iterations_rate_label"
-                app:label_appearance="?android:attr/textAppearanceListItemSmall"
-                app:thumb_width="@dimen/seekbar_thumb_width_wide" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="39dp" />
-
-            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/bailout"
-                app:label="@string/settings_bailout_label"
-                app:label_appearance="?android:attr/textAppearanceListItemSmall"
-                app:value_min="@integer/bailout_min"
-                app:value_max="@integer/bailout_max"
-                app:value_scale="10"/>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="39dp" />
-
-            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/doubletap"
-                app:label="@string/settings_doubletap_label"
-                app:label_appearance="?android:attr/textAppearanceListItemSmall"
-                app:value_min="@integer/doubletap_min"
-                app:value_max="@integer/doubletap_max" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="39dp" />
-
-            <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/num_passes"
-                app:label="@string/settings_num_passes_label"
-                app:label_appearance="?android:attr/textAppearanceListItemSmall"
-                app:value_min="@integer/num_passes_min"
-                app:value_max="@integer/num_passes_max" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="39dp" />
-
-            <RadioGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/rendermode">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                    android:text="@string/settings_rendermode_label"
-                    android:id="@+id/label_rendermode" />
-
-                <Space
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="15dp" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_rendermode_topdown"
-                    android:id="@+id/rendermode_topdown" />
+                    android:padding="20dp">
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp" />
+                    <jetsetilly.mandelbrot.Gadgets.IterationsSeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/iterations"
+                        app:label="@string/settings_max_iterations_label"
+                        app:label_appearance="?android:attr/textAppearanceListItemSmall" />
 
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_rendermode_centre"
-                    android:id="@+id/rendermode_centre" />
+                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="39dp"
+                        android:id="@+id/bailout"
+                        app:label="@string/settings_bailout_label"
+                        app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                        app:value_min="@integer/bailout_min"
+                        app:value_max="@integer/bailout_max"
+                        app:value_scale="10"/>
+                 </LinearLayout>
+            </android.support.v7.widget.CardView>
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_rendermode_hardware"
-                    android:id="@+id/rendermode_hardware" />
-
-            </RadioGroup>
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="39dp" />
+                android:layout_height="@dimen/settings_card_spacing" />
 
-            <RadioGroup
-                android:layout_width="wrap_content"
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/orientation">
+                app:cardBackgroundColor="@color/cardview_light_background">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                    android:text="@string/settings_orientation_label"
-                    android:id="@+id/label_orientation" />
-
-                <Space
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="15dp" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_orientation_portrait"
-                    android:id="@+id/orientation_portrait" />
+                    android:padding="20dp">
 
-                <Space
+                    <jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/iterations_rate"
+                        app:label="@string/settings_iterations_rate_label"
+                        app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                        app:thumb_width="@dimen/seekbar_thumb_width_wide" />
+
+                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="39dp"
+                        android:id="@+id/doubletap"
+                        app:label="@string/settings_doubletap_label"
+                        app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                        app:value_min="@integer/doubletap_min"
+                        app:value_max="@integer/doubletap_max" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/settings_card_spacing" />
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/cardview_light_background">
+
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="10dp" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_orientation_sensor"
-                    android:id="@+id/orientation_sensor" />
+                    android:padding="20dp">
 
-            </RadioGroup>
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/rendermode">
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                            android:text="@string/settings_rendermode_label"
+                            android:id="@+id/label_rendermode" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="15dp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_rendermode_hardware"
+                            android:id="@+id/rendermode_hardware" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_rendermode_topdown"
+                            android:id="@+id/rendermode_topdown" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_rendermode_centre"
+                            android:id="@+id/rendermode_centre" />
+
+                    </RadioGroup>
+
+                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="39dp"
+                        android:id="@+id/num_passes"
+                        app:label="@string/settings_num_passes_label"
+                        app:label_appearance="?android:attr/textAppearanceListItemSmall"
+                        app:value_min="@integer/num_passes_min"
+                        app:value_max="@integer/num_passes_max" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/settings_card_spacing" />
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/cardview_light_background">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp">
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/orientation">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                            android:text="@string/settings_orientation_label"
+                            android:id="@+id/label_orientation" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="15dp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_orientation_portrait"
+                            android:id="@+id/orientation_portrait" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_orientation_sensor"
+                            android:id="@+id/orientation_sensor" />
+                    </RadioGroup>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/settings_card_spacing" />
 
         </LinearLayout>
     </ScrollView>

@@ -2386,6 +2386,7 @@ containing a value of this type.
         public static final int seekbar_thumb_height=0x7f080077;
         public static final int seekbar_thumb_width=0x7f080078;
         public static final int seekbar_thumb_width_wide=0x7f080079;
+        public static final int settings_card_spacing=0x7f08007a;
     }
     public static final class drawable {
         public static final int abc_ab_share_pack_mtrl_alpha=0x7f020000;
@@ -2501,7 +2502,7 @@ containing a value of this type.
         public static final int activity_chooser_view_content=0x7f0c003d;
         public static final int alertTitle=0x7f0c0049;
         public static final int always=0x7f0c0033;
-        public static final int bailout=0x7f0c0077;
+        public static final int bailout=0x7f0c0076;
         public static final int beginning=0x7f0c0031;
         public static final int bottom=0x7f0c001d;
         public static final int buttonPanel=0x7f0c0044;
@@ -2549,9 +2550,9 @@ containing a value of this type.
         public static final int info_pane=0x7f0c006f;
         public static final int item_touch_helper_previous_elevation=0x7f0c0005;
         public static final int iterations=0x7f0c0075;
-        public static final int iterations_rate=0x7f0c0076;
+        public static final int iterations_rate=0x7f0c0077;
         public static final int label_orientation=0x7f0c0080;
-        public static final int label_rendermode=0x7f0c007b;
+        public static final int label_rendermode=0x7f0c007a;
         public static final int left=0x7f0c0023;
         public static final int line1=0x7f0c0092;
         public static final int line3=0x7f0c0096;
@@ -2565,7 +2566,7 @@ containing a value of this type.
         public static final int never=0x7f0c0036;
         public static final int none=0x7f0c0010;
         public static final int normal=0x7f0c000c;
-        public static final int num_passes=0x7f0c0079;
+        public static final int num_passes=0x7f0c007e;
         public static final int orientation=0x7f0c007f;
         public static final int orientation_portrait=0x7f0c0081;
         public static final int orientation_sensor=0x7f0c0082;
@@ -2582,9 +2583,9 @@ containing a value of this type.
         public static final int progress_circular=0x7f0c0006;
         public static final int progress_horizontal=0x7f0c0007;
         public static final int radio=0x7f0c0054;
-        public static final int rendermode=0x7f0c007a;
+        public static final int rendermode=0x7f0c0079;
         public static final int rendermode_centre=0x7f0c007d;
-        public static final int rendermode_hardware=0x7f0c007e;
+        public static final int rendermode_hardware=0x7f0c007b;
         public static final int rendermode_topdown=0x7f0c007c;
         public static final int right=0x7f0c0024;
         public static final int screen=0x7f0c0028;

@@ -12,6 +12,7 @@ public class IterationsRateSeekBar extends ReportingSeekBar {
 
     public IterationsRateSeekBar(Context context) {
         this(context, null);
+        reset();
     }
 
     public IterationsRateSeekBar(Context context, AttributeSet attrs) {

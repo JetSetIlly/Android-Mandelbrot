@@ -16,4 +16,6 @@
     <dimen name="palette_settings_smoothness_padding">15dp</dimen>
     <dimen name="palette_settings_smoothness_margin">10dp</dimen>
     <dimen name="palette_setting_smoothness_z">5dp</dimen>
+
+    <dimen name="settings_card_spacing">30dp</dimen>
 </resources>

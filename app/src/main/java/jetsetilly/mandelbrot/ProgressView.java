@@ -13,7 +13,6 @@ public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
     private final double PROGRESS_WAIT = 1000; // in milliseconds
-    private final float PROGRESS_DELAY = (float) 0.5;   // the fraction of the total num_passes to wait before showing the progress animation
     private final int SPIN_FRAME_COUNT = 360;
     private final int SPIN_DURATION = 1000;
 

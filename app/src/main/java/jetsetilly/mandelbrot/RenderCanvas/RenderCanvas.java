@@ -311,9 +311,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     @UiThread
     public void cancelDraw(long canvas_id) {
-        Tools.printDebug(DBG_TAG, "wobble: c" + this_canvas_id + " "+ canvas_id);
         if (this_canvas_id != canvas_id || buffer == null) return;
-        Tools.printDebug(DBG_TAG, "wobble: cancelling");
 
         buffer.endBuffer(true);
         buffer = null;

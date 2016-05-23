@@ -61,15 +61,15 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onPostExecute(Void v) {
-        MainActivity.progress.unregister();
         m.canvas.endDraw(canvas_id);
+        MainActivity.progress.unregister();
     }
 
     @Override
     @UiThread
     @CallSuper
     protected void onCancelled() {
-        MainActivity.progress.unregister();
         m.canvas.cancelDraw(canvas_id);
+        MainActivity.progress.unregister();
     }
 }

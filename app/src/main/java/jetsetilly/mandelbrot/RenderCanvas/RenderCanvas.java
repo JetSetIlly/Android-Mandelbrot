@@ -11,6 +11,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewAnimationUtils;
@@ -250,9 +252,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* MandelbrotCanvas implementation */
+    @UiThread
     public void startDraw(long canvas_id) {
-        // UI thread
-
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
             Tools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
@@ -268,8 +269,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         completed_render = false;
     }
 
+    // any thread
     public void plotIterations(long canvas_id, int iterations[]) {
-        // Mandelbrot Thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
         // plot iterations and if the set of iterations is complete
@@ -282,23 +283,23 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
     }
 
+    // any thread
     public void plotIteration(long canvas_id, int cx, int cy, int iteration) {
-        // Mandelbrot Thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
         cached_iterations = null;
         buffer.plotIteration(cx, cy, iteration);
     }
 
+    @UiThread
     public void update(long canvas_id) {
-        // UI thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
         buffer.flush();
     }
 
+    @UiThread
     public void endDraw(long canvas_id) {
-        // UI thread
         if (this_canvas_id != canvas_id || buffer == null) return;
 
         buffer.endBuffer(false);
@@ -308,8 +309,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         this_canvas_id = NO_CANVAS_ID;
     }
 
+    @UiThread
     public void cancelDraw(long canvas_id) {
-        // UI thread
         Tools.printDebug(DBG_TAG, "wobble: c" + this_canvas_id + " "+ canvas_id);
         if (this_canvas_id != canvas_id || buffer == null) return;
         Tools.printDebug(DBG_TAG, "wobble: cancelling");

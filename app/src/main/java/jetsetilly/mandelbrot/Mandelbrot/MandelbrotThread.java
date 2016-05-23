@@ -1,7 +1,9 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
-import android.provider.Settings;
+import android.support.annotation.CallSuper;
+import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -26,21 +28,23 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
+    @WorkerThread
     protected Void doInBackground(Void... v) {
-        // Mandelbrot Thread
         return null;
     }
 
     @Override
+    @UiThread
+    @CallSuper
     protected void onProgressUpdate(Void... v) {
-        // UI Thread
         MainActivity.progress.kick(m.rescaling_render);
         m.canvas.update(canvas_id);
     }
 
     @Override
+    @UiThread
+    @CallSuper
     protected void onPreExecute() {
-        // UI Thread
         MainActivity.progress.register();
 
         if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
@@ -54,15 +58,17 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
+    @UiThread
+    @CallSuper
     protected void onPostExecute(Void v) {
-        // UI Thread
         MainActivity.progress.unregister();
         m.canvas.endDraw(canvas_id);
     }
 
     @Override
+    @UiThread
+    @CallSuper
     protected void onCancelled() {
-        // UI Thread
         MainActivity.progress.unregister();
         m.canvas.cancelDraw(canvas_id);
     }

@@ -1,5 +1,6 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
+import android.support.annotation.WorkerThread;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 
@@ -14,6 +15,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
     }
 
     @Override
+    @WorkerThread
     protected Void doInBackground(Void... params) {
         super.doInBackground(params);
 

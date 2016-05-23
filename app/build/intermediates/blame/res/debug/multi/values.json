@@ -2495,14 +2495,7 @@
                     "endOffset": 38551
                 },
                 "from": {
-                    "file": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/values/dimens.xml",
-                    "position": {
-                        "startLine": 19,
-                        "startColumn": 4,
-                        "startOffset": 819,
-                        "endColumn": 52,
-                        "endOffset": 867
-                    }
+                    "file": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/values/dimens.xml"
                 }
             },
             {

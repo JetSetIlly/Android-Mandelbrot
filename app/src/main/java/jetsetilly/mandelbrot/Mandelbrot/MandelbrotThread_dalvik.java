@@ -1,5 +1,7 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
+import android.support.annotation.WorkerThread;
+
 class MandelbrotThread_dalvik extends MandelbrotThread {
     final static public String DBG_TAG = "mandelbrot thread (dalvik)";
 
@@ -30,6 +32,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
     }
 
     @Override
+    @WorkerThread
     protected Void doInBackground(Void... v) {
         int cx, cy, cyb;
         double mx, my, myb;

@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.UiThread;
-import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewAnimationUtils;
@@ -77,11 +76,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private int rendered_offset_x;
     private int rendered_offset_y;
 
-    // the amount by which the mandelbrot needs to scale in order to match the display
+    // the amount by which the mandelbrot needs to scale in order to match the display.
     // for our purposes, this isn't the same as the scale amount. doubling in size would mean
     // a scale of 2. this equates to: mandelbrot_zoom_factor = (scale - 1) / (2 * scale)
-    // in this class we use scale exclusively to mean this and is only used in zoom animations
-    // where scale is used in this way. the Gestures class uses the word scale more liberally.
+    //
+    // in this class when we use the word "scale" we mean mandelbrot_zoom_factor.
+    // the Gestures class uses the word scale more liberally.
     private double mandelbrot_zoom_factor;
 
     // hack solution to the problem of pinch zooming after a image move (which includes animated
@@ -94,6 +94,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // completed render is true if last render was finished to completion. set to true
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean completed_render;
+
+    // displaying_zoomed_image is true if display_bm is an image has been zoomed (by getVisibleImage())
+    // used to set/clear a flag that controls how an image is scaled. put simply, we don't want
+    // pixelation if zooming an original (ie. rendered) image but we do want pixelation (and not
+    // blurriness) if the image has already been zoomed.
+    private boolean displaying_zoomed_image;
 
     // controls the transition between bitmaps when using this class's setBitmap() with
     // the transition flag set
@@ -306,6 +312,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer = null;
         setBackgroundColor(colour_cache.mostFrequentColor());
         completed_render = true;
+        displaying_zoomed_image = false;
         this_canvas_id = NO_CANVAS_ID;
     }
 
@@ -317,6 +324,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         buffer = null;
         setBackgroundColor(colour_cache.mostFrequentColor());
         completed_render = false;
+        // not clearing displaying_zoomed_image
         this_canvas_id = NO_CANVAS_ID;
     }
 
@@ -452,6 +460,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
+                // the UI thread was blocked just prior to animatedZoom() being called
+                // unblocking it here will allow the gesture sequence to complete once
+                // the animation has completed
                 gestures.unblock(null);
             }
         });
@@ -511,32 +522,30 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private Bitmap fixateVisibleImage() {
         setImageBitmap(getVisibleImage());
         normaliseCanvas();
+
+        displaying_zoomed_image = mandelbrot_zoom_factor != 0 || displaying_zoomed_image;
+
         return display_bm;
     }
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
     // we can reset the scrolling and scaling of the RenderCanvas ImageView
     private Bitmap getVisibleImage() {
-        double new_left, new_right, new_top, new_bottom;
+        int new_left, new_right, new_top, new_bottom;
         Canvas offset_canvas, scale_canvas;
         Bitmap offset_bm, scaled_bm;
         Rect blit_to, blit_from;
 
-        // do offset
-        offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-
         // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
         // in any order. the image may lose definition after several cycles of this but
         // it shouldn't be too noticeable
+
+        // do offset
+        offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
         offset_canvas = new Canvas(offset_bm);
         offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
 
         // do zoom
-        new_left = mandelbrot_zoom_factor * getCanvasWidth();
-        new_right = getCanvasWidth() - new_left;
-        new_top = mandelbrot_zoom_factor * getCanvasHeight();
-        new_bottom = getCanvasHeight() - new_top;
-
         scaled_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
 
         // in case the source image has been offset (we won't check for it, it's not worth it) we
@@ -544,12 +553,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // reveals with setImageBitmap() may not work as expected
         scaled_bm.eraseColor(colour_cache.mostFrequentColor());
 
+        new_left = (int) (mandelbrot_zoom_factor * getCanvasWidth());
+        new_right = getCanvasWidth() - new_left;
+        new_top = (int) (mandelbrot_zoom_factor * getCanvasHeight());
+        new_bottom = getCanvasHeight() - new_top;
         blit_to = new Rect(0, 0, getCanvasWidth(), getCanvasHeight());
-        blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);
+        blit_from = new Rect(new_left, new_top, new_right, new_bottom);
 
         Paint scale_paint = new Paint();
-        scale_paint.setAntiAlias(true);
-        scale_paint.setDither(true);
+        if (!displaying_zoomed_image) {
+            // use bilinear sampling when scaling unless zooming an image that has been
+            // previously zoomed
+            scale_paint.setFlags(Paint.FILTER_BITMAP_FLAG);
+        }
 
         scale_canvas = new Canvas(scaled_bm);
         scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_paint);

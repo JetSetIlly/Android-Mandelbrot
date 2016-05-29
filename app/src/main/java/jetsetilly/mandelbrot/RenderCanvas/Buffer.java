@@ -2,6 +2,8 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.graphics.Bitmap;
 
+import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+
 abstract class Buffer {
     protected RenderCanvas render_canvas;
     protected int width, height;
@@ -19,8 +21,13 @@ abstract class Buffer {
     void plotIteration(int cx, int cy, int iteration) {}
 
     // return whether every iteration has resulted in a new pixel
-    // iteration entries of Mandelbrot.NULL_ITERATION should not result in a new pixel
+    // iteration entries of Mandelbrot.NULL_ITERATIONS should not result in a new pixel
     boolean plotIterations(int iterations[]) {
-        return false;
+        for (int i = 0; i < iterations.length; ++ i) {
+            if (iterations[i] != Mandelbrot.NULL_ITERATIONS) {
+                plotIteration(i % width, i / width, iterations[i]);
+            }
+        }
+        return true;
     }
 }

@@ -45,7 +45,10 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.VISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
-                        .x(getWidth())
+                        .x(getWidth()/4)
+                        .alpha(0.0f)
+                        .scaleX(0.95f)
+                        .scaleY(0.95f)
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
@@ -59,6 +62,9 @@ public class MandelbrotActionBar extends Toolbar {
             if (getVisibility() == View.INVISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
                         .x(0)
+                        .alpha(1.0f)
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
                         .withStartAction(new Runnable() {
                             @Override
                             public void run() {

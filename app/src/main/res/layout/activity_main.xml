@@ -53,10 +53,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/toolbar"
-        android:layout_gravity="top"
         android:minHeight="?attr/actionBarSize"
+        android:visibility="invisible"
+        android:layout_gravity="center_horizontal|top"
         android:background="?attr/colorPrimary"
-        android:visibility="invisible" />
+        android:alpha="0.6" />
 
     <TextView
         android:layout_width="wrap_content"

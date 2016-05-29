@@ -8,9 +8,7 @@
     </style>
 
     <style name="MainActivityTheme" parent="@style/AppTheme">
-        <!-- uncomment to allow translucent status bar - doesn't really fit with material themes
         <item name="android:windowTranslucentStatus">true</item>
-        -->
     </style>
 
     <style name="PaletteActivityTheme" parent="@style/AppTheme">

@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
         // render script instance -- alive for the entire lifespan of the app
         render_script = RenderScript.create(this, RenderScript.ContextType.NORMAL);
 
+        // create new DialogReceiver
+        dialog_receiver = new DialogReceiver();
+
         // set render running as soon as possible
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
@@ -89,9 +92,6 @@ public class MainActivity extends AppCompatActivity {
                 render_canvas.initPostLayout();
             }
         });
-
-        // create new DialogReceiver
-        dialog_receiver = new DialogReceiver();
 
         // apply any relevant settings
         applyOrientation();

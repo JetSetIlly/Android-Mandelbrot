@@ -4,12 +4,12 @@ import android.content.Context;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
 
 public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "mandelbrot actionbar";
 
     private View status_bar;
+    private float alpha;
 
     public MandelbrotActionBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -25,7 +25,7 @@ public class MandelbrotActionBar extends Toolbar {
 
     public void completeSetup(MainActivity context, String title) {
         status_bar = context.getWindow().getDecorView();
-
+        alpha = getAlpha();
         setTitle(title);
         setY(Tools.getStatusBarHeight(context));
         setVisibility(false);
@@ -62,7 +62,7 @@ public class MandelbrotActionBar extends Toolbar {
             if (getVisibility() == View.INVISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
                         .x(0)
-                        .alpha(1.0f)
+                        .alpha(alpha)
                         .scaleX(1.0f)
                         .scaleY(1.0f)
                         .withStartAction(new Runnable() {

@@ -59,7 +59,9 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         if (isCancelled()) return null;
 
         // ... and draw
-        m.canvas.plotIterations(canvas_id, iterations);
+        boolean complete_plot;
+        complete_plot = m.render_area.left == 0 && m.render_area.right == canvas_width && m.render_area.top == 0 && m.render_area.bottom == canvas_height;
+        m.canvas.plotIterations(canvas_id, iterations, complete_plot);
 
         return null;
     }

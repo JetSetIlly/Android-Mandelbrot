@@ -98,7 +98,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // controls the transition between bitmaps when using this class's setBitmap() with
     // the transition flag set
     public enum TransitionType {NONE, CROSS_FADE, CIRCLE}
-    public enum TransitionSpeed {VFAST, FAST, NORMAL, SLOW}
+    public enum TransitionSpeed {VFAST, FAST, NORMAL, SLOW, VSLOW}
     private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
     private final TransitionSpeed def_transition_speed= TransitionSpeed.NORMAL;
     private TransitionType transition_type = def_transition_type;
@@ -163,7 +163,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                     speed = R.integer.transition_duration_fast;
                     break;
                 case SLOW:
-                    speed = R.integer.transition_duration_slower;
+                    speed = R.integer.transition_duration_slow;
+                    break;
+                case VSLOW:
+                    speed = R.integer.transition_duration_vslow;
                     break;
                 default:
                 case NORMAL:
@@ -296,13 +299,15 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     // any thread
-    public void plotIterations(long canvas_id, int iterations[]) {
+    public void plotIterations(long canvas_id, int iterations[], boolean complete_plot) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
         // plot iterations and if the set of iterations is complete
         // (ie. every iteration has resulted in a new pixel) then
         // store iterations for future calls to reRender()
-        if (buffer.plotIterations(iterations)) {
+        buffer.plotIterations(iterations);
+
+        if (complete_plot) {
             cached_iterations = iterations;
         } else {
             cached_iterations = null;
@@ -386,7 +391,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         long canvas_id = System.currentTimeMillis();
         startDraw(canvas_id);
-        plotIterations(canvas_id, cached_iterations);
+        plotIterations(canvas_id, cached_iterations, true);
         endDraw(canvas_id);
     }
 
@@ -399,6 +404,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         if (mandelbrot_zoom_factor == 0) {
             fixateVisibleImage(false);
         } else {
+            setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
             fixateVisibleImage(true);
         }
 

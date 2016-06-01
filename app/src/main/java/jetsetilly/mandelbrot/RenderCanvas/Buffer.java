@@ -22,12 +22,11 @@ abstract class Buffer {
 
     // return whether every iteration has resulted in a new pixel
     // iteration entries of Mandelbrot.NULL_ITERATIONS should not result in a new pixel
-    boolean plotIterations(int iterations[]) {
+    void plotIterations(int iterations[]) {
         for (int i = 0; i < iterations.length; ++ i) {
             if (iterations[i] != Mandelbrot.NULL_ITERATIONS) {
                 plotIteration(i % width, i / width, iterations[i]);
             }
         }
-        return true;
     }
 }

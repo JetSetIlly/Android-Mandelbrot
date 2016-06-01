@@ -37,13 +37,14 @@ public class BufferSimple extends Buffer {
         buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
         render_canvas.invalidate();
-        render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
+
+        if (!cancelled) {
+            render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
+        }
     }
 
     @Override
-    public boolean plotIterations(int iterations[]) {
-        boolean complete_set_of_iterations = true;
-
+    public void plotIterations(int iterations[]) {
         for (int i = 0; i < iterations.length; ++ i) {
             int iteration = iterations[i];
             if (iteration != Mandelbrot.NULL_ITERATIONS) {
@@ -65,11 +66,7 @@ public class BufferSimple extends Buffer {
                         most_frequent_palette_entry = palette_entry;
                     }
                 }
-            } else {
-                complete_set_of_iterations = false;
             }
         }
-
-        return complete_set_of_iterations;
     }
 }

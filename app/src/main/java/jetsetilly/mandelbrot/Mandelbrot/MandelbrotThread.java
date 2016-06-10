@@ -18,7 +18,6 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
      */
 
     protected long canvas_id;
-    private int num_passes;
 
     protected final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
     protected final Mandelbrot m;
@@ -46,13 +45,6 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onPreExecute() {
         MainActivity.progress.register();
-
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
-            num_passes = 1;
-        } else {
-            num_passes = mandelbrot_settings.num_passes;
-        }
-
         canvas_id = System.currentTimeMillis();
         m.canvas.startDraw(canvas_id);
     }

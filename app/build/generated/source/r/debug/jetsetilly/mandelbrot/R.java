@@ -2472,10 +2472,8 @@ containing a value of this type.
         public static final int ic_palette_24dp=0x7f020050;
         public static final int ic_settings_24dp=0x7f020051;
         public static final int ic_undo_24dp=0x7f020052;
-        public static final int notification_template_icon_bg=0x7f020056;
-        public static final int palette_splatter=0x7f020053;
-        public static final int progress_background=0x7f020054;
-        public static final int splotch5=0x7f020055;
+        public static final int notification_template_icon_bg=0x7f020054;
+        public static final int progress_background=0x7f020053;
     }
     public static final class id {
         public static final int action0=0x7f0c008d;
@@ -2670,7 +2668,8 @@ containing a value of this type.
         public static final int status_bar_notification_info_maxnum=0x7f0a0019;
         public static final int transition_duration_fast=0x7f0a001a;
         public static final int transition_duration_slow=0x7f0a001b;
-        public static final int transition_duration_slower=0x7f0a001c;
+        public static final int transition_duration_vfast=0x7f0a001c;
+        public static final int transition_duration_vslow=0x7f0a001d;
     }
     public static final class layout {
         public static final int abc_action_bar_title_item=0x7f040000;
@@ -2771,33 +2770,34 @@ containing a value of this type.
         public static final int appbar_scrolling_view_behavior=0x7f06001d;
         public static final int bottom_sheet_behavior=0x7f06001e;
         public static final int character_counter_pattern=0x7f06001f;
-        public static final int description_gesture_overlay=0x7f060020;
-        public static final int description_palette_swatch=0x7f060021;
-        public static final int description_palette_swatch_selected=0x7f060022;
-        public static final int description_static_background=0x7f060023;
-        public static final int description_static_foreground=0x7f060024;
-        public static final int dialog_cancel=0x7f060025;
-        public static final int dialog_default=0x7f060026;
-        public static final int dialog_more=0x7f060027;
-        public static final int dialog_ok=0x7f060028;
-        public static final int error_ui_alert=0x7f060029;
-        public static final int palette_smoothness_label=0x7f06002a;
-        public static final int settings_action_reset=0x7f06002b;
-        public static final int settings_bailout_label=0x7f06002c;
-        public static final int settings_doubletap_label=0x7f06002d;
-        public static final int settings_iterations_rate_fast=0x7f06002e;
-        public static final int settings_iterations_rate_label=0x7f06002f;
-        public static final int settings_iterations_rate_normal=0x7f060030;
-        public static final int settings_iterations_rate_slow=0x7f060031;
-        public static final int settings_max_iterations_label=0x7f060032;
-        public static final int settings_num_passes_label=0x7f060033;
-        public static final int settings_orientation_label=0x7f060034;
-        public static final int settings_orientation_portrait=0x7f060035;
-        public static final int settings_orientation_sensor=0x7f060036;
-        public static final int settings_rendermode_centre=0x7f060037;
-        public static final int settings_rendermode_hardware=0x7f060038;
-        public static final int settings_rendermode_label=0x7f060039;
-        public static final int settings_rendermode_topdown=0x7f06003a;
+        public static final int description_film_grain=0x7f060020;
+        public static final int description_gesture_overlay=0x7f060021;
+        public static final int description_palette_swatch=0x7f060022;
+        public static final int description_palette_swatch_selected=0x7f060023;
+        public static final int description_static_background=0x7f060024;
+        public static final int description_static_foreground=0x7f060025;
+        public static final int dialog_cancel=0x7f060026;
+        public static final int dialog_default=0x7f060027;
+        public static final int dialog_more=0x7f060028;
+        public static final int dialog_ok=0x7f060029;
+        public static final int error_ui_alert=0x7f06002a;
+        public static final int palette_smoothness_label=0x7f06002b;
+        public static final int settings_action_reset=0x7f06002c;
+        public static final int settings_bailout_label=0x7f06002d;
+        public static final int settings_doubletap_label=0x7f06002e;
+        public static final int settings_iterations_rate_fast=0x7f06002f;
+        public static final int settings_iterations_rate_label=0x7f060030;
+        public static final int settings_iterations_rate_normal=0x7f060031;
+        public static final int settings_iterations_rate_slow=0x7f060032;
+        public static final int settings_max_iterations_label=0x7f060033;
+        public static final int settings_num_passes_label=0x7f060034;
+        public static final int settings_orientation_label=0x7f060035;
+        public static final int settings_orientation_portrait=0x7f060036;
+        public static final int settings_orientation_sensor=0x7f060037;
+        public static final int settings_rendermode_centre=0x7f060038;
+        public static final int settings_rendermode_hardware=0x7f060039;
+        public static final int settings_rendermode_label=0x7f06003a;
+        public static final int settings_rendermode_topdown=0x7f06003b;
         public static final int status_bar_notification_info_overflow=0x7f060013;
     }
     public static final class style {
@@ -2956,10 +2956,6 @@ containing a value of this type.
         public static final int CardView_Light=0x7f0900bd;
         public static final int Dialog_Theme=0x7f0900be;
         public static final int Dialog_Theme_Window=0x7f0900bf;
-        /**  uncomment to allow translucent status bar - doesn't really fit with material themes
-        <item name="android:windowTranslucentStatus">true</item>
-        
-         */
         public static final int MainActivityTheme=0x7f0900c0;
         public static final int MyActionButtonOverflow=0x7f0900c1;
         public static final int PaletteActivityTheme=0x7f0900c2;

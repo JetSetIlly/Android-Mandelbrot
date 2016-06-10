@@ -4,11 +4,11 @@
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-mdpi/ic_progress.png"
     },
     {
-        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-mdpi-v4/ic_launcher_me.png",
-        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-mdpi/ic_launcher_me.png"
-    },
-    {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-mdpi-v4/ic_swatch_selected.png",
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-mdpi/ic_swatch_selected.png"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/mipmap-mdpi-v4/ic_launcher_me.png",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/mipmap-mdpi/ic_launcher_me.png"
     }
 ]

@@ -2,8 +2,8 @@
 <resources>
     <integer name="bailout_min">1</integer>
     <integer name="bailout_max">32</integer>
-    <integer name="doubletap_min">1</integer>
-    <integer name="doubletap_max">5</integer>
+    <integer name="doubletap_min">2</integer>
+    <integer name="doubletap_max">7</integer>
     <integer name="num_passes_min">1</integer>
     <integer name="num_passes_max">4</integer>
     <integer name="smoothness_min">1</integer>

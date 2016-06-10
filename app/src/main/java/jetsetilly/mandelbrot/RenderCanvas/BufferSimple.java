@@ -39,7 +39,7 @@ public class BufferSimple extends Buffer {
         render_canvas.invalidate();
 
         if (!cancelled) {
-            render_canvas.colour_cache.colourCountUpdate(most_frequent_palette_entry);
+            render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
         }
     }
 

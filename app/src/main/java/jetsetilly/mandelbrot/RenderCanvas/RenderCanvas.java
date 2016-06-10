@@ -36,7 +36,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private MainActivity main_activity;
     private Mandelbrot mandelbrot;
-    protected ColourCache colour_cache;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
@@ -45,6 +44,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     // that ImageView that sits in front of RenderCanvas in the layout. used to disguise changes
     // to main RenderCanvas and allows us to animate changes
     private ImageView static_foreground;
+
+    // colour which is used to color the background - the actual colour, not the index
+    // into the current palette. consequently, in some instances a colour may be used that is not
+    // in the current palette definition.
+    protected int background_colour;
 
     // special widget used to listen for gestures -- better than listening for gestures
     // on the RenderCanvas because we want to scale the RenderCanvas and scaling screws up
@@ -247,7 +251,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     private void clearImage() {
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        clear_bm.eraseColor(colour_cache.mostFrequentColor());
+        clear_bm.eraseColor(background_colour);
         setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
         setImageBitmap(clear_bm, true);
     }
@@ -255,13 +259,12 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     public void resetCanvas() {
         // new render cache
         stopRender();
-        colour_cache = new ColourCache();
 
         // kill any existing image
         clearImage();
 
         // set base color
-        setBackgroundColor(colour_cache.mostFrequentColor());
+        setBackgroundColor(background_colour);
 
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
 
@@ -335,7 +338,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         buffer.endBuffer(false);
         buffer = null;
-        setBackgroundColor(colour_cache.mostFrequentColor());
+        setBackgroundColor(background_colour);
         completed_render = true;
         this_canvas_id = NO_CANVAS_ID;
     }
@@ -346,7 +349,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         buffer.endBuffer(true);
         buffer = null;
-        setBackgroundColor(colour_cache.mostFrequentColor());
+        setBackgroundColor(background_colour);
         completed_render = false;
         this_canvas_id = NO_CANVAS_ID;
     }
@@ -387,7 +390,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         }
 
         stopRender();
-        colour_cache.reset();
 
         long canvas_id = System.currentTimeMillis();
         startDraw(canvas_id);
@@ -407,8 +409,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
             fixateVisibleImage(true);
         }
-
-        colour_cache.reset();
 
         // start render thread
         mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
@@ -602,7 +602,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // in case the source image has been offset (we won't check for it, it's not worth it) we
         // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
         // reveals with setImageBitmap() may not work as expected
-        scaled_bm.eraseColor(colour_cache.mostFrequentColor());
+        scaled_bm.eraseColor(background_colour);
 
         new_left = (int) (mandelbrot_zoom_factor * getCanvasWidth());
         new_right = getCanvasWidth() - new_left;

@@ -93,7 +93,6 @@ public class ProgressView extends ImageView {
                 spin_anim.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
-                        setLayerType(View.LAYER_TYPE_HARDWARE, null);
                     }
 
                     @Override
@@ -119,7 +118,6 @@ public class ProgressView extends ImageView {
                             public void onAnimationEnd(Animation animation) {
                                 clearAnimation();
                                 setVisibility(INVISIBLE);
-                                setLayerType(View.LAYER_TYPE_NONE, null);
                             }
 
                             @Override

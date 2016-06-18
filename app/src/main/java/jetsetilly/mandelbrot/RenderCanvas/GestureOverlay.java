@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Process;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -80,6 +81,7 @@ public class GestureOverlay extends ImageView implements
                             up_delay_thr = new AsyncTask() {
                                 @Override
                                 protected Object doInBackground(Object[] params) {
+                                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                                     try {
                                         up_delay_sem.acquire();
                                     } catch (InterruptedException e) {

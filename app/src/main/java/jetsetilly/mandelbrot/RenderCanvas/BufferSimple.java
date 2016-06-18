@@ -15,11 +15,13 @@ public class BufferSimple extends Buffer {
 
     private int[] palette_frequency;
     private int most_frequent_palette_entry;
+    private int num_colours;
 
     public BufferSimple(RenderCanvas canvas) {
         super(canvas);
         pixels = new int[height * width];
-        palette_frequency = new int[palette_settings.numColors() + 1];
+        num_colours = palette_settings.numColors();
+        palette_frequency = new int[num_colours + 1];
     }
 
     @Override
@@ -50,8 +52,8 @@ public class BufferSimple extends Buffer {
             if (iteration != Mandelbrot.NULL_ITERATIONS) {
                 // figure out which colour to use
                 int palette_entry = iteration;
-                if (iteration >= palette_settings.numColors()) {
-                    palette_entry = (iteration % (palette_settings.numColors() - 1)) + 1;
+                if (iteration >= num_colours) {
+                    palette_entry = (iteration % (num_colours - 1)) + 1;
                 }
 
                 // put coloured pixel into pixel buffer - ready for flushing

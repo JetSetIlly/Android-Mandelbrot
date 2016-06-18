@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
+import android.os.Trace;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -116,7 +117,7 @@ public class Mandelbrot {
 
     /* threading */
     public void stopRender() {
-        if ( render_thr == null ) {
+        if (render_thr == null) {
             return;
         }
 
@@ -131,42 +132,47 @@ public class Mandelbrot {
     }
 
     public void startRender(double offset_x, double offset_y, double zoom_factor) {
-        transformMandelbrot(offset_x, offset_y, zoom_factor);
+        Trace.beginSection("starting mandelbrot");
+        try {
+            transformMandelbrot(offset_x, offset_y, zoom_factor);
 
-        // initialise render_area
-        render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
+            // initialise render_area
+            render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
-        // make sure render mode etc. is set correctly
-        rescaling_render = zoom_factor != 0;
+            // make sure render mode etc. is set correctly
+            rescaling_render = zoom_factor != 0;
 
-        // define render_area
-        if (zoom_factor == 0 && canvas.isCompleteRender()) {
-            if (offset_x < 0) {
-                render_area.right = (int) -offset_x;
-            } else if (offset_x > 0) {
-                render_area.left = canvas.getCanvasWidth() - (int) offset_x;
+            // define render_area
+            if (zoom_factor == 0 && canvas.isCompleteRender()) {
+                if (offset_x < 0) {
+                    render_area.right = (int) -offset_x;
+                } else if (offset_x > 0) {
+                    render_area.left = canvas.getCanvasWidth() - (int) offset_x;
+                }
+
+                if (offset_y < 0) { // moving down
+                    render_area.bottom = (int) -offset_y;
+                } else if (offset_y > 0) { // moving up
+                    render_area.top = canvas.getCanvasHeight() - (int) offset_y;
+                }
             }
 
-            if (offset_y < 0) { // moving down
-                render_area.bottom = (int) -offset_y;
-            } else if (offset_y > 0) { // moving up
-                render_area.top = canvas.getCanvasHeight() - (int) offset_y;
+            // display mandelbrot info
+            fractal_info.setText(this.toString());
+
+            // start render
+            MainActivity.progress.startSession();
+
+            if (mandelbrot_settings.render_mode == RenderMode.HARDWARE) {
+                render_thr = new MandelbrotThread_renderscript(this);
+            } else {
+                render_thr = new MandelbrotThread_dalvik(this);
             }
+
+            render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } finally {
+            Trace.endSection();
         }
-
-        // display mandelbrot info
-        fractal_info.setText(this.toString());
-
-        // start render
-        MainActivity.progress.startSession();
-
-        if (mandelbrot_settings.render_mode == RenderMode.HARDWARE) {
-            render_thr = new MandelbrotThread_renderscript(this);
-        } else {
-            render_thr = new MandelbrotThread_dalvik(this);
-        }
-
-        render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     /* end of threading */
 }

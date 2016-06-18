@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Trace;
 import android.provider.MediaStore;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
@@ -108,6 +109,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private TransitionType transition_type = def_transition_type;
     private TransitionSpeed transition_speed = def_transition_speed;
 
+    private int canvas_width, canvas_height;
+
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
     private Runnable transition_anim_cancel = null;
@@ -141,6 +144,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         resetCanvas();
     }
     /* end of initialisation */
+
+    @Override // View
+    public void onSizeChanged(int w, int h, int old_w, int old_h) {
+        super.onSizeChanged(w, h, old_w, old_h);
+        canvas_width = w;
+        canvas_height = h;
+    }
 
     @Override // View
     public void setImageBitmap(Bitmap bm) {
@@ -284,7 +294,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
 
     /* MandelbrotCanvas implementation */
-    @UiThread
+    // any thread
     public void startDraw(long canvas_id) {
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
             Tools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
@@ -355,11 +365,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public int getCanvasWidth() {
-        return getWidth();
+        return canvas_width;
     }
 
     public int getCanvasHeight() {
-        return getHeight();
+        return canvas_height;
     }
 
     public boolean isCompleteRender() {
@@ -398,35 +408,40 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void startRender() {
-        stopRender();
+        Trace.beginSection("starting render");
+        try {
+            stopRender();
 
-        // use whatever image is currently visible as the basis for the new render
-        // we do this with a smooth_transition if the image has been zoomed
-        // see comments in fixateVisibleImage() for explanation
-        if (mandelbrot_zoom_factor == 0) {
-            fixateVisibleImage(false);
-        } else {
-            setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-            fixateVisibleImage(true);
+            // use whatever image is currently visible as the basis for the new render
+            // we do this with a smooth_transition if the image has been zoomed
+            // see comments in fixateVisibleImage() for explanation
+            if (mandelbrot_zoom_factor == 0) {
+                fixateVisibleImage(false);
+            } else {
+                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
+                fixateVisibleImage(true);
+            }
+
+            // start render thread
+            mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
+
+            // reset transformation variables
+            rendered_offset_x = 0;
+            rendered_offset_y = 0;
+            mandelbrot_zoom_factor = 0;
+        } finally {
+            Trace.endSection();
         }
-
-        // start render thread
-        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
-
-        // reset transformation variables
-        rendered_offset_x = 0;
-        rendered_offset_y = 0;
-        mandelbrot_zoom_factor = 0;
     }
 
     public void stopRender() {
+        if (mandelbrot != null)
+            mandelbrot.stopRender();
+
         // cancel transition animation and run end conditions
         if (transition_anim_cancel != null) {
             transition_anim_cancel.run();
         }
-
-        if (mandelbrot != null)
-            mandelbrot.stopRender();
     }
     /* end of render control */
 
@@ -452,7 +467,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void animatedZoom(int offset_x, int offset_y) {
-        // animation can take a while -- we don't gestures to be honoured
+        // animation can take a while -- we don't want gestures to be honoured
         // while the animation is taking place. call block() here
         // and unblock() in the animation's endAction
         // this also has the effect of delaying the call to startRender() until
@@ -503,8 +518,16 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             }
         });
         anim.start();
-
         scrolled_since_last_normalise = true;
+
+        /*
+        setX(-offset_x * scale);
+        setY(-offset_y * scale);
+        setScaleX(scale);
+        setScaleY(scale);
+        scrolled_since_last_normalise = true;
+        startRender();
+        */
     }
 
     public void pinchZoom(float amount) {
@@ -567,60 +590,72 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // the two images (smooth to pixelated)
         // if we didn't create the pixelated image, then multiple zooms without a re-rendering of the
         // image will result in a blurry mess. the pixelated image looks better.
-        if (smooth_transition) {
-            Bitmap from_bm = getVisibleImage(true);
-            Bitmap to_bm = getVisibleImage(false);
-            normaliseCanvas();
-            setImageBitmap(from_bm);
-            setImageBitmap(to_bm, true);
-        } else {
-            setImageBitmap(getVisibleImage(false));
-            normaliseCanvas();
+        Trace.beginSection("fixateVisibleImage()");
+        try {
+            if (smooth_transition) {
+                Bitmap from_bm = getVisibleImage(true);
+                Bitmap to_bm = getVisibleImage(false);
+                normaliseCanvas();
+                setImageBitmap(from_bm);
+                setImageBitmap(to_bm, true);
+
+            } else {
+                Bitmap bm = getVisibleImage(false);
+                setImageBitmap(bm);
+                normaliseCanvas();
+            }
+        } finally {
+            Trace.endSection();
         }
     }
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
     // we can reset the scrolling and scaling of the RenderCanvas ImageView
-    private Bitmap getVisibleImage(boolean bilinear_filter) {
+    Bitmap getVisibleImage (boolean bilinear_filter) {
         int new_left, new_right, new_top, new_bottom;
-        Canvas offset_canvas, scale_canvas;
         Bitmap offset_bm, scaled_bm;
-        Rect blit_to, blit_from;
+        Canvas offset_canvas, scale_canvas;
+        final Rect blit_to, blit_from;
 
-        // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
-        // in any order. the image may lose definition after several cycles of this but
-        // it shouldn't be too noticeable
+        Trace.beginSection("getVisibleImage(" + bilinear_filter + ")");
+        try {
+            // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
+            // in any order. the image may lose definition after several cycles of this but
+            // it shouldn't be too noticeable
 
-        // do offset
-        offset_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        offset_canvas = new Canvas(offset_bm);
-        offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
+            // do offset
+            offset_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
+            offset_canvas = new Canvas(offset_bm);
+            offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
 
-        // do zoom
-        scaled_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+            // do zoom
+            scaled_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
 
-        // in case the source image has been offset (we won't check for it, it's not worth it) we
-        // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
-        // reveals with setImageBitmap() may not work as expected
-        scaled_bm.eraseColor(background_colour);
+            // in case the source image has been offset (we won't check for it, it's not worth it) we
+            // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
+            // reveals with setImageBitmap() may not work as expected
+            scaled_bm.eraseColor(background_colour);
 
-        new_left = (int) (mandelbrot_zoom_factor * getCanvasWidth());
-        new_right = getCanvasWidth() - new_left;
-        new_top = (int) (mandelbrot_zoom_factor * getCanvasHeight());
-        new_bottom = getCanvasHeight() - new_top;
-        blit_to = new Rect(0, 0, getCanvasWidth(), getCanvasHeight());
-        blit_from = new Rect(new_left, new_top, new_right, new_bottom);
+            new_left = (int) (mandelbrot_zoom_factor * canvas_width);
+            new_right = canvas_width - new_left;
+            new_top = (int) (mandelbrot_zoom_factor * canvas_height);
+            new_bottom = canvas_height - new_top;
+            blit_to = new Rect(0, 0, canvas_width, canvas_height);
+            blit_from = new Rect(new_left, new_top, new_right, new_bottom);
 
-        Paint scale_pnt = null;
-        if (bilinear_filter) {
-            scale_pnt = new Paint();
-            scale_pnt.setFilterBitmap(true);
+            Paint scale_pnt = null;
+            if (bilinear_filter) {
+                scale_pnt = new Paint();
+                scale_pnt.setFilterBitmap(true);
+            }
+
+            scale_canvas = new Canvas(scaled_bm);
+            scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_pnt);
+
+            return scaled_bm;
+        } finally {
+            Trace.endSection();
         }
-
-        scale_canvas = new Canvas(scaled_bm);
-        scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_pnt);
-
-        return scaled_bm;
     }
     /* end of canvas transformations */
 

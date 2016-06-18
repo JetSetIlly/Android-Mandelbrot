@@ -54,7 +54,6 @@ public class MandelbrotActionBar extends Toolbar {
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                                 setVisibility(INVISIBLE);
                             }
                         }).start();

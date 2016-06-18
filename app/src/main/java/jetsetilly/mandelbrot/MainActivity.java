@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
@@ -55,6 +56,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // enforce thread policy
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build());
+
         super.onCreate(savedInstanceState);
 
         // maintain un-shadow-able reference to this
@@ -86,10 +93,11 @@ public class MainActivity extends AppCompatActivity {
         dialog_receiver = new DialogReceiver();
 
         // set render running as soon as possible
+        final MainActivity main_activity = this;
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
             public void run() {
-                render_canvas.initPostLayout();
+                render_canvas.initPostLayout(main_activity);
             }
         });
 
@@ -146,11 +154,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_reset:
                 render_canvas.stopRender();
                 MandelbrotSettings.getInstance().reset();
-                render_canvas.resetCanvas();
+                render_canvas.resetCanvas(this);
                 return true;
 
             case R.id.action_redraw:
-                render_canvas.resetCanvas();
+                render_canvas.resetCanvas(this);
                 return true;
 
             case R.id.action_toggle_info_pane:

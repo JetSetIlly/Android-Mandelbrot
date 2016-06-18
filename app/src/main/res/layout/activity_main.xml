@@ -35,18 +35,16 @@
     <jetsetilly.mandelbrot.ProgressView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
         android:src="@mipmap/ic_progress"
         android:id="@+id/progressView"
-        android:layout_gravity="end|bottom"
-        android:visibility="invisible"
+        android:visibility="visible"
         android:elevation="10dp"
         android:background="@drawable/progress_background"
         android:layout_margin="20dp"
         android:padding="7dp"
         android:cropToPadding="false"
         android:clickable="false"
-        android:baselineAlignBottom="false"
-        android:adjustViewBounds="false"
         />
 
     <jetsetilly.mandelbrot.MandelbrotActionBar
@@ -62,10 +60,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
         android:fontFamily="monospace"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/info_pane"
-        android:layout_gravity="left|bottom"
         android:text="Small Text"
         android:padding="7dp"
         android:background="#bbffffff"

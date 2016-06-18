@@ -48,10 +48,6 @@
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/anim/palette_swatch_selected.xml"
     },
     {
-        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/anim/progress_show.xml",
-        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/anim/progress_show.xml"
-    },
-    {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/anim/abc_slide_out_top.xml",
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/anim/abc_slide_out_top.xml"
     },
@@ -66,10 +62,6 @@
     {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/anim/design_snackbar_out.xml",
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/exploded-aar/com.android.support/design/23.4.0/res/anim/design_snackbar_out.xml"
-    },
-    {
-        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/anim/progress_hide.xml",
-        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/anim/progress_hide.xml"
     },
     {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/anim/design_fab_out.xml",

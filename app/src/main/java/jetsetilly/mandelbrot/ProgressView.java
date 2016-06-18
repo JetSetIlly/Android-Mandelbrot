@@ -1,10 +1,11 @@
 package jetsetilly.mandelbrot;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,16 +21,21 @@ public class ProgressView extends ImageView {
 
     private final AtomicInteger busy_ct = new AtomicInteger(0);
 
+    private AnimatorSet anim;
+
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        setActivityVisibility(0f);
     }
 
     public ProgressView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setActivityVisibility(0f);
     }
 
     public ProgressView(Context context) {
         super(context);
+        setActivityVisibility(0f);
     }
 
     public void startSession() {
@@ -45,7 +51,7 @@ public class ProgressView extends ImageView {
         kick_time = System.currentTimeMillis();
 
         // quick exit if progress is already visible
-        if (getVisibility() == VISIBLE) return;
+        if (getActivityVisibility() > 0f) return;
 
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
@@ -55,7 +61,9 @@ public class ProgressView extends ImageView {
             }
         }
 
-        startAnimation(buildProgressAnimation());
+        anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_on);
+        anim.setTarget(this);
+        anim.start();
     }
 
     public void unregister() {
@@ -68,88 +76,39 @@ public class ProgressView extends ImageView {
         // shouldn't happen really
         busy_ct.set(0);
 
-        // quick exit if progress is not visible
-        if (getVisibility() == INVISIBLE) {
-            return;
-        }
+        // do nothing else if there is no animation
+        if (anim == null) return;
 
-        // wait for spin_anim to finish at the key frame
-        Animation spin_anim = getAnimation();
-        if (spin_anim == null) return;
-        spin_anim.setRepeatCount(0);
-    }
+        // cancel existing animation
+        anim.cancel();
 
-    private Animation buildProgressAnimation() {
-        Animation show_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_show);
-        show_anim.setAnimationListener(new Animation.AnimationListener() {
-            public void onAnimationEnd(Animation a) {
-                // building spin animation by hand because of android bug in how repeat count is set
-                // in animation xml files
-                final Animation spin_anim = new RotateAnimation(0, SPIN_FRAME_COUNT, getMeasuredWidth()/2, getMeasuredHeight()/2);
-                spin_anim.setRepeatCount(Animation.INFINITE);
-                spin_anim.setDuration(SPIN_DURATION);
-
-                spin_anim.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        // check to see if another MandelbrotThread has registered with ProgressView in the
-                        // time it takes for postDelayed() to run. if it has, resume the spin animation
-                        // and exit
-                        if (busy_ct.get() > 0) {
-                            // busy_sustain is set so kick the spin animation to continue the progress view
-                            spin_anim.setRepeatCount(Animation.INFINITE);
-                            startAnimation(spin_anim);
-                            return;
-                        }
-
-                        final Animation hide_anim = AnimationUtils.loadAnimation(getContext(), R.anim.progress_hide);
-
-                        hide_anim.setAnimationListener(new Animation.AnimationListener() {
-                            @Override
-                            public void onAnimationStart(Animation animation) {
-                            }
-
-                            @Override
-                            public void onAnimationEnd(Animation animation) {
-                                clearAnimation();
-                                setVisibility(INVISIBLE);
-                            }
-
-                            @Override
-                            public void onAnimationRepeat(Animation animation) {
-                            }
-                        });
-
-                        startAnimation(hide_anim);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                        // check that the animation hasn't been spinning too long
-                        // this shouldn't be necessary because threads should always unregister
-                        // once they are done in all circumstances
-                        // if the wtf message is every logged then this clearly isn't happening
-                        if (System.currentTimeMillis() - kick_time > PROGRESS_WAIT ) {
-                            Tools.printWTF(DBG_TAG, "spinner has been spinning too long without activity - forcing closure");
-                            unregister();
-                        }
-                    }
-                });
-                startAnimation(spin_anim);
-            }
-
-            public void onAnimationRepeat(Animation a) {
-            }
-
-            public void onAnimationStart(Animation a) {
-                setVisibility(VISIBLE);
+        // set up and run off animation
+        anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_off);
+        anim.setTarget(this);
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                anim = null;
             }
         });
+        anim.start();
+    }
 
-        return show_anim;
+    public void setActivityVisibility(final float value) {
+        if (value == 0f) {
+            setVisibility(INVISIBLE);
+            setRotation(0f);
+        } else {
+            setVisibility(VISIBLE);
+        }
+
+        setAlpha(value);
+        setTranslationX((1-value) * getWidth());
+        setTranslationY((1-value) * getHeight());
+    }
+
+    public float getActivityVisibility() {
+        return getAlpha();
     }
 }

@@ -35,7 +35,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 {
     private final String DBG_TAG = "render canvas";
 
-    private MainActivity main_activity;
     private Mandelbrot mandelbrot;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
@@ -118,30 +117,29 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
-        init(context);
+        init();
     }
 
     public RenderCanvas(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
 
     public RenderCanvas(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context);
+        init();
     }
 
-    private void init(Context context) {
-        this.main_activity = (MainActivity) context;
+    private void init() {
         setScaleType(ImageView.ScaleType.CENTER);
     }
 
-    public void initPostLayout() {
+    public void initPostLayout(MainActivity main_activity) {
         this.static_background = (ImageView) main_activity.findViewById(R.id.static_background);
         this.static_foreground = (ImageView) main_activity.findViewById(R.id.static_foreground);
         this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gesture_overlay);
         this.gestures.setup(main_activity, this);
-        resetCanvas();
+        resetCanvas(main_activity);
     }
     /* end of initialisation */
 
@@ -158,95 +156,99 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void setImageBitmap(Bitmap bm, boolean transition) {
-        if (transition || transition_type == TransitionType.NONE) {
-            // prepare foreground. this is the image we transition from
-            static_foreground.setImageBitmap(display_bm);
-            static_foreground.setVisibility(VISIBLE);
-            static_foreground.setAlpha(1.0f);
+        Trace.beginSection("setImageBitmap() transition=" + transition);
+        try {
+            if (transition || transition_type == TransitionType.NONE) {
+                // prepare foreground. this is the image we transition from
+                static_foreground.setImageBitmap(display_bm);
+                static_foreground.setVisibility(VISIBLE);
+                static_foreground.setAlpha(1.0f);
 
-            // prepare final image. the image we transition to
-            super.setImageBitmap(display_bm = bm);
+                // prepare final image. the image we transition to
+                super.setImageBitmap(display_bm = bm);
 
-            // get speed of animation (we'll actually set the speed later)
-            int speed;
-            switch (transition_speed) {
-                case VFAST:
-                    speed = R.integer.transition_duration_vfast;
-                    break;
-                case FAST:
-                    speed = R.integer.transition_duration_fast;
-                    break;
-                case SLOW:
-                    speed = R.integer.transition_duration_slow;
-                    break;
-                case VSLOW:
-                    speed = R.integer.transition_duration_vslow;
-                    break;
-                default:
-                case NORMAL:
-                    speed = R.integer.transition_duration_slow;
-                    break;
-            }
-            speed = getResources().getInteger(speed);
-
-            // same end runnable for all transition types
-            final Runnable transition_end_runnable = new Runnable() {
-                @Override
-                public void run() {
-                    static_foreground.setVisibility(INVISIBLE);
-                    transition_anim_cancel = null;
+                // get speed of animation (we'll actually set the speed later)
+                int speed;
+                switch (transition_speed) {
+                    case VFAST:
+                        speed = R.integer.transition_duration_vfast;
+                        break;
+                    case FAST:
+                        speed = R.integer.transition_duration_fast;
+                        break;
+                    case SLOW:
+                        speed = R.integer.transition_duration_slow;
+                        break;
+                    case VSLOW:
+                        speed = R.integer.transition_duration_vslow;
+                        break;
+                    default:
+                    case NORMAL:
+                        speed = R.integer.transition_duration_slow;
+                        break;
                 }
-            };
+                speed = getResources().getInteger(speed);
 
-            // set up animation based on type
-            if (transition_type == TransitionType.CROSS_FADE) {
-                final ViewPropertyAnimator transition_anim = static_foreground.animate();
-
-                // prepare transition_anim_cancel. see comments in declaration for explanation
-                transition_anim_cancel= new Runnable() {
+                // same end runnable for all transition types
+                final Runnable transition_end_runnable = new Runnable() {
                     @Override
                     public void run() {
-                        transition_anim.cancel();
-                        transition_end_runnable.run();
+                        static_foreground.setVisibility(INVISIBLE);
+                        transition_anim_cancel = null;
                     }
                 };
 
-                transition_anim.withEndAction(transition_end_runnable);
-                transition_anim.setDuration(speed);
-                transition_anim.alpha(0.0f);
-                transition_anim.start();
+                // set up animation based on type
+                if (transition_type == TransitionType.CROSS_FADE) {
+                    final ViewPropertyAnimator transition_anim = static_foreground.animate();
 
-            } else if (transition_type == TransitionType.CIRCLE) {
-                final Animator transition_anim = ViewAnimationUtils.createCircularReveal(static_foreground,
-                        getCanvasWidth()/2, getCanvasHeight()/2, getCanvasWidth(), 0);
+                    // prepare transition_anim_cancel. see comments in declaration for explanation
+                    transition_anim_cancel = new Runnable() {
+                        @Override
+                        public void run() {
+                            transition_anim.cancel();
+                            transition_end_runnable.run();
+                        }
+                    };
 
-                // prepare transition_anim_cancel. see comments in declaration for explanation
-                transition_anim_cancel = new Runnable() {
-                    @Override
-                    public void run() {
-                        transition_anim.cancel();
-                        transition_end_runnable.run();
-                    }
-                };
+                    transition_anim.withEndAction(transition_end_runnable);
+                    transition_anim.setDuration(speed);
+                    transition_anim.alpha(0.0f);
+                    transition_anim.start();
 
-                transition_anim.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        transition_end_runnable.run();
-                    }
-                });
+                } else if (transition_type == TransitionType.CIRCLE) {
+                    final Animator transition_anim = ViewAnimationUtils.createCircularReveal(static_foreground,
+                            getCanvasWidth() / 2, getCanvasHeight() / 2, getCanvasWidth(), 0);
 
-                transition_anim.setDuration(speed);
-                transition_anim.start();
+                    // prepare transition_anim_cancel. see comments in declaration for explanation
+                    transition_anim_cancel = new Runnable() {
+                        @Override
+                        public void run() {
+                            transition_anim.cancel();
+                            transition_end_runnable.run();
+                        }
+                    };
+
+                    transition_anim.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            transition_end_runnable.run();
+                        }
+                    });
+
+                    transition_anim.setDuration(speed);
+                    transition_anim.start();
+                }
+
+                // reset transition type/speed - until next call to changeNextTransition()
+                transition_type = def_transition_type;
+                transition_speed = def_transition_speed;
+            } else {
+                super.setImageBitmap(display_bm = bm);
             }
-
-            // reset transition type/speed - until next call to changeNextTransition()
-            transition_type = def_transition_type;
-            transition_speed = def_transition_speed;
-        }
-        else {
-            super.setImageBitmap(display_bm = bm);
+        } finally {
+            Trace.endSection();
         }
     }
 
@@ -266,7 +268,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(clear_bm, true);
     }
 
-    public void resetCanvas() {
+    public void resetCanvas(MainActivity main_activity) {
         // new render cache
         stopRender();
 

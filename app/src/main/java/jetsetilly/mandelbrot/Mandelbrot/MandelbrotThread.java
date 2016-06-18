@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
+import android.os.Process;
 import android.support.annotation.CallSuper;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -8,7 +9,7 @@ import android.support.annotation.WorkerThread;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 
-abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
+abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     /* from the android documentation:
 
     AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
@@ -28,7 +29,10 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
 
     @Override
     @WorkerThread
+    @CallSuper
     protected Void doInBackground(Void... v) {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        m.canvas.startDraw(canvas_id);
         return null;
     }
 
@@ -46,7 +50,6 @@ abstract public class MandelbrotThread  extends AsyncTask<Void, Void, Void> {
     protected void onPreExecute() {
         MainActivity.progress.register();
         canvas_id = System.currentTimeMillis();
-        m.canvas.startDraw(canvas_id);
     }
 
     @Override

@@ -12,8 +12,9 @@ public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
     private final double PROGRESS_WAIT = 1000; // in milliseconds
+    private final long UNREGISTER_DELAY = 1000; // in milliseconds
 
-    private double start_time = 0.0;
+    private long start_time = 0;
     private AnimatorSet running_anim;
     private AnimatorSet on_anim;
     private AnimatorSet throb_anim;
@@ -86,11 +87,22 @@ public class ProgressView extends ImageView {
     }
 
     public void unregister() {
-        // run off-animation if necessary
-        if (running_anim == off_anim || running_anim == no_anim) return;
-        running_anim.cancel(); // running_anim == on_anim || running_anim == throb_anim
-        running_anim = off_anim;
-        off_anim.start();
+        // run off-animation if necessary after a short delay
+        // the delay should give enough time for a new render event
+        // to start without the progress view bobbing out of view
+
+        final long unregister_time = System.currentTimeMillis();
+
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (unregister_time < start_time) return; // do nothing if a new session has started
+                if (running_anim == off_anim || running_anim == no_anim) return;
+                running_anim.cancel(); // running_anim == on_anim || running_anim == throb_anim
+                running_anim = off_anim;
+                off_anim.start();
+            }
+        }, UNREGISTER_DELAY);
     }
 
     public void setActivityVisibility(final float value) {

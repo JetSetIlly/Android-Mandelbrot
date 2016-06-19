@@ -48,7 +48,6 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onPreExecute() {
-        MainActivity.progress.register();
         canvas_id = System.currentTimeMillis();
     }
 

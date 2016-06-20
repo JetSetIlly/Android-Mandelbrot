@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Gadgets.ReportingSeekBar;
+import jetsetilly.mandelbrot.View.ReportingSeekBar;
 
 public class SmoothnessDialog extends DialogFragment {
     private ReportingSeekBar smoothness;

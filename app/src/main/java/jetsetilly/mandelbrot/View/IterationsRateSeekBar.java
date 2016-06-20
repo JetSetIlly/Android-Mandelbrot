@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot.Gadgets;
+package jetsetilly.mandelbrot.View;
 
 import android.content.Context;
 import android.util.AttributeSet;

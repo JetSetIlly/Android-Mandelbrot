@@ -521,21 +521,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         });
         anim.start();
         scrolled_since_last_normalise = true;
-
-        /*
-        setX(-offset_x * scale);
-        setY(-offset_y * scale);
-        setScaleX(scale);
-        setScaleY(scale);
-        scrolled_since_last_normalise = true;
-        startRender();
-        */
     }
 
     public void pinchZoom(float amount) {
         // WARNING: This doesn't work correctly in certain combination of zoom/move chains
         // unless the canvas is reset (as it is in zoomCorrection() and startRender() methods)
-
         if (amount == 0)
             return;
 
@@ -553,6 +543,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 Math.min(gesture_settings.max_pinch_zoom_in, mandelbrot_zoom_factor));
 
         float scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+
         setScaleX(scale);
         setScaleY(scale);
     }

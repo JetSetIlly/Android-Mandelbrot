@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -35,17 +35,15 @@
     <jetsetilly.mandelbrot.ProgressView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
         android:src="@mipmap/ic_progress"
         android:id="@+id/progressView"
         android:visibility="visible"
         android:elevation="10dp"
         android:background="@drawable/progress_background"
         android:layout_margin="20dp"
-        android:padding="7dp"
-        android:cropToPadding="false"
-        android:clickable="false"
-        />
+        android:padding="7dp" />
 
     <jetsetilly.mandelbrot.MandelbrotActionBar
         android:layout_width="match_parent"
@@ -53,14 +51,14 @@
         android:id="@+id/toolbar"
         android:minHeight="?attr/actionBarSize"
         android:visibility="invisible"
-        android:layout_gravity="center_horizontal|top"
         android:background="?attr/colorPrimary"
         android:alpha="0.7" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left|bottom"
+        android:layout_width="250sp"
+        android:layout_height="120sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
         android:fontFamily="monospace"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/info_pane"
@@ -70,9 +68,8 @@
         android:backgroundTint="@color/primary_dark_material_light"
         android:textColor="@color/primary_text_default_material_light"
         android:visibility="invisible"
-        android:alpha="0"
-        />
+        android:alpha="0" />
 
-</FrameLayout>
+</RelativeLayout>
 
 

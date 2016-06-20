@@ -14,9 +14,9 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.SystemSettings;
-import jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar;
-import jetsetilly.mandelbrot.Gadgets.IterationsSeekBar;
-import jetsetilly.mandelbrot.Gadgets.ReportingSeekBar;
+import jetsetilly.mandelbrot.View.IterationsRateSeekBar;
+import jetsetilly.mandelbrot.View.IterationsSeekBar;
+import jetsetilly.mandelbrot.View.ReportingSeekBar;
 
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";

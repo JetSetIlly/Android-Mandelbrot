@@ -37,14 +37,14 @@
                     android:layout_height="wrap_content"
                     android:padding="20dp">
 
-                    <jetsetilly.mandelbrot.Gadgets.IterationsSeekBar
+                    <jetsetilly.mandelbrot.View.IterationsSeekBar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/iterations"
                         app:label="@string/settings_max_iterations_label"
                         app:label_appearance="?android:attr/textAppearanceListItemSmall" />
 
-                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                    <jetsetilly.mandelbrot.View.ReportingSeekBar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="39dp"
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:padding="20dp">
 
-                    <jetsetilly.mandelbrot.Gadgets.IterationsRateSeekBar
+                    <jetsetilly.mandelbrot.View.IterationsRateSeekBar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/iterations_rate"
@@ -80,7 +80,7 @@
                         app:label_appearance="?android:attr/textAppearanceListItemSmall"
                         app:thumb_width="@dimen/seekbar_thumb_width_wide" />
 
-                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                    <jetsetilly.mandelbrot.View.ReportingSeekBar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="39dp"
@@ -151,7 +151,7 @@
 
                     </RadioGroup>
 
-                    <jetsetilly.mandelbrot.Gadgets.ReportingSeekBar
+                    <jetsetilly.mandelbrot.View.ReportingSeekBar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="39dp"

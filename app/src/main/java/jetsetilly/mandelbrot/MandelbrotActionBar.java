@@ -1,10 +1,10 @@
 package jetsetilly.mandelbrot;
 
+import android.os.Process;
 import android.content.Context;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
-import android.os.Process;
 
 public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "mandelbrot actionbar";
@@ -25,6 +25,7 @@ public class MandelbrotActionBar extends Toolbar {
     }
 
     public void completeSetup(MainActivity context, String title) {
+        setLayerType(LAYER_TYPE_HARDWARE, null);
         status_bar = context.getWindow().getDecorView();
         alpha = getAlpha();
         setTitle(title);
@@ -46,7 +47,6 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.VISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
-                        .withLayer()
                         .x(getWidth()/4)
                         .alpha(0.0f)
                         .scaleX(0.95f)

@@ -10,7 +10,11 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Trace;
+import android.os.Process;
 import android.provider.MediaStore;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
@@ -139,6 +143,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         this.static_foreground = (ImageView) main_activity.findViewById(R.id.static_foreground);
         this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gesture_overlay);
         this.gestures.setup(main_activity, this);
+
+        setLayerType(LAYER_TYPE_HARDWARE, null);
+        this.static_foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
+        this.static_background.setLayerType(LAYER_TYPE_HARDWARE, null);
+
         resetCanvas(main_activity);
     }
     /* end of initialisation */
@@ -155,10 +164,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(bm, false);
     }
 
-    public void setImageBitmap(Bitmap bm, boolean transition) {
+    public void setImageBitmap(final Bitmap bm, boolean transition) {
         Trace.beginSection("setImageBitmap() transition=" + transition);
         try {
-            if (transition || transition_type == TransitionType.NONE) {
+            if (transition && transition_type != TransitionType.NONE) {
                 // prepare foreground. this is the image we transition from
                 static_foreground.setImageBitmap(display_bm);
                 static_foreground.setVisibility(VISIBLE);
@@ -206,6 +215,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                     transition_anim_cancel = new Runnable() {
                         @Override
                         public void run() {
+                            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
                             transition_anim.cancel();
                             transition_end_runnable.run();
                         }
@@ -248,6 +258,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 super.setImageBitmap(display_bm = bm);
             }
         } finally {
+
             Trace.endSection();
         }
     }
@@ -410,30 +421,25 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public void startRender() {
-        Trace.beginSection("starting render");
-        try {
-            stopRender();
+        stopRender();
 
-            // use whatever image is currently visible as the basis for the new render
-            // we do this with a smooth_transition if the image has been zoomed
-            // see comments in fixateVisibleImage() for explanation
-            if (mandelbrot_zoom_factor == 0) {
-                fixateVisibleImage(false);
-            } else {
-                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-                fixateVisibleImage(true);
-            }
-
-            // start render thread
-            mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
-
-            // reset transformation variables
-            rendered_offset_x = 0;
-            rendered_offset_y = 0;
-            mandelbrot_zoom_factor = 0;
-        } finally {
-            Trace.endSection();
+        // use whatever image is currently visible as the basis for the new render
+        // we do this with a smooth_transition if the image has been zoomed
+        // see comments in fixateVisibleImage() for explanation
+        if (mandelbrot_zoom_factor == 0) {
+            fixateVisibleImage(false);
+        } else {
+            setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
+            fixateVisibleImage(true);
         }
+
+        // start render thread
+        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
+
+        // reset transformation variables
+        rendered_offset_x = 0;
+        rendered_offset_y = 0;
+        mandelbrot_zoom_factor = 0;
     }
 
     public void stopRender() {
@@ -496,7 +502,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         // do animation
         ViewPropertyAnimator anim = animate();
-        anim.withLayer();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * scale);
         anim.y(-offset_y * scale);
@@ -576,7 +581,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // applied to the image, the second without. setImageBitmap() is called the second time with
         // the transition flag set to true.
         // this rigmarole is necessary after the image has been scaled. scaling the canvas is done
-        // with bilinear filtering applied and the first call to getVisibleImage()/setImageBitmap()
+        // with filtering applied and the first call to getVisibleImage()/setImageBitmap()
         // recreates a normalised image similar to the final zoomed image. however, we don't want a
         // bilinear filtered image, we want a pixelated image. the second call to
         // getVisibleImage()/setImageBitmap() creates this image and causes a transition between
@@ -591,7 +596,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 normaliseCanvas();
                 setImageBitmap(from_bm);
                 setImageBitmap(to_bm, true);
-
             } else {
                 Bitmap bm = getVisibleImage(false);
                 setImageBitmap(bm);
@@ -604,7 +608,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
     // we can reset the scrolling and scaling of the RenderCanvas ImageView
-    Bitmap getVisibleImage (boolean bilinear_filter) {
+    Bitmap getVisibleImage (final boolean bilinear_filter) {
         int new_left, new_right, new_top, new_bottom;
         Bitmap offset_bm, scaled_bm;
         Canvas offset_canvas, scale_canvas;
@@ -645,10 +649,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
             scale_canvas = new Canvas(scaled_bm);
             scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_pnt);
 
-            return scaled_bm;
         } finally {
             Trace.endSection();
         }
+
+        return scaled_bm;
     }
     /* end of canvas transformations */
 

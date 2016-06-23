@@ -1,5 +1,6 @@
 package jetsetilly.mandelbrot;
 
+import android.os.Process;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;
@@ -37,6 +38,7 @@ public class ProgressView extends ImageView {
     }
 
     private void init() {
+        setLayerType(LAYER_TYPE_HARDWARE, null);
         setActivityVisibility(0f);
         on_anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_on);
         off_anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_off);

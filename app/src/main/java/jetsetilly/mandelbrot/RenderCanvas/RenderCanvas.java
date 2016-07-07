@@ -10,9 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
-import android.os.Message;
 import android.os.Trace;
 import android.os.Process;
 import android.provider.MediaStore;
@@ -164,7 +162,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         setImageBitmap(bm, false);
     }
 
-    public void setImageBitmap(final Bitmap bm, boolean transition) {
+    public int setImageBitmap(final Bitmap bm, boolean transition) {
+        // returns actual speed of transition (in milliseconds)
+
         Trace.beginSection("setImageBitmap() transition=" + transition);
         try {
             if (transition && transition_type != TransitionType.NONE) {
@@ -202,8 +202,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 final Runnable transition_end_runnable = new Runnable() {
                     @Override
                     public void run() {
-                        static_foreground.setVisibility(INVISIBLE);
                         transition_anim_cancel = null;
+                        static_foreground.setVisibility(INVISIBLE);
                     }
                 };
 
@@ -254,11 +254,13 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 // reset transition type/speed - until next call to changeNextTransition()
                 transition_type = def_transition_type;
                 transition_speed = def_transition_speed;
+
+                return speed;
             } else {
                 super.setImageBitmap(display_bm = bm);
+                return 0;
             }
         } finally {
-
             Trace.endSection();
         }
     }
@@ -272,26 +274,28 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         static_background.setBackgroundColor(color);
     }
 
-    private void clearImage() {
-        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
-        clear_bm.eraseColor(background_colour);
-        setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-        setImageBitmap(clear_bm, true);
-    }
-
     public void resetCanvas(MainActivity main_activity) {
         // new render cache
         stopRender();
 
-        // kill any existing image
-        clearImage();
-
-        // set base color
+        // clear image
         setBackgroundColor(background_colour);
+        Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+        clear_bm.eraseColor(background_colour);
+        setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
+        int speed = setImageBitmap(clear_bm, true);
 
+        // prepare new mandelbrot
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
 
-        startRender();
+        // clumsily wait for transition anim to finish
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startRender();
+            }
+        }, speed);
     }
 
     public void checkActionBar(float x, float y, boolean show) {

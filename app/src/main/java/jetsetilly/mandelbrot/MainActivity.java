@@ -1,14 +1,19 @@
 package jetsetilly.mandelbrot;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
@@ -16,6 +21,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -143,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_save:
-                if (render_canvas.saveImage()) {
+                if (saveImage()) {
                     Toast.makeText(this, R.string.action_save_success, Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
@@ -276,5 +285,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public boolean saveImage() {
+        long curr_time = System.currentTimeMillis();
+
+        String title = String.format("%s_%s.jpeg", getString(R.string.app_name), new SimpleDateFormat("yyyymmdd_hhmmss", Locale.ENGLISH).format(curr_time));
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, getString(R.string.app_name));
+        values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, curr_time);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+        ContentResolver cr = this.getContentResolver();
+        Uri url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        // TODO: album in pictures folder
+
+        try {
+            url = cr.insert(url, values);
+            assert url != null;
+            OutputStream output_stream = cr.openOutputStream(url);
+            render_canvas.getVisibleImage(false).compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
+        } catch (Exception e) {
+            // security exception?
+            return false;
+        }
+
+        return true;
     }
 }

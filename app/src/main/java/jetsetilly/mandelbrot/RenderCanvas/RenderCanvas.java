@@ -2,18 +2,14 @@ package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Trace;
 import android.os.Process;
-import android.provider.MediaStore;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
@@ -21,16 +17,13 @@ import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Tools;
 
 public class RenderCanvas extends ImageView implements MandelbrotCanvas
@@ -279,11 +272,19 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         stopRender();
 
         // clear image
-        setBackgroundColor(background_colour);
+
+        // co-ordinates are being reset so instead of using the currently defined background_color,
+        // we'll redefine it to be the first color in the current palette. this is less garish
+        // because the existing background_color might be a colour that is not visible in the
+        // reset image. in effect we're short cutting some of the work in done by startRender()
+        background_colour = PaletteSettings.getInstance().colours[1];
+
         Bitmap clear_bm = Bitmap.createBitmap(getCanvasWidth(), getCanvasHeight(), Bitmap.Config.ARGB_8888);
+        setBackgroundColor(background_colour);
         clear_bm.eraseColor(background_colour);
         setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
         int speed = setImageBitmap(clear_bm, true);
+        // END OF clear image
 
         // prepare new mandelbrot
         mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
@@ -612,7 +613,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     // getVisibleImage() returns just the portion of the bitmap that is visible. used so
     // we can reset the scrolling and scaling of the RenderCanvas ImageView
-    Bitmap getVisibleImage (final boolean bilinear_filter) {
+    public Bitmap getVisibleImage (final boolean bilinear_filter) {
         int new_left, new_right, new_top, new_bottom;
         Bitmap offset_bm, scaled_bm;
         Canvas offset_canvas, scale_canvas;
@@ -669,37 +670,5 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         return (scale - 1) / (2 * scale);
     }
 
-    public boolean saveImage() {
-        long curr_time = System.currentTimeMillis();
-
-        String title = String.format("%s_%s.jpeg", getContext().getString(R.string.app_name), new SimpleDateFormat("yyyymmdd_hhmmss", Locale.ENGLISH).format(curr_time));
-
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DESCRIPTION, getContext().getString(R.string.app_name));
-        values.put(MediaStore.Images.Media.DATE_ADDED, curr_time);
-        values.put(MediaStore.Images.Media.DATE_TAKEN, curr_time);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-        ContentResolver cr = getContext().getContentResolver();
-        Uri url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-
-        // TODO: album in pictures folder
-
-        try {
-            url = cr.insert(url, values);
-            assert url != null;
-            OutputStream output_stream = cr.openOutputStream(url);
-            getVisibleImage(false).compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
-        } catch (Exception e) {
-            if (url != null) {
-                cr.delete(url, null, null);
-            }
-
-            return false;
-        }
-
-        return true;
-    }
 }
 

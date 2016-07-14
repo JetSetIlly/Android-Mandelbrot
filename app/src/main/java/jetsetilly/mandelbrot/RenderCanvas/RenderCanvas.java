@@ -103,8 +103,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     private TransitionType transition_type = def_transition_type;
     private TransitionSpeed transition_speed = def_transition_speed;
 
-    private int canvas_width, canvas_height;
-
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
     private Runnable transition_anim_cancel = null;
@@ -142,13 +140,6 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         resetCanvas(main_activity);
     }
     /* end of initialisation */
-
-    @Override // View
-    public void onSizeChanged(int w, int h, int old_w, int old_h) {
-        super.onSizeChanged(w, h, old_w, old_h);
-        canvas_width = w;
-        canvas_height = h;
-    }
 
     @Override // View
     public void setImageBitmap(Bitmap bm) {
@@ -383,11 +374,11 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     }
 
     public int getCanvasWidth() {
-        return canvas_width;
+        return getWidth();
     }
 
     public int getCanvasHeight() {
-        return canvas_height;
+        return getHeight();
     }
 
     public boolean isCompleteRender() {
@@ -618,6 +609,9 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         Bitmap offset_bm, scaled_bm;
         Canvas offset_canvas, scale_canvas;
         final Rect blit_to, blit_from;
+
+        int canvas_width = getCanvasWidth();
+        int canvas_height = getCanvasHeight();
 
         Trace.beginSection("getVisibleImage(" + bilinear_filter + ")");
         try {

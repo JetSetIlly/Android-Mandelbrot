@@ -12,9 +12,11 @@ import android.os.Trace;
 import android.os.Process;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -26,11 +28,15 @@ import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Tools;
 
-public class RenderCanvas extends ImageView implements MandelbrotCanvas
+public class RenderCanvas extends RelativeLayout implements MandelbrotCanvas
 {
     private final String DBG_TAG = "render canvas";
 
     private Mandelbrot mandelbrot;
+
+    // canvas on which the fractal is drawn -- all transforms (scrolling, scaling) affect
+    // this view only
+    private ImageView fractal_canvas;
 
     // that ImageView that sits behind RenderCanvas in the layout. we colour this image view
     // so that zooming the canvas doesn't expose the nothingness behind the canvas.
@@ -110,38 +116,42 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
     /* initialisation */
     public RenderCanvas(Context context) {
         super(context);
-        init();
     }
 
     public RenderCanvas(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
-    }
-
-    public RenderCanvas(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init();
-    }
-
-    private void init() {
-        setScaleType(ImageView.ScaleType.CENTER);
     }
 
     public void initPostLayout(MainActivity main_activity) {
-        this.static_background = (ImageView) main_activity.findViewById(R.id.static_background);
-        this.static_foreground = (ImageView) main_activity.findViewById(R.id.static_foreground);
-        this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gesture_overlay);
-        this.gestures.setup(main_activity, this);
+        // create the views used for rendering
+        this.fractal_canvas = new ImageView(main_activity);
+        this.static_background = new ImageView(main_activity);
+        this.static_foreground = new ImageView(main_activity);
 
-        setLayerType(LAYER_TYPE_HARDWARE, null);
+        // add the views in order - from back to front
+        addView(this.static_background);
+        addView(this.fractal_canvas);
+        addView(this.static_foreground);
+
+        // set scale type of fractal canvas to reckon from the centre of the view
+        this.fractal_canvas.setScaleType(ImageView.ScaleType.CENTER);
+
+        // set to hardware acceleration if available
+        // TODO: proper hardware acceleration using SurfaceView
+        this.fractal_canvas.setLayerType(LAYER_TYPE_HARDWARE, null);
         this.static_foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
         this.static_background.setLayerType(LAYER_TYPE_HARDWARE, null);
 
+        // get a reference to the gesture overlay and set it up
+        this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gestureOverlay);
+        assert this.gestures != null;
+        this.gestures.setup(main_activity, this);
+
+        // reset canvas will start the new render
         resetCanvas(main_activity);
     }
     /* end of initialisation */
 
-    @Override // View
     public void setImageBitmap(Bitmap bm) {
         setImageBitmap(bm, false);
     }
@@ -158,7 +168,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
                 static_foreground.setAlpha(1.0f);
 
                 // prepare final image. the image we transition to
-                super.setImageBitmap(display_bm = bm);
+                this.fractal_canvas.setImageBitmap(display_bm = bm);
 
                 // get speed of animation (we'll actually set the speed later)
                 int speed;
@@ -241,7 +251,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
                 return speed;
             } else {
-                super.setImageBitmap(display_bm = bm);
+                this.fractal_canvas.setImageBitmap(display_bm = bm);
                 return 0;
             }
         } finally {
@@ -278,7 +288,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         // END OF clear image
 
         // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.info_pane));
+        mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.infoPane));
 
         // clumsily wait for transition anim to finish
         Handler h = new Handler();
@@ -389,10 +399,10 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
     /* render control */
     private void normaliseCanvas(){
-        setScaleX(1f);
-        setScaleY(1f);
-        setX(0);
-        setY(0);
+        this.fractal_canvas.setScaleX(1f);
+        this.fractal_canvas.setScaleY(1f);
+        this.fractal_canvas.setX(0);
+        this.fractal_canvas.setY(0);
 
         scrolled_since_last_normalise = false;
     }
@@ -464,8 +474,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         rendered_offset_y += y;
 
         // offset entire image view rather than using the scrolling ability
-        setX(getX() - (x * scale));
-        setY(getY() - (y * scale));
+        this.fractal_canvas.setX(this.fractal_canvas.getX() - (x * scale));
+        this.fractal_canvas.setY(this.fractal_canvas.getY() - (y * scale));
 
         scrolled_since_last_normalise = true;
     }
@@ -497,7 +507,7 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
         rendered_offset_y = offset_y;
 
         // do animation
-        ViewPropertyAnimator anim = animate();
+        ViewPropertyAnimator anim = this.fractal_canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * scale);
         anim.y(-offset_y * scale);
@@ -545,8 +555,8 @@ public class RenderCanvas extends ImageView implements MandelbrotCanvas
 
         float scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
 
-        setScaleX(scale);
-        setScaleY(scale);
+        this.fractal_canvas.setScaleX(scale);
+        this.fractal_canvas.setScaleY(scale);
     }
 
     public void zoomCorrection(boolean force) {

@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_toggle_info_pane:
-                final View info_pane = findViewById(R.id.info_pane);
+                final View info_pane = findViewById(R.id.infoPane);
                 if (info_pane.getVisibility() == View.INVISIBLE) {
                     info_pane.animate().setDuration(resources.getInteger(R.integer.info_pane_fade)).alpha(1f)
                             .withStartAction(new Runnable() {

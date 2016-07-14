@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot.RenderCanvas;
+package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.graphics.Bitmap;
 

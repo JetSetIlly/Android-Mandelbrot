@@ -33,7 +33,7 @@ public class BufferTimer extends Buffer {
         }
     };
 
-    public BufferTimer(RenderCanvas canvas) {
+    public BufferTimer(RenderCanvas_ImageView canvas) {
         super(canvas);
         pixels = new int[height * width];
         palette_frequency = new int[palette_settings.numColors() + 1];

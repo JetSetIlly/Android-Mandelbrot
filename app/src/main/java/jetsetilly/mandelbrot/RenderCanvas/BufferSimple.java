@@ -17,7 +17,7 @@ public class BufferSimple extends Buffer {
     private int most_frequent_palette_entry;
     private int num_colours;
 
-    public BufferSimple(RenderCanvas canvas) {
+    public BufferSimple(RenderCanvas_ImageView canvas) {
         super(canvas);
         pixels = new int[height * width];
         num_colours = palette_settings.numColors();

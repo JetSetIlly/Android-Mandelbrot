@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
+import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas_ImageView;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.SystemSettings;
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     static public Resources resources;
     
     // reference to render canvas
-    static private RenderCanvas render_canvas;
+    static private RenderCanvas_ImageView render_canvas;
 
     // declaring these as static so that it is globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set render running as soon as possible
         final MainActivity main_activity = this;
-        render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
+        render_canvas = (RenderCanvas_ImageView) findViewById(R.id.fractalView);
         render_canvas.post(new Runnable() {
             public void run() {
                 render_canvas.initPostLayout(main_activity);
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                         h.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                render_canvas.setNextTransition(RenderCanvas.TransitionType.CROSS_FADE, RenderCanvas.TransitionSpeed.SLOW);
+                                render_canvas.setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE, RenderCanvas_ImageView.TransitionSpeed.SLOW);
                                 render_canvas.reRender();
                             }
                         }, getResources().getInteger(R.integer.activity_transition_duration));

@@ -5,10 +5,10 @@ import android.graphics.Bitmap;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 
 abstract class Buffer {
-    protected RenderCanvas render_canvas;
+    protected RenderCanvas_ImageView render_canvas;
     protected int width, height;
 
-    public Buffer(RenderCanvas canvas) {
+    public Buffer(RenderCanvas_ImageView canvas) {
         render_canvas = canvas;
         width = canvas.getCanvasWidth();
         height = canvas.getCanvasHeight();

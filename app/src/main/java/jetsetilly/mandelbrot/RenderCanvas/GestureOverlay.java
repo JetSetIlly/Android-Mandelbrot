@@ -23,7 +23,7 @@ public class GestureOverlay extends ImageView implements
     private static final String DEBUG_TAG = "touch canvas";
     private static final long ADDITIONAL_ON_UP_DELAY = 0;
 
-    private RenderCanvas canvas;
+    private RenderCanvas_ImageView canvas;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
@@ -47,7 +47,7 @@ public class GestureOverlay extends ImageView implements
     }
 
     /* initialisation */
-    public void setup(Context context, final RenderCanvas canvas) {
+    public void setup(Context context, final RenderCanvas_ImageView canvas) {
         this.canvas = canvas;
         this.blocked = false;
         this.up_delay_sem = new Semaphore(1);

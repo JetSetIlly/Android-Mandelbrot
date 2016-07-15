@@ -19,18 +19,15 @@ import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
-import jetsetilly.mandelbrot.Gestures.GestureHandler;
 import jetsetilly.mandelbrot.Gestures.GestureOverlay;
-import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Tools;
 
-public class RenderCanvas_ImageView extends RenderCanvas_Base implements RenderCanvas, MandelbrotCanvas, GestureHandler {
+public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
     private Mandelbrot mandelbrot;
@@ -284,12 +281,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base implements RenderC
     }
 
     // RenderCanvas implementation
-    public void newPalette() {
-        setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE,RenderCanvas_ImageView.TransitionSpeed.SLOW);
-        reRender();
-    }
-
-    // RenderCanvas implementation
     public void resetCanvas(MainActivity main_activity) {
         // new render cache
         stopRender();
@@ -428,7 +419,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base implements RenderC
         transition_speed = speed;
     }
 
-    private void reRender() {
+    // RenderCanvas implementation
+    public void reRender() {
         if (cached_iterations == null) {
             startRender();
             return;

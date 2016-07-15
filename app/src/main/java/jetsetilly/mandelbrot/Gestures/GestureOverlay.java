@@ -24,7 +24,7 @@ public class GestureOverlay extends ImageView implements
     private static final String DEBUG_TAG = "gesture overlay";
     private static final long ADDITIONAL_ON_UP_DELAY = 0;
 
-    private RenderCanvas_ImageView render_canvas;
+    private GestureHandler gesture_handler;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
@@ -49,7 +49,7 @@ public class GestureOverlay extends ImageView implements
 
     /* initialisation */
     public void setup(Context context, final RenderCanvas_ImageView canvas) {
-        this.render_canvas = canvas;
+        this.gesture_handler = canvas;
         this.blocked = false;
         this.up_delay_sem = new Semaphore(1);
         this.up_delay_runnable = null;
@@ -158,7 +158,7 @@ public class GestureOverlay extends ImageView implements
         }
 
         Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
-        render_canvas.checkActionBar(event.getX(), event.getY(), false);
+        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
         altered_canvas = false;
         return true;
     }
@@ -169,7 +169,7 @@ public class GestureOverlay extends ImageView implements
         if (scaling) return true;
 
         Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
-        render_canvas.scrollBy((int) distanceX, (int) distanceY);
+        gesture_handler.scrollBy((int) distanceX, (int) distanceY);
         altered_canvas = true;
         return true;
     }
@@ -180,7 +180,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
-        render_canvas.checkActionBar(event.getX(), event.getY(), true);
+        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
 
         return true;
     }
@@ -194,10 +194,10 @@ public class GestureOverlay extends ImageView implements
 
         Tools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
-        int offset_x = (int) (event.getX() - (render_canvas.getCanvasWidth() /2));
-        int offset_y = (int) (event.getY() - (render_canvas.getCanvasHeight() / 2));
+        int offset_x = (int) (event.getX() - (gesture_handler.getCanvasWidth() /2));
+        int offset_y = (int) (event.getY() - (gesture_handler.getCanvasHeight() / 2));
 
-        render_canvas.animatedZoom(offset_x, offset_y);
+        gesture_handler.animatedZoom(offset_x, offset_y);
         altered_canvas = true;
 
         return true;
@@ -220,7 +220,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
 
         Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-        render_canvas.pinchZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
+        gesture_handler.pinchZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
     }
@@ -230,7 +230,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return;
 
         Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
-        render_canvas.zoomCorrection(false);
+        gesture_handler.zoomCorrection(false);
         altered_canvas = true;
         scaling = false;
     }

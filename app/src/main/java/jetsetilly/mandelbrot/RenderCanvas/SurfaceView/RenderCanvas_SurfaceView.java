@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
-import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
 import android.view.TextureView;
 
@@ -47,7 +46,7 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void animatedZoom(int offset_x, int offset_y) {
+    public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
     }
 
     @Override

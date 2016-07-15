@@ -13,7 +13,6 @@ import android.widget.ImageView;
 
 import java.util.concurrent.Semaphore;
 
-import jetsetilly.mandelbrot.RenderCanvas.ImageView.RenderCanvas_ImageView;
 import jetsetilly.mandelbrot.Tools;
 
 public class GestureOverlay extends ImageView implements
@@ -184,6 +183,20 @@ public class GestureOverlay extends ImageView implements
 
         return true;
     }
+
+    @Override
+    public void onLongPress(MotionEvent event) {
+        /* implementation of onGesturesListener */
+        if (blocked) return;
+
+        Tools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
+
+        // no offset when we're zooming out
+
+        gesture_handler.animatedZoom(0, 0, true);
+        altered_canvas = true;
+    }
+
     /* END OF implementation of onGesturesListener */
 
 
@@ -197,7 +210,7 @@ public class GestureOverlay extends ImageView implements
         int offset_x = (int) (event.getX() - (gesture_handler.getCanvasWidth() /2));
         int offset_y = (int) (event.getY() - (gesture_handler.getCanvasHeight() / 2));
 
-        gesture_handler.animatedZoom(offset_x, offset_y);
+        gesture_handler.animatedZoom(offset_x, offset_y, false);
         altered_canvas = true;
 
         return true;
@@ -245,14 +258,6 @@ public class GestureOverlay extends ImageView implements
 
         Tools.printDebug(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent event) {
-        /* implementation of onGesturesListener */
-        if (blocked) return;
-
-        Tools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
     }
 
     @Override

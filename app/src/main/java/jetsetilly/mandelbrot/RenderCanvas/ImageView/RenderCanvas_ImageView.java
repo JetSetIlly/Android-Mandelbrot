@@ -483,7 +483,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     // GestureHandler implementation
-    public void animatedZoom(int offset_x, int offset_y) {
+    public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
         // animation can take a while -- we don't want gestures to be honoured
         // while the animation is taking place. call block() here
         // and unblock() in the animation's endAction
@@ -502,7 +502,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         offset_y /= old_scale;
 
         // get new scale value - old_scale will be 1 if this is the first scale in the sequence
-        float scale = old_scale * gesture_settings.double_tap_scale;
+        float scale;
+
+        if (zoom_out) {
+            scale = old_scale * (1 / gesture_settings.double_tap_scale);
+        } else {
+            scale = old_scale * gesture_settings.double_tap_scale;
+        }
 
         // set zoom_factor and offsets ready for the new render
         mandelbrot_zoom_factor = zoomFactorFromScale(scale);

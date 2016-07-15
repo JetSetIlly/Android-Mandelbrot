@@ -1,8 +1,0 @@
-<root>
-  <item
-      name='android.support.v7.app.AppCompatActivity android.support.v7.app.ActionBar getSupportActionBar()'>
-    <annotation name='org.jetbrains.annotations.Contract'>
-      <val val="&quot;-&gt; !null&quot;" />
-    </annotation>
-  </item>
-</root>

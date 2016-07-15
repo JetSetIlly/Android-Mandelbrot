@@ -48,7 +48,7 @@ public class GestureOverlay extends ImageView implements
     }
 
     /* initialisation */
-    public void setup(Context context, final RenderCanvas_ImageView canvas) {
+    public void setup(Context context, final GestureHandler canvas) {
         this.gesture_handler = canvas;
         this.blocked = false;
         this.up_delay_sem = new Semaphore(1);
@@ -169,7 +169,7 @@ public class GestureOverlay extends ImageView implements
         if (scaling) return true;
 
         Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
-        gesture_handler.scrollBy((int) distanceX, (int) distanceY);
+        gesture_handler.scroll((int) distanceX, (int) distanceY);
         altered_canvas = true;
         return true;
     }

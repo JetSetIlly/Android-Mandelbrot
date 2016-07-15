@@ -159,11 +159,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_reset:
                 render_canvas.stopRender();
                 MandelbrotSettings.getInstance().reset();
-                render_canvas.resetCanvas(this);
+                render_canvas.resetCanvas();
                 return true;
 
             case R.id.action_redraw:
-                render_canvas.resetCanvas(this);
+                render_canvas.resetCanvas();
                 return true;
 
             case R.id.action_toggle_info_pane:

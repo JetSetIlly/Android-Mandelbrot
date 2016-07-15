@@ -15,13 +15,11 @@ import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
-import jetsetilly.mandelbrot.Gestures.GestureOverlay;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -29,8 +27,6 @@ import jetsetilly.mandelbrot.Tools;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
-
-    private Mandelbrot mandelbrot;
 
     // canvas on which the fractal is drawn -- all transforms (scrolling, scaling) affect
     // this view only
@@ -52,7 +48,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // special widget used to listen for gestures -- better than listening for gestures
     // on the RenderCanvas_ImageView because we want to scale the RenderCanvas_ImageView and scaling screws up
     // distance measurements
-    private GestureOverlay gestures;
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
@@ -124,6 +119,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         super(context, attrs);
     }
 
+    public RenderCanvas_ImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
     // RenderCanvas implementation
     public void initialise(final MainActivity main_activity) {
         post(new Runnable() {
@@ -132,6 +131,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 setup(main_activity);
             }
         });
+        super.initialise(main_activity);
     }
 
     private void setup(MainActivity main_activity) {
@@ -154,13 +154,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this.static_foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
         this.static_background.setLayerType(LAYER_TYPE_HARDWARE, null);
 
-        // get a reference to the gesture overlay and set it up
-        this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gestureOverlay);
-        assert this.gestures != null;
-        this.gestures.setup(main_activity, this);
-
         // reset canvas will start the new render
-        resetCanvas(main_activity);
+        resetCanvas();
     }
     /* end of initialisation */
 
@@ -281,10 +276,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     // RenderCanvas implementation
-    public void resetCanvas(MainActivity main_activity) {
+    public void resetCanvas() {
         // new render cache
         stopRender();
 
+        super.resetCanvas();
         // clear image
 
         // co-ordinates are being reset so instead of using the currently defined background_color,
@@ -299,9 +295,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
         int speed = setImageBitmap(clear_bm, true);
         // END OF clear image
-
-        // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.infoPane));
 
         // clumsily wait for transition anim to finish
         Handler h = new Handler();
@@ -471,7 +464,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // GestureHandler implementation
     @Override // View
-    public void scrollBy(int x, int y) {
+    public void scroll(int x, int y) {
         // no need to stop rendering except that there is an effect where the dominant
         // background colour will change while the existing render is ongoing
         stopRender();

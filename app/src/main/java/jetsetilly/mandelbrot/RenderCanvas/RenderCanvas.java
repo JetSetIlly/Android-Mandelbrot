@@ -8,7 +8,7 @@ public interface RenderCanvas {
     void initialise(MainActivity main_activity);
     void startRender();
     void stopRender();
-    void resetCanvas(MainActivity main_activity);
+    void resetCanvas();
     void reRender();
     Bitmap getVisibleImage (boolean bilinear_filter);
 }

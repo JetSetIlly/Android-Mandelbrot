@@ -20,6 +20,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
+import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -74,13 +75,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private int rendered_offset_x;
     private int rendered_offset_y;
 
-    // the amount by which the mandelbrot needs to scale in order to match the display.
-    // for our purposes, this isn't the same as the scale amount. doubling in size would mean
-    // a scale of 2. this equates to: mandelbrot_zoom_factor = (scale - 1) / (2 * scale)
-    //
-    // in this class when we use the word "scale" we mean mandelbrot_zoom_factor.
-    // the Gestures class uses the word scale more liberally.
-    private double mandelbrot_zoom_factor;
+    // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
+    private double fractal_scale;
 
     // hack solution to the problem of pinch zooming after a image move (which includes animated
     // zoom). i think that the problem has something to do with pivot points but i couldn't
@@ -434,7 +430,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // use whatever image is currently visible as the basis for the new render
         // we do this with a smooth_transition if the image has been zoomed
         // see comments in fixateVisibleImage() for explanation
-        if (mandelbrot_zoom_factor == 0) {
+        if (fractal_scale == 0) {
             fixateVisibleImage(false);
         } else {
             setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
@@ -442,12 +438,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         // start render thread
-        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
+        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, fractal_scale);
 
         // reset transformation variables
         rendered_offset_x = 0;
         rendered_offset_y = 0;
-        mandelbrot_zoom_factor = 0;
+        fractal_scale = 0;
     }
 
     // RenderCanvas implementation
@@ -469,15 +465,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // background colour will change while the existing render is ongoing
         stopRender();
 
-        float scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
-        x /= scale;
-        y /= scale;
+        float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
+        x /= image_scale;
+        y /= image_scale;
         rendered_offset_x += x;
         rendered_offset_y += y;
 
         // offset entire image view rather than using the scrolling ability
-        this.fractal_canvas.setX(this.fractal_canvas.getX() - (x * scale));
-        this.fractal_canvas.setY(this.fractal_canvas.getY() - (y * scale));
+        this.fractal_canvas.setX(this.fractal_canvas.getX() - (x * image_scale));
+        this.fractal_canvas.setY(this.fractal_canvas.getY() - (y * image_scale));
 
         scrolled_since_last_normalise = true;
     }
@@ -494,34 +490,35 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // stop render to avoid smearing
         stopRender();
 
-        // transform offsets by current scroll/scale state
-        float old_scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
+        // transform offsets by current scroll/image_scale state
+        float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
         offset_x -= getX();
         offset_y -= getY();
-        offset_x /= old_scale;
-        offset_y /= old_scale;
+        offset_x /= old_image_scale;
+        offset_y /= old_image_scale;
 
-        // get new scale value - old_scale will be 1 if this is the first scale in the sequence
-        float scale;
+        // get new image_scale value - old_image_scale will be 1 if this is the first scale in the sequence
+        float image_scale;
 
         if (zoom_out) {
-            scale = old_scale * (1.0f / gesture_settings.double_tap_scale);
+            // no user setting to control how much to zoom out
+            image_scale = old_image_scale * 0.5f;
         } else {
-            scale = old_scale * gesture_settings.double_tap_scale;
+            image_scale = old_image_scale * gesture_settings.double_tap_scale;
         }
 
         // set zoom_factor and offsets ready for the new render
-        mandelbrot_zoom_factor = zoomFactorFromScale(scale);
+        fractal_scale = Transforms.fractalScaleFromImageScale(image_scale);
         rendered_offset_x = offset_x;
         rendered_offset_y = offset_y;
 
         // do animation
         ViewPropertyAnimator anim = this.fractal_canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
-        anim.x(-offset_x * scale);
-        anim.y(-offset_y * scale);
-        anim.scaleX(scale);
-        anim.scaleY(scale);
+        anim.x(-offset_x * image_scale);
+        anim.y(-offset_y * image_scale);
+        anim.scaleX(image_scale);
+        anim.scaleY(image_scale);
 
         anim.withStartAction(new Runnable() {
             @Override
@@ -556,17 +553,17 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // stop render to avoid smearing
         stopRender();
 
-        // calculate mandelbrot_zoom_factor
-        mandelbrot_zoom_factor += amount / Math.hypot(getCanvasWidth(), getCanvasHeight());
+        // calculate fractal_scale
+        fractal_scale += amount / Math.hypot(getCanvasWidth(), getCanvasHeight());
 
-        // limit mandelbrot_zoom_factor between max in/out ranges
-        mandelbrot_zoom_factor = Math.max(gesture_settings.max_pinch_zoom_out,
-                Math.min(gesture_settings.max_pinch_zoom_in, mandelbrot_zoom_factor));
+        // limit fractal_scale between max in/out ranges
+        fractal_scale = Math.max(gesture_settings.max_pinch_zoom_out,
+                Math.min(gesture_settings.max_pinch_zoom_in, fractal_scale));
 
-        float scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
+        float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
 
-        this.fractal_canvas.setScaleX(scale);
-        this.fractal_canvas.setScaleY(scale);
+        this.fractal_canvas.setScaleX(image_scale);
+        this.fractal_canvas.setScaleY(image_scale);
     }
 
     // GestureHandler implementation
@@ -576,7 +573,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
         // and without losing any of the image after the image has been rescaled
-        if (!force && mandelbrot_zoom_factor >= 0) {
+        if (!force && fractal_scale >= 0) {
             return;
         }
 
@@ -584,8 +581,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // we've reset the image transformation (normaliseCanvas() call in fixateVisibleImage())
         // so we need to reset the mandelbrot transformation
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, mandelbrot_zoom_factor);
-        mandelbrot_zoom_factor = 0;
+        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale);
+        fractal_scale = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;
 
@@ -655,9 +652,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             // reveals with setImageBitmap() may not work as expected
             scaled_bm.eraseColor(background_colour);
 
-            new_left = (int) (mandelbrot_zoom_factor * canvas_width);
+            new_left = (int) (fractal_scale * canvas_width);
             new_right = canvas_width - new_left;
-            new_top = (int) (mandelbrot_zoom_factor * canvas_height);
+            new_top = (int) (fractal_scale * canvas_height);
             new_bottom = canvas_height - new_top;
             blit_to = new Rect(0, 0, canvas_width, canvas_height);
             blit_from = new Rect(new_left, new_top, new_right, new_bottom);

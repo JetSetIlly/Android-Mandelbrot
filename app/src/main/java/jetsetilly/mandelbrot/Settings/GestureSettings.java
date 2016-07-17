@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class GestureSettings {
+    /* DOUBLE_TAP_SCALE expressed in terms of image_scale */
     private final float DEF_DOUBLE_TAP_SCALE = 3.0f;
+
+    /* PINCH_ZOOM values expressed in terms of fractal_scale */
     private final float DEF_MAX_PINCH_ZOOM_IN = 0.5f;
     private final float DEF_MAX_PINCH_ZOOM_OUT = -0.5f;
 

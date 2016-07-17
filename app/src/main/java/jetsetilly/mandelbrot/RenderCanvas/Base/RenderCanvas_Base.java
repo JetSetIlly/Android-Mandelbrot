@@ -31,14 +31,6 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         super(context, attrs, defStyleAttr);
     }
 
-    static public double scaleFromZoomFactor(double zoom_factor) {
-        return 1.0 / (1.0 - (2.0 * zoom_factor));
-    }
-
-    static public double zoomFactorFromScale(float scale) {
-        return (scale - 1.0) / (2.0 * scale);
-    }
-
     public void checkActionBar(float x, float y, boolean show) {
         // returns false if coordinates are in action bar, otherwise true
         if (show) {

@@ -7,8 +7,7 @@ import android.os.Trace;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
-import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
-import jetsetilly.mandelbrot.RenderCanvas.ImageView.RenderCanvas_ImageView;
+import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Tools;
 
@@ -19,7 +18,7 @@ public class Mandelbrot {
 
     public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE}
     public enum IterationsRate {SLOW, NORMAL, FAST}
-    private int[] IterationsRateValues = {15, 10, 5};
+    private int[] IterationsRateValues = {50, 40, 30};
 
     private final Context context;
     protected final MandelbrotCanvas canvas;
@@ -41,8 +40,7 @@ public class Mandelbrot {
     // end if
     Rect render_area;
 
-    // is this render a rescaling render (ie. has the zoom level changed)
-    // we use this so that progress view is shown immediately
+    // is this render a rescaling render - we use this so that progress view is shown immediately
     boolean rescaling_render;
 
     public Mandelbrot(Context context, MandelbrotCanvas canvas, TextView fractal_info) {
@@ -91,28 +89,31 @@ public class Mandelbrot {
         Tools.printDebug(DBG_TAG, "after restore: " + toString());
     }
 
-    private void transform(double offset_x, double offset_y, double zoom_factor)
+    private void transform(double offset_x, double offset_y, double fractal_scale)
     {
         double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
         double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
 
-        // zoom
-        if (zoom_factor != 0) {
-            mandelbrot_settings.real_left += zoom_factor * fractal_width;
-            mandelbrot_settings.real_right -= zoom_factor * fractal_width;
-            mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
-            mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
+        if (fractal_scale != 0) {
+            mandelbrot_settings.real_left += fractal_scale * fractal_width;
+            mandelbrot_settings.real_right -= fractal_scale * fractal_width;
+            mandelbrot_settings.imaginary_upper -= fractal_scale * fractal_height;
+            mandelbrot_settings.imaginary_lower += fractal_scale * fractal_height;
 
-            double scale = RenderCanvas_Base.scaleFromZoomFactor(zoom_factor);
+            // use image scale value instead of fractal_scale value for calculating max_iterations
+            // easier to work with
+            double image_scale = Transforms.imageScaleFromFractalScale(fractal_scale);
+
             double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate.ordinal()];
-            if (scale > 1)
-                mandelbrot_settings.max_iterations = mandelbrot_settings.max_iterations + (int) (mandelbrot_settings.max_iterations * scale / iterations_rate);
+            if (image_scale > 1)
+                // scale up
+                mandelbrot_settings.max_iterations = mandelbrot_settings.max_iterations + (int) (mandelbrot_settings.max_iterations * image_scale / iterations_rate);
             else {
-                mandelbrot_settings.max_iterations = (int) ((mandelbrot_settings.max_iterations * iterations_rate) / (iterations_rate + (1.0/scale)));
+                // scale down
+                mandelbrot_settings.max_iterations = (int) ((mandelbrot_settings.max_iterations * iterations_rate) / (iterations_rate + (1.0/image_scale)));
             }
         }
 
-        // scroll
         mandelbrot_settings.real_left += offset_x * pixel_scale;
         mandelbrot_settings.real_right += offset_x * pixel_scale;
         mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
@@ -131,25 +132,25 @@ public class Mandelbrot {
         render_thr = null;
     }
 
-    public void transformMandelbrot(double offset_x, double offset_y, double zoom_factor) {
+    public void transformMandelbrot(double offset_x, double offset_y, double fractal_scale) {
         // this function updates the mandelbrot co-ordinates. stopping any current threads.
         stopRender();
-        transform(offset_x, offset_y, zoom_factor);
+        transform(offset_x, offset_y, fractal_scale);
     }
 
-    public void startRender(double offset_x, double offset_y, double zoom_factor) {
+    public void startRender(double offset_x, double offset_y, double fractal_scale) {
         Trace.beginSection("starting mandelbrot");
         try {
-            transformMandelbrot(offset_x, offset_y, zoom_factor);
+            transformMandelbrot(offset_x, offset_y, fractal_scale);
 
             // initialise render_area
             render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
             // make sure render mode etc. is set correctly
-            rescaling_render = zoom_factor != 0;
+            rescaling_render = fractal_scale != 0;
 
             // define render_area
-            if (zoom_factor == 0 && canvas.isCompleteRender()) {
+            if (fractal_scale == 0 && canvas.isCompleteRender()) {
                 if (offset_x < 0) {
                     render_area.right = (int) -offset_x;
                 } else if (offset_x > 0) {

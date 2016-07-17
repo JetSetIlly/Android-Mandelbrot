@@ -31,12 +31,12 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         super(context, attrs, defStyleAttr);
     }
 
-    protected float scaleFromZoomFactor(double zoom_factor) {
-        return (float) (1 / (1 - (2 * zoom_factor)));
+    static public double scaleFromZoomFactor(double zoom_factor) {
+        return 1.0 / (1.0 - (2.0 * zoom_factor));
     }
 
-    protected double zoomFactorFromScale(float scale) {
-        return (scale - 1) / (2 * scale);
+    static public double zoomFactorFromScale(float scale) {
+        return (scale - 1.0) / (2.0 * scale);
     }
 
     public void checkActionBar(float x, float y, boolean show) {

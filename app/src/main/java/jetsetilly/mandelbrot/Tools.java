@@ -25,6 +25,10 @@ public class Tools {
         printDebug(tag, String.format("%d", num));
     }
 
+    static public void printDebug(String tag, double num) {
+        printDebug(tag, String.format("%f", num));
+    }
+
     static public void printDebug(String tag, String msg) {
        printDebug(tag, msg, false);
     }

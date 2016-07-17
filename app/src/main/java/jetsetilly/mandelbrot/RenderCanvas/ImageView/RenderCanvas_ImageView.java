@@ -469,7 +469,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // background colour will change while the existing render is ongoing
         stopRender();
 
-        float scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+        float scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
         x /= scale;
         y /= scale;
         rendered_offset_x += x;
@@ -495,7 +495,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         // transform offsets by current scroll/scale state
-        float old_scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+        float old_scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
         offset_x -= getX();
         offset_y -= getY();
         offset_x /= old_scale;
@@ -505,7 +505,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         float scale;
 
         if (zoom_out) {
-            scale = old_scale * (1 / gesture_settings.double_tap_scale);
+            scale = old_scale * (1.0f / gesture_settings.double_tap_scale);
         } else {
             scale = old_scale * gesture_settings.double_tap_scale;
         }
@@ -563,7 +563,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         mandelbrot_zoom_factor = Math.max(gesture_settings.max_pinch_zoom_out,
                 Math.min(gesture_settings.max_pinch_zoom_in, mandelbrot_zoom_factor));
 
-        float scale = scaleFromZoomFactor(mandelbrot_zoom_factor);
+        float scale = (float) scaleFromZoomFactor(mandelbrot_zoom_factor);
 
         this.fractal_canvas.setScaleX(scale);
         this.fractal_canvas.setScaleY(scale);

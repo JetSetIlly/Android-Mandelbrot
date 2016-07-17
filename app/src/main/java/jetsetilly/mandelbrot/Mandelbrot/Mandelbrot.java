@@ -7,6 +7,8 @@ import android.os.Trace;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
+import jetsetilly.mandelbrot.RenderCanvas.ImageView.RenderCanvas_ImageView;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Tools;
 
@@ -17,9 +19,7 @@ public class Mandelbrot {
 
     public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE}
     public enum IterationsRate {SLOW, NORMAL, FAST}
-
-    // with the current algorithm, this value is the value of the fastest IterationsRate
-    private final int iterations_rate_base = 5;
+    private int[] IterationsRateValues = {15, 10, 5};
 
     private final Context context;
     protected final MandelbrotCanvas canvas;
@@ -60,7 +60,7 @@ public class Mandelbrot {
         info_str = info_str + "xl: " + mandelbrot_settings.real_left + "\n";
         info_str = info_str + "xr: " + mandelbrot_settings.real_right + "\n";
         info_str = info_str + "yl: " + mandelbrot_settings.imaginary_lower + "\n";
-        info_str = info_str + "scale: " + pixel_scale + "\n";
+        info_str = info_str + "pixel scale: " + pixel_scale + "\n";
         info_str = info_str + "iterations: " + mandelbrot_settings.max_iterations;
 
         return info_str;
@@ -103,7 +103,13 @@ public class Mandelbrot {
             mandelbrot_settings.imaginary_upper -= zoom_factor * fractal_height;
             mandelbrot_settings.imaginary_lower += zoom_factor * fractal_height;
 
-            mandelbrot_settings.max_iterations *= 1 + (zoom_factor / ( iterations_rate_base - mandelbrot_settings.iterations_rate.ordinal()));
+            double scale = RenderCanvas_Base.scaleFromZoomFactor(zoom_factor);
+            double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate.ordinal()];
+            if (scale > 1)
+                mandelbrot_settings.max_iterations = mandelbrot_settings.max_iterations + (int) (mandelbrot_settings.max_iterations * scale / iterations_rate);
+            else {
+                mandelbrot_settings.max_iterations = (int) ((mandelbrot_settings.max_iterations * iterations_rate) / (iterations_rate + (1.0/scale)));
+            }
         }
 
         // scroll

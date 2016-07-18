@@ -1,6 +1,5 @@
 package jetsetilly.mandelbrot;
 
-import android.os.Process;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;

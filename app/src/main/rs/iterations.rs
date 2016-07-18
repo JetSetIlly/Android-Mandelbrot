@@ -1,6 +1,9 @@
 #pragma version(1)
 #pragma rs java_package_name(jetsetilly.mandelbrot)
-#pragma rs_fp_full
+
+//#pragma rs_fp_full
+//#pragma rs_fp_relaxed
+#pragma rs_fp_imprecise
 
 static const char * DBG_TAG = "iteration.rs";
 

@@ -57,6 +57,10 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     public void zoomCorrection(boolean force) {
 
     }
+
+    @Override
+    public void finishGesture() {
+    }
     /* END OF GestureHandler implementation */
 
     /* MandelbrotCanvas implementation */

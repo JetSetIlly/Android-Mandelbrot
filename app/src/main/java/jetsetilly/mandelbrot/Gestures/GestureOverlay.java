@@ -77,7 +77,7 @@ public class GestureOverlay extends ImageView implements
 
                         if (up_delay_thr == null || up_delay_thr.getStatus() != AsyncTask.Status.RUNNING) {
                             // separate thread to test for delay
-                            // allows animated zoom to finish before running canvas.startRender()
+                            // allows animated zoom to finish before running canvas.finishGesture()
                             up_delay_thr = new AsyncTask() {
                                 @Override
                                 protected Object doInBackground(Object[] params) {
@@ -110,7 +110,7 @@ public class GestureOverlay extends ImageView implements
                                         up_delay_runnable = null;
                                     }
 
-                                    canvas.startRender();
+                                    canvas.finishGesture();
                                 }
 
                                 @Override
@@ -207,10 +207,7 @@ public class GestureOverlay extends ImageView implements
 
         Tools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
-        int offset_x = (int) (event.getX() - (gesture_handler.getCanvasWidth() /2));
-        int offset_y = (int) (event.getY() - (gesture_handler.getCanvasHeight() / 2));
-
-        gesture_handler.animatedZoom(offset_x, offset_y, false);
+        gesture_handler.animatedZoom((int) event.getX(), (int) event.getY(), false);
         altered_canvas = true;
 
         return true;

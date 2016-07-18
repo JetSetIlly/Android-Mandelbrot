@@ -6,11 +6,5 @@ public interface GestureHandler {
     void animatedZoom(int offset_x, int offset_y, boolean zoom_out);
     void pinchZoom(float amount);
     void zoomCorrection(boolean force);
-
-    // shared with MandelbrotCanvas interface
-    int getCanvasWidth();
-    int getCanvasHeight();
-
-    // shared with RenderCanvas interface
-    void startRender();
+    void finishGesture();
 }

@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Trace;
 import android.os.Process;
+import android.support.annotation.MainThread;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
@@ -28,6 +29,13 @@ import jetsetilly.mandelbrot.Tools;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
+
+    MainActivity main_activity;
+
+    // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
+    // which are only callable from the UIThread
+    private int canvas_width;
+    private int canvas_height;
 
     // canvas on which the fractal is drawn -- all transforms (scrolling, scaling) affect
     // this view only
@@ -106,7 +114,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // if null then no animation is running. otherwise, animation IS running
     private Runnable transition_anim_cancel = null;
 
-    /* initialisation */
+
+    /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
         super(context);
     }
@@ -119,7 +128,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         super(context, attrs, defStyleAttr);
     }
 
-    // RenderCanvas implementation
     public void initialise(final MainActivity main_activity) {
         post(new Runnable() {
             @Override
@@ -131,6 +139,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     private void setup(MainActivity main_activity) {
+        this.main_activity = main_activity;
+
         // create the views used for rendering
         this.fractal_canvas = new ImageView(main_activity);
         this.static_background = new ImageView(main_activity);
@@ -153,7 +163,23 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // reset canvas will start the new render
         resetCanvas();
     }
-    /* end of initialisation */
+    /*** END OF initialisation ***/
+
+    @Override // View
+    public void onSizeChanged(int w, int h, int old_w, int old_h) {
+        super.onSizeChanged(w, h, old_w, old_h);
+        canvas_width = w;
+        canvas_height = h;
+    }
+
+    @Override // View
+    public void setBackgroundColor(int color) {
+        super.setBackgroundColor(color);
+
+        // color static_background at the same time -- static_background only comes into play
+        // when zooming. set it here for convenience and neatness
+        static_background.setBackgroundColor(color);
+    }
 
     protected void setImageBitmap(Bitmap bm) {
         setImageBitmap(bm, false);
@@ -262,16 +288,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
     }
 
-    @Override // View
-    public void setBackgroundColor(int color) {
-        super.setBackgroundColor(color);
-
-        // color static_background at the same time -- static_background only comes into play
-        // when zooming. set it here for convenience and neatness
-        static_background.setBackgroundColor(color);
-    }
-
-    // RenderCanvas implementation
     public void resetCanvas() {
         // new render cache
         stopRender();
@@ -302,7 +318,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }, speed);
     }
 
-    // MandelbrotCanvas implementation
+
+    /*** MandelbrotCanvas implementation ***/
     // any thread
     public void startDraw(long canvas_id) {
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
@@ -320,7 +337,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         completed_render = false;
     }
 
-    // MandelbrotCanvas implementation
     // any thread
     public void plotIterations(long canvas_id, int iterations[], boolean complete_plot) {
         if (this_canvas_id != canvas_id || buffer == null) return;
@@ -337,7 +353,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
     }
 
-    // MandelbrotCanvas implementation
     // any thread
     public void plotIteration(long canvas_id, int cx, int cy, int iteration) {
         if (this_canvas_id != canvas_id || buffer == null) return;
@@ -346,7 +361,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.plotIteration(cx, cy, iteration);
     }
 
-    // MandelbrotCanvas implementation
     @UiThread
     public void update(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
@@ -354,7 +368,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.flush();
     }
 
-    // MandelbrotCanvas implementation
     @UiThread
     public void endDraw(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
@@ -366,7 +379,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this_canvas_id = NO_CANVAS_ID;
     }
 
-    // MandelbrotCanvas implementation
     @UiThread
     public void cancelDraw(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
@@ -378,20 +390,21 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this_canvas_id = NO_CANVAS_ID;
     }
 
-    // MandelbrotCanvas/GestureHandler implementation
+    // any thread
     public int getCanvasWidth() {
-        return getWidth();
+        return canvas_width;
     }
 
-    // MandelbrotCanvas/GestureHandler implementation
+    // any thread
     public int getCanvasHeight() {
-        return getHeight();
+        return canvas_height;
     }
 
-    // MandelbrotCanvas implementation
+    // any thread
     public boolean isCompleteRender() {
         return completed_render;
     }
+    /*** END OF MandelbrotCanvas implementation ***/
 
 
     private void normaliseCanvas(){
@@ -408,7 +421,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         transition_speed = speed;
     }
 
-    // RenderCanvas implementation
     public void reRender() {
         if (cached_iterations == null) {
             startRender();
@@ -423,7 +435,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         endDraw(canvas_id);
     }
 
-    // RenderCanvas implementation
     public void startRender() {
         stopRender();
 
@@ -446,7 +457,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         fractal_scale = 0;
     }
 
-    // RenderCanvas implementation
     public void stopRender() {
         if (mandelbrot != null)
             mandelbrot.stopRender();
@@ -458,7 +468,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
 
-    // GestureHandler implementation
+    /*** GestureHandler implementation ***/
     @Override // View
     public void scroll(int x, int y) {
         // no need to stop rendering except that there is an effect where the dominant
@@ -478,7 +488,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = true;
     }
 
-    // GestureHandler implementation
     public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
         // animation can take a while -- we don't want gestures to be honoured
         // while the animation is taking place. call block() here
@@ -489,6 +498,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // stop render to avoid smearing
         stopRender();
+
+        // correct offset values
+        offset_x -= (getCanvasWidth() / 2);
+        offset_y -= (getCanvasHeight() / 2);
 
         // transform offsets by current scroll/image_scale state
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
@@ -540,7 +553,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = true;
     }
 
-    // GestureHandler implementation
     public void pinchZoom(float amount) {
         // WARNING: This doesn't work correctly in certain combination of zoom/move chains
         // unless the canvas is reset (as it is in zoomCorrection() and startRender() methods)
@@ -566,7 +578,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this.fractal_canvas.setScaleY(image_scale);
     }
 
-    // GestureHandler implementation
     public void zoomCorrection(boolean force) {
         // force == true -> called by pinchZoom() when scrolled_since_last_normalise is true
         // force == false -> called by GestureOverlay().onScaleEnd()
@@ -589,6 +600,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // and we also need to mark the render as incomplete in order to force a complete re-render
         completed_render = false;
     }
+
+    public void finishGesture() {
+        startRender();
+    }
+    /*** END OF GestureHandler implementation ***/
 
     private void fixateVisibleImage(boolean smooth_transition) {
         // smooth_transition fixates the image but does it twice, once with a bilinear filter
@@ -620,7 +636,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
     }
 
-    // RenderCanvas implementation
     public Bitmap getVisibleImage (final boolean bilinear_filter) {
         // getVisibleImage() returns just the portion of the bitmap that is visible. used so
         // we can reset the scrolling and scaling of the RenderCanvas_ImageView ImageView

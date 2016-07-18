@@ -7,10 +7,7 @@ public interface MandelbrotCanvas {
     void update(long canvas_id);
     void endDraw(long canvas_id);
     void cancelDraw(long canvas_id);
-
-    // shared with GestureHandler interface
     int getCanvasWidth();
     int getCanvasHeight();
-
     boolean isCompleteRender();
 }

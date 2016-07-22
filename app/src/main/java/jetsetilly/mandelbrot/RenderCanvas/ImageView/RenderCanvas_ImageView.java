@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Trace;
 import android.os.Process;
-import android.support.annotation.MainThread;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
@@ -543,9 +542,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
-                // the UI thread was blocked just prior to animatedZoom() being called
+                // gestures were blocked at the head of this implementation of animatedZoom()
                 // unblocking it here will allow the gesture sequence to complete once
-                // the animation has completed
+                // the animation has completed (see GestureOverlay.block()/unblock() for details)
                 gestures.unblock(null);
             }
         });

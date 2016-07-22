@@ -131,6 +131,7 @@ public class GestureOverlay extends ImageView implements
             }
         });
     }
+    /* END OF initialisation */
 
     public void block() {
         blocked = true;

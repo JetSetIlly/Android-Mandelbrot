@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
         dialog_receiver = new DialogReceiver();
 
         // set render running as soon as possible
-        final MainActivity main_activity = this;
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
         render_canvas.initialise(this);
 

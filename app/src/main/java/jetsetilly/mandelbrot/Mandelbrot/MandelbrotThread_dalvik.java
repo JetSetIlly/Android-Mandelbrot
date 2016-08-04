@@ -45,7 +45,26 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
         int this_line_end;
         int y_line;
 
+        super.doInBackground();
+
         switch (mandelbrot_settings.render_mode) {
+            case SOFTWARE_SIMPLEST:
+                my = mandelbrot_settings.imaginary_lower;
+                for (cy = 0; cy < canvas_height; cy ++ ) {
+                    mx = mandelbrot_settings.real_left;
+                    for (cx = 0; cx < canvas_width; cx ++ ) {
+                        m.canvas.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
+                        mx += m.pixel_scale;
+
+                        publishProgress();
+
+                        // exit early if necessary
+                        if (isCancelled()) return null;
+                    }
+                    my += m.pixel_scale;
+                }
+                break;
+
             case SOFTWARE_TOP_DOWN:
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
@@ -103,9 +122,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, my);
-                            if (num_iterations >= 0) {
-                                m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
-                            }
+                            m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
                         }
 
                         // top half of image
@@ -125,9 +142,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, myb);
-                            if (num_iterations >= 0) {
-                                m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
-                            }
+                            m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
                         }
 
                         publishProgress();

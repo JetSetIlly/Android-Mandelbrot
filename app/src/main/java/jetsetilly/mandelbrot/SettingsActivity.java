@@ -79,6 +79,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // TODO: animate visibility
                 switch (checkedId) {
                     case R.id.rendermode_hardware:
+                    case R.id.rendermode_simplest:
                         num_passes.setVisibility(View.GONE);
                         break;
                     default:
@@ -114,12 +115,14 @@ public class SettingsActivity extends AppCompatActivity {
         num_passes.set(mandelbrot_settings.num_passes);
 
         // set render mode radio button
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN) {
+        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
+            render_mode.check(R.id.rendermode_hardware);
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN) {
             render_mode.check(R.id.rendermode_topdown);
         } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_CENTRE) {
             render_mode.check(R.id.rendermode_centre);
-        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
-            render_mode.check(R.id.rendermode_hardware);
+        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_SIMPLEST) {
+            render_mode.check(R.id.rendermode_simplest);
         }
 
         // set screen orientation radio button
@@ -144,14 +147,17 @@ public class SettingsActivity extends AppCompatActivity {
 
                 // changes to these settings have no effect on final render image
                 switch (render_mode.getCheckedRadioButtonId()) {
+                    case R.id.rendermode_hardware:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.HARDWARE;
+                        break;
                     case R.id.rendermode_topdown:
                         mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN;
                         break;
                     case R.id.rendermode_centre:
                         mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_CENTRE;
                         break;
-                    case R.id.rendermode_hardware:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.HARDWARE;
+                    case R.id.rendermode_simplest:
+                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_SIMPLEST;
                         break;
                 }
 

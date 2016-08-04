@@ -53,11 +53,11 @@ public class BufferTimer extends Buffer {
         render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
     }
 
+    @Override
     public void endBuffer(boolean cancelled) {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        render_canvas.invalidate();
-        render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
+        flush();
     }
 
     @Override

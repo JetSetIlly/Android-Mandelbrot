@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Tools;
 
 public class BufferSimple extends Buffer {
     final static public String DBG_TAG = "buffer hardware";
@@ -36,9 +37,8 @@ public class BufferSimple extends Buffer {
     }
 
     @Override void endBuffer(boolean cancelled) {
-        buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        flush();
         render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
-        render_canvas.invalidate();
 
         if (!cancelled) {
             render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];

@@ -16,7 +16,7 @@ public class Mandelbrot {
 
     public static final int NULL_ITERATIONS = -1;
 
-    public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE}
+    public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, SOFTWARE_SIMPLEST}
     public enum IterationsRate {SLOW, NORMAL, FAST}
     private int[] IterationsRateValues = {50, 40, 30};
 
@@ -29,6 +29,13 @@ public class Mandelbrot {
     private MandelbrotThread render_thr;
 
     double pixel_scale;
+
+    // the pixel scale we reckon from when calculating scale amount (the amount we've zoomed in)
+    private static final double BASE_PIXEL_SCALE = 0.0030312500000000005;
+
+    // the limit to the amount of scaling the floating point calculations can handle
+    // TODO: this limit seems small to me :-(
+    private static final double ZOOM_LIMIT = 103192715871245.0f;
 
     // render_area is used to define that area of the canvas
     // that needs to be rendered again. pixels outside this area
@@ -58,10 +65,22 @@ public class Mandelbrot {
         info_str = info_str + "xl: " + mandelbrot_settings.real_left + "\n";
         info_str = info_str + "xr: " + mandelbrot_settings.real_right + "\n";
         info_str = info_str + "yl: " + mandelbrot_settings.imaginary_lower + "\n";
-        info_str = info_str + "pixel scale: " + pixel_scale + "\n";
-        info_str = info_str + "iterations: " + mandelbrot_settings.max_iterations;
+        info_str = info_str + String.format("pixel scale: %.10f", pixel_scale) + "\n";
+        info_str = info_str + "iterations: " + mandelbrot_settings.max_iterations + "\n";
+        info_str = info_str + String.format("zoom (1x): %.1f", BASE_PIXEL_SCALE / pixel_scale);
 
         return info_str;
+    }
+
+    /* transform -> correct -> save */
+    private void save() {
+        // save settings
+        mandelbrot_settings.save(context);
+
+        // restore straight away - forcing any errors to manifest immediately
+        Tools.printDebug(DBG_TAG, "before restore: " + toString());
+        mandelbrot_settings.restore(context);
+        Tools.printDebug(DBG_TAG, "after restore: " + toString());
     }
 
     private void correct()
@@ -80,13 +99,7 @@ public class Mandelbrot {
         // correct pixel scale
         pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasWidth();
 
-        // save settings
-        mandelbrot_settings.save(context);
-
-        // restore straight away - forcing any errors to manifest immediately
-        Tools.printDebug(DBG_TAG, "before restore: " + toString());
-        mandelbrot_settings.restore(context);
-        Tools.printDebug(DBG_TAG, "after restore: " + toString());
+        save();
     }
 
     private void transform(double offset_x, double offset_y, double fractal_scale)
@@ -121,6 +134,7 @@ public class Mandelbrot {
 
         correct();
     }
+    /* END OF transform -> correct -> save */
 
     /* threading */
     public void stopRender() {

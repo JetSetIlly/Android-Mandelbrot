@@ -165,6 +165,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF initialisation ***/
 
     @Override // View
+    public void invalidate() {
+        super.invalidate();
+        this.fractal_canvas.invalidate();
+        this.static_background.invalidate();
+        this.static_foreground.invalidate();
+    }
+
+    @Override // View
     public void onSizeChanged(int w, int h, int old_w, int old_h) {
         super.onSizeChanged(w, h, old_w, old_h);
         canvas_width = w;
@@ -280,6 +288,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 return speed;
             } else {
                 this.fractal_canvas.setImageBitmap(display_bm = bm);
+                this.fractal_canvas.invalidate();
                 return 0;
             }
         } finally {
@@ -326,7 +335,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
         this_canvas_id = canvas_id;
 
-        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE ||
+                MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.SOFTWARE_SIMPLEST) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -340,11 +350,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void plotIterations(long canvas_id, int iterations[], boolean complete_plot) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        // plot iterations and if the set of iterations is complete
-        // (ie. every iteration has resulted in a new pixel) then
-        // store iterations for future calls to reRender()
         buffer.plotIterations(iterations);
 
+        // if the set of iterations is complete
+        // (ie. every iteration has resulted in a new pixel) then
+        // store iterations for future calls to reRender()
         if (complete_plot) {
             cached_iterations = iterations;
         } else {
@@ -499,8 +509,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         // correct offset values
-        offset_x -= (getCanvasWidth() / 2);
-        offset_y -= (getCanvasHeight() / 2);
+        if (!zoom_out) {
+            offset_x -= (getCanvasWidth() / 2);
+            offset_y -= (getCanvasHeight() / 2);
+        }
 
         // transform offsets by current scroll/image_scale state
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);

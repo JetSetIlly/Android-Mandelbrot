@@ -18,4 +18,9 @@
     <dimen name="palette_setting_smoothness_z">5dp</dimen>
 
     <dimen name="settings_card_spacing">30dp</dimen>
+
+    <!-- we want progress view to appear behind info pane if info pane is visible
+    for this to work info_pane_z needs to be more than progress view's elevation -->
+    <dimen name="progress_view_elevation">10dp</dimen>
+    <dimen name="info_pane_z">20dp</dimen>
 </resources>

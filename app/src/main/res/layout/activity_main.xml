@@ -20,19 +20,6 @@
         android:id="@+id/gestureOverlay"
         android:contentDescription="@string/description_gesture_overlay" />
 
-    <jetsetilly.mandelbrot.ProgressView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:src="@mipmap/ic_progress"
-        android:id="@+id/progressView"
-        android:visibility="visible"
-        android:elevation="10dp"
-        android:background="@drawable/progress_background"
-        android:layout_margin="20dp"
-        android:padding="7dp" />
-
     <jetsetilly.mandelbrot.MandelbrotActionBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,8 +30,8 @@
         android:alpha="0.7" />
 
     <TextView
-        android:layout_width="250sp"
-        android:layout_height="120sp"
+        android:layout_width="match_parent"
+        android:layout_height="130sp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:fontFamily="monospace"
@@ -56,7 +43,21 @@
         android:backgroundTint="@color/primary_dark_material_light"
         android:textColor="@color/primary_text_default_material_light"
         android:visibility="invisible"
-        android:alpha="0" />
+        android:alpha="0"
+        android:translationZ="@dimen/info_pane_z" />
+
+    <jetsetilly.mandelbrot.ProgressView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/ic_progress"
+        android:id="@+id/progressView"
+        android:visibility="visible"
+        android:elevation="@dimen/progress_view_elevation"
+        android:background="@drawable/progress_background"
+        android:layout_margin="20dp"
+        android:padding="7dp" />
 
 </RelativeLayout>
 

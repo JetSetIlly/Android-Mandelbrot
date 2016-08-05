@@ -7,6 +7,7 @@ import android.os.Trace;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
+import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Tools;
@@ -15,6 +16,8 @@ public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
 
     public static final int NULL_ITERATIONS = -1;
+
+    public enum CalculationMethod {NATIVE, BIG_DECIMAL}
 
     public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, SOFTWARE_SIMPLEST}
     public enum IterationsRate {SLOW, NORMAL, FAST}
@@ -59,17 +62,15 @@ public class Mandelbrot {
 
     @Override
     public String toString() {
-        String info_str = "";
-
-        info_str = info_str + "yu: " + mandelbrot_settings.imaginary_upper + "\n";
-        info_str = info_str + "xl: " + mandelbrot_settings.real_left + "\n";
-        info_str = info_str + "xr: " + mandelbrot_settings.real_right + "\n";
-        info_str = info_str + "yl: " + mandelbrot_settings.imaginary_lower + "\n";
-        info_str = info_str + String.format("pixel scale: %.10f", pixel_scale) + "\n";
-        info_str = info_str + "iterations: " + mandelbrot_settings.max_iterations + "\n";
-        info_str = info_str + String.format("zoom (1x): %.1f", BASE_PIXEL_SCALE / pixel_scale);
-
-        return info_str;
+        return String.format(context.getResources().getString(R.string.mandelbrot_info_string),
+                mandelbrot_settings.imaginary_lower,
+                mandelbrot_settings.real_left,
+                mandelbrot_settings.real_right,
+                mandelbrot_settings.imaginary_lower,
+                pixel_scale,
+                mandelbrot_settings.max_iterations,
+                BASE_PIXEL_SCALE / pixel_scale
+        );
     }
 
     /* transform -> correct -> save */
@@ -77,10 +78,9 @@ public class Mandelbrot {
         // save settings
         mandelbrot_settings.save(context);
 
-        // restore straight away - forcing any errors to manifest immediately
-        Tools.printDebug(DBG_TAG, "before restore: " + toString());
-        mandelbrot_settings.restore(context);
-        Tools.printDebug(DBG_TAG, "after restore: " + toString());
+        // restore settings straight away to force out any errors
+        // - now removed due to no issues being found
+        //mandelbrot_settings.restore(context);
     }
 
     private void correct()

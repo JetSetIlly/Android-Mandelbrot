@@ -47,4 +47,15 @@
     <string name="dialog_default">Default</string>
 
     <string name="error_ui_alert">* ERROR *</string>
+
+    <!-- string used by Mandelbrot().toString() - formatted with String.format() -->
+    <string name="mandelbrot_info_string">
+yu: %1$f\n
+xl: %2$f\n
+xr: %3$f\n
+yl: %4$f\n
+pixel scale: %5$e\n
+iterations: %6$d\n
+zoom (1x): %7$.1f\n
+    </string>
 </resources>

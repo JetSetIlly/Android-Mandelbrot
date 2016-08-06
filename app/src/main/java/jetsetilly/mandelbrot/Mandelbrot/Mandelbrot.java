@@ -10,7 +10,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Tools;
+import jetsetilly.mandelbrot.LogTools;
 
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
@@ -38,7 +38,7 @@ public class Mandelbrot {
 
     // the limit to the amount of scaling the floating point calculations can handle
     // TODO: this limit seems small to me :-(
-    private static final double ZOOM_LIMIT = 103192715871245.0f;
+    private static final double SCALE_LIMIT = 6.0e-17;
 
     // render_area is used to define that area of the canvas
     // that needs to be rendered again. pixels outside this area
@@ -108,14 +108,18 @@ public class Mandelbrot {
         double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
 
         if (fractal_scale != 0) {
+            // use image scale value instead of fractal_scale value for calculating max_iterations
+            // easier to work with
+            double image_scale = Transforms.imageScaleFromFractalScale(fractal_scale);
+
+            if (pixel_scale < SCALE_LIMIT) {
+                LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
+            }
+
             mandelbrot_settings.real_left += fractal_scale * fractal_width;
             mandelbrot_settings.real_right -= fractal_scale * fractal_width;
             mandelbrot_settings.imaginary_upper -= fractal_scale * fractal_height;
             mandelbrot_settings.imaginary_lower += fractal_scale * fractal_height;
-
-            // use image scale value instead of fractal_scale value for calculating max_iterations
-            // easier to work with
-            double image_scale = Transforms.imageScaleFromFractalScale(fractal_scale);
 
             double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate.ordinal()];
             if (image_scale > 1)

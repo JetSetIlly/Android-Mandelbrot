@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Tools;
 
 public class BufferSimple extends Buffer {
     final static public String DBG_TAG = "buffer hardware";

@@ -87,10 +87,16 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(action_bar);
 
         // restore settings
-        MandelbrotSettings.getInstance().restore(this);
-        PaletteSettings.getInstance().restore(this);
-        GestureSettings.getInstance().restore(this);
-        SystemSettings.getInstance().restore(this);
+        final Context context = this;
+        new SimpleAsyncTask(new Runnable() {
+            @Override
+            public void run() {
+                MandelbrotSettings.getInstance().restore(context);
+                PaletteSettings.getInstance().restore(context);
+                GestureSettings.getInstance().restore(context);
+                SystemSettings.getInstance().restore(context);
+            }
+        });
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);

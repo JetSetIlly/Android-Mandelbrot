@@ -41,6 +41,8 @@
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
 
+    <string name="scale_limit_reached">Scaling limit reached!</string>
+
     <string name="dialog_ok">Done</string>
     <string name="dialog_more">More Settings</string>
     <string name="dialog_cancel">Cancel</string>

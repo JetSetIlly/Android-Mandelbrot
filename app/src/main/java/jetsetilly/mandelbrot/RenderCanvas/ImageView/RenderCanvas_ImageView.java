@@ -24,7 +24,7 @@ import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Tools;
+import jetsetilly.mandelbrot.LogTools;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
@@ -331,7 +331,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // any thread
     public void startDraw(long canvas_id) {
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
-            Tools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
+            LogTools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
         this_canvas_id = canvas_id;
 

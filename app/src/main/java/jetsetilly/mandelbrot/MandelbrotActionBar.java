@@ -1,6 +1,5 @@
 package jetsetilly.mandelbrot;
 
-import android.os.Process;
 import android.content.Context;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
@@ -24,12 +23,21 @@ public class MandelbrotActionBar extends Toolbar {
         super(context);
     }
 
+    private int getStatusBarHeight(Context context) {
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
     public void completeSetup(MainActivity context, String title) {
         setLayerType(LAYER_TYPE_HARDWARE, null);
         status_bar = context.getWindow().getDecorView();
         alpha = getAlpha();
         setTitle(title);
-        setY(Tools.getStatusBarHeight(context));
+        setY(getStatusBarHeight(context));
         setVisibility(false);
     }
 

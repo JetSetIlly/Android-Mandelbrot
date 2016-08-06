@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Tools;
+import jetsetilly.mandelbrot.LogTools;
 
 public class PaletteActivityListAdapter implements ListAdapter {
     private final String DBG_TAG = "palette list adapter";
@@ -83,7 +83,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
                     deselected_anim.setAnimationListener(new Animation.AnimationListener() {
                         @Override
                         public void onAnimationStart(Animation animation) {
-                            Tools.printDebug(DBG_TAG, "old selected icon anim start");
+                            LogTools.printDebug(DBG_TAG, "old selected icon anim start");
                         }
 
                         @Override

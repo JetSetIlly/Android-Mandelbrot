@@ -13,14 +13,14 @@ import android.widget.ImageView;
 
 import java.util.concurrent.Semaphore;
 
-import jetsetilly.mandelbrot.Tools;
+import jetsetilly.mandelbrot.LogTools;
 
 public class GestureOverlay extends ImageView implements
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener
 {
-    private static final String DEBUG_TAG = "gesture overlay";
+    private static final String DEBUG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
     private static final long ADDITIONAL_ON_UP_DELAY = 0;
 
     private GestureHandler gesture_handler;
@@ -73,7 +73,7 @@ public class GestureOverlay extends ImageView implements
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                     if (altered_canvas) {
-                        Tools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
+                        LogTools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
 
                         if (up_delay_thr == null || up_delay_thr.getStatus() != AsyncTask.Status.RUNNING) {
                             // separate thread to test for delay
@@ -116,7 +116,7 @@ public class GestureOverlay extends ImageView implements
                                 @Override
                                 protected void onCancelled() {
                                     super.onCancelled();
-                                    Tools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
+                                    LogTools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
                                 }
                             };
 
@@ -157,7 +157,7 @@ public class GestureOverlay extends ImageView implements
             up_delay_thr.cancel(true);
         }
 
-        Tools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         gesture_handler.checkActionBar(event.getX(), event.getY(), false);
         altered_canvas = false;
         return true;
@@ -168,7 +168,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
         if (scaling) return true;
 
-        Tools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
+        LogTools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll((int) distanceX, (int) distanceY);
         altered_canvas = true;
         return true;
@@ -179,7 +179,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onDoubleTapListener interface */
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
         gesture_handler.checkActionBar(event.getX(), event.getY(), true);
 
         return true;
@@ -190,7 +190,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onGesturesListener */
         if (blocked) return;
 
-        Tools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
 
         // no offset when we're zooming out
 
@@ -206,7 +206,7 @@ public class GestureOverlay extends ImageView implements
     public boolean onDoubleTap(MotionEvent event) {
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
         gesture_handler.animatedZoom((int) event.getX(), (int) event.getY(), false);
         altered_canvas = true;
@@ -221,7 +221,7 @@ public class GestureOverlay extends ImageView implements
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+        LogTools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
         scaling = true;
         return true;
     }
@@ -230,7 +230,7 @@ public class GestureOverlay extends ImageView implements
     public boolean onScale(ScaleGestureDetector detector) {
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
+        LogTools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
         gesture_handler.pinchZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
@@ -240,7 +240,7 @@ public class GestureOverlay extends ImageView implements
     public void onScaleEnd(ScaleGestureDetector detector) {
         if (blocked) return;
 
-        Tools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
+        LogTools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.zoomCorrection(false);
         altered_canvas = true;
         scaling = false;
@@ -254,7 +254,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onGesturesListener */
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+        LogTools.printDebug(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
     }
 
@@ -263,7 +263,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onGesturesListener */
         if (blocked) return;
 
-        Tools.printDebug(DEBUG_TAG, "onShowPress: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
@@ -271,7 +271,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onGesturesListener */
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onSingleTapUp: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onSingleTapUp: " + event.toString());
         return true;
     }
 
@@ -280,7 +280,7 @@ public class GestureOverlay extends ImageView implements
         /* implementation of onDoubleTapListener interface */
         if (blocked) return false;
 
-        Tools.printDebug(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
+        LogTools.printDebug(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 

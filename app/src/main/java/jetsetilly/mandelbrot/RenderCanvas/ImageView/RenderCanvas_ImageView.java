@@ -24,7 +24,7 @@ import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.LogTools;
+import jetsetilly.tools.LogTools;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";

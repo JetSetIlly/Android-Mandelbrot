@@ -13,7 +13,7 @@ import android.widget.ImageView;
 
 import java.util.concurrent.Semaphore;
 
-import jetsetilly.mandelbrot.LogTools;
+import jetsetilly.tools.LogTools;
 
 public class GestureOverlay extends ImageView implements
         GestureDetector.OnGestureListener,

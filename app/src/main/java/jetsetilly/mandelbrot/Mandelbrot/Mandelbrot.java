@@ -10,7 +10,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.LogTools;
+import jetsetilly.tools.LogTools;
 
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";

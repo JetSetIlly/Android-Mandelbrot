@@ -1,4 +1,4 @@
-package jetsetilly.mandelbrot;
+package jetsetilly.tools;
 
 import android.content.Context;
 import android.os.Process;

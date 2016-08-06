@@ -31,6 +31,7 @@ import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.SystemSettings;
+import jetsetilly.tools.SimpleAsyncTask;
 
 
 public class MainActivity extends AppCompatActivity {

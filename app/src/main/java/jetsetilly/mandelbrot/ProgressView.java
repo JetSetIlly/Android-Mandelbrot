@@ -41,9 +41,9 @@ public class ProgressView extends ImageView {
         init();
     }
 
-    private long timeToAnimEnd(Animator anim) {
+    private long timeToThrobEnd() {
         // the time in milliseconds until the start of the next throb anim cycle
-        return throb_start_time+anim.getDuration()-System.currentTimeMillis();
+        return throb_start_time+throb_anim_rotation.getDuration()-System.currentTimeMillis();
     }
 
     private void init() {
@@ -130,7 +130,10 @@ public class ProgressView extends ImageView {
                 public void run() {
                     on_anim.start();
                 }
-            }, timeToAnimEnd(off_anim));
+            }, off_anim.getDuration());
+            // getDuration() will not be completely accurate if off_anim is already running
+            // but we expect the off time to be so short that it won't be noticeable
+            // -- see timeToThrobEnd() for more complete solution
         } else {
             // run without delay
             on_anim.start();
@@ -162,7 +165,7 @@ public class ProgressView extends ImageView {
                                 throb_anim.end();
                             }
                         }
-                    }, timeToAnimEnd(throb_anim_rotation));
+                    }, timeToThrobEnd());
                 }
             }
         }, UNREGISTER_DELAY);

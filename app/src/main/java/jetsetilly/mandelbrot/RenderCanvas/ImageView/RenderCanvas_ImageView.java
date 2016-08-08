@@ -57,7 +57,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the display_bm is a pointer to whatever bitmap is currently displayed
-    // setImageBitmap() is over-ridden and will assign appropriately
+    // showBitmap() is over-ridden and will assign appropriately
     private Bitmap display_bm;
 
     // buffer implementation
@@ -192,16 +192,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     // thread safe
-    protected void setImageBitmap(Bitmap bm) {
-        setImageBitmap(bm, false);
+    protected void showBitmap(Bitmap bm) {
+        showBitmap(bm, false);
     }
 
     // thread safe
-    protected int setImageBitmap(final Bitmap bm, boolean transition) {
+    protected int showBitmap(final Bitmap bm, boolean transition) {
         // returns actual speed of transition (in milliseconds)
-        // NOTE: this implementation of setImageBitmap is thread safe
+        // NOTE: this implementation of showBitmap is thread safe
         // cancel transition animation and run end conditions
-        Trace.beginSection("setImageBitmap() transition=" + transition);
+        Trace.beginSection("showBitmap() transition=" + transition);
         try {
             if (transition && transition_type == TransitionType.CROSS_FADE) {
                 // get speed of animation (we'll actually set the speed later)
@@ -311,7 +311,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setBackgroundColor(background_colour);
         clear_bm.eraseColor(background_colour);
         setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
-        int speed = setImageBitmap(clear_bm, true);
+        int speed = showBitmap(clear_bm, true);
         // END OF clear image
 
         // clumsily wait for transition anim to finish
@@ -620,13 +620,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     private void fixateVisibleImage(boolean smooth_transition) {
         // smooth_transition fixates the image but does it twice, once with a bilinear filter
-        // applied to the image, the second without. setImageBitmap() is called the second time with
+        // applied to the image, the second without. showBitmap() is called the second time with
         // the transition flag set to true.
         // this rigmarole is necessary after the image has been scaled. scaling the canvas is done
-        // with filtering applied and the first call to getVisibleImage()/setImageBitmap()
+        // with filtering applied and the first call to getVisibleImage()/showBitmap()
         // recreates a normalised image similar to the final zoomed image. however, we don't want a
         // bilinear filtered image, we want a pixelated image. the second call to
-        // getVisibleImage()/setImageBitmap() creates this image and causes a transition between
+        // getVisibleImage()/showBitmap() creates this image and causes a transition between
         // the two images (smooth to pixelated)
         // if we didn't create the pixelated image, then multiple zooms without a re-rendering of the
         // image will result in a blurry mess. the pixelated image looks better.
@@ -636,14 +636,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 Bitmap from_bm = getVisibleImage(true);
                 Bitmap to_bm = getVisibleImage(false);
 
-                setImageBitmap(from_bm);
+                showBitmap(from_bm);
                 setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-                setImageBitmap(to_bm, true);
+                showBitmap(to_bm, true);
 
                 normaliseCanvas();
             } else {
                 Bitmap bm = getVisibleImage(false);
-                setImageBitmap(bm);
+                showBitmap(bm);
                 normaliseCanvas();
             }
         } finally {
@@ -679,7 +679,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
             // in case the source image has been offset (we won't check for it, it's not worth it) we
             // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
-            // reveals with setImageBitmap() may not work as expected
+            // reveals with showBitmap() may not work as expected
             scaled_bm.eraseColor(background_colour);
 
             new_left = (int) (fractal_scale * canvas_width);

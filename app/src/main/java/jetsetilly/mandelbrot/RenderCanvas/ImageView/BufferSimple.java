@@ -39,7 +39,7 @@ public class BufferSimple extends Buffer {
     @UiThread
     @Override void endDraw(boolean cancelled) {
         update();
-        render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
+        render_canvas.showBitmap(buffer_bitmap, !cancelled);
 
         if (!cancelled) {
             render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];

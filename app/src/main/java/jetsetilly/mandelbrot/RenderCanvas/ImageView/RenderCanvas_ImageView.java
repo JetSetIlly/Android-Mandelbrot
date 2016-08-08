@@ -1,7 +1,5 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,7 +11,6 @@ import android.os.Process;
 import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
-import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -99,7 +96,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // controls the transition between bitmaps when using this class's setBitmap() with
     // the transition flag set
     public enum TransitionType {
-        NONE, CROSS_FADE, CIRCLE
+        NONE, CROSS_FADE
     }
 
     public enum TransitionSpeed {VFAST, FAST, NORMAL, SLOW, VSLOW}
@@ -111,8 +108,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
-    private Runnable transition_anim_cancel = null;
-
+    private Runnable setImageBitmap_anim_cancel = null;
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -194,92 +190,66 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     protected int setImageBitmap(final Bitmap bm, boolean transition) {
         // returns actual speed of transition (in milliseconds)
-
+        // NOTE: this implementation of setImageBitmap is thread safe
+        // cancel transition animation and run end conditions
         Trace.beginSection("setImageBitmap() transition=" + transition);
         try {
-            if (transition && transition_type != TransitionType.NONE) {
+            if (transition && transition_type == TransitionType.CROSS_FADE) {
+                // get speed of animation (we'll actually set the speed later)
+                final int speed;
+                switch (transition_speed) {
+                    case VFAST:
+                        speed = getResources().getInteger(R.integer.transition_duration_vfast);
+                        break;
+                    case FAST:
+                        speed = getResources().getInteger(R.integer.transition_duration_fast);
+                        break;
+                    case SLOW:
+                        speed = getResources().getInteger(R.integer.transition_duration_slow);
+                        break;
+                    case VSLOW:
+                        speed = getResources().getInteger(R.integer.transition_duration_vslow);
+                        break;
+                    default:
+                    case NORMAL:
+                        speed = getResources().getInteger(R.integer.transition_duration_slow);
+                        break;
+                }
+
+                // prepare end runnable for animation
+                final Runnable transition_end_runnable = new Runnable() {
+                    @Override public void run() {
+                        setImageBitmap_anim_cancel = null;
+                        static_foreground.setVisibility(INVISIBLE);
+                    }
+                };
+
                 // prepare foreground. this is the image we transition from
                 static_foreground.setImageBitmap(display_bm);
                 static_foreground.setVisibility(VISIBLE);
                 static_foreground.setAlpha(1.0f);
 
                 // prepare final image. the image we transition to
-                this.fractal_canvas.setImageBitmap(display_bm = bm);
+                fractal_canvas.setImageBitmap(display_bm = bm);
 
-                // get speed of animation (we'll actually set the speed later)
-                int speed;
-                switch (transition_speed) {
-                    case VFAST:
-                        speed = R.integer.transition_duration_vfast;
-                        break;
-                    case FAST:
-                        speed = R.integer.transition_duration_fast;
-                        break;
-                    case SLOW:
-                        speed = R.integer.transition_duration_slow;
-                        break;
-                    case VSLOW:
-                        speed = R.integer.transition_duration_vslow;
-                        break;
-                    default:
-                    case NORMAL:
-                        speed = R.integer.transition_duration_slow;
-                        break;
-                }
-                speed = getResources().getInteger(speed);
+                // set up animation based on type
+                final ViewPropertyAnimator transition_anim = static_foreground.animate();
 
-                // same end runnable for all transition types
-                final Runnable transition_end_runnable = new Runnable() {
+                // prepare setImageBitmap_anim_cancel - ran if we need to stop animation prematurely
+                setImageBitmap_anim_cancel = new Runnable() {
                     @Override
                     public void run() {
-                        transition_anim_cancel = null;
-                        static_foreground.setVisibility(INVISIBLE);
+                        Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
+                        transition_anim.cancel();
+                        transition_end_runnable.run();
                     }
                 };
 
-                // set up animation based on type
-                if (transition_type == TransitionType.CROSS_FADE) {
-                    final ViewPropertyAnimator transition_anim = static_foreground.animate();
+                transition_anim.withEndAction(transition_end_runnable);
+                transition_anim.setDuration(speed);
+                transition_anim.alpha(0.0f);
 
-                    // prepare transition_anim_cancel. see comments in declaration for explanation
-                    transition_anim_cancel = new Runnable() {
-                        @Override
-                        public void run() {
-                            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
-                            transition_anim.cancel();
-                            transition_end_runnable.run();
-                        }
-                    };
-
-                    transition_anim.withEndAction(transition_end_runnable);
-                    transition_anim.setDuration(speed);
-                    transition_anim.alpha(0.0f);
-                    transition_anim.start();
-
-                } else if (transition_type == TransitionType.CIRCLE) {
-                    final Animator transition_anim = ViewAnimationUtils.createCircularReveal(static_foreground,
-                            getCanvasWidth() / 2, getCanvasHeight() / 2, getCanvasWidth(), 0);
-
-                    // prepare transition_anim_cancel. see comments in declaration for explanation
-                    transition_anim_cancel = new Runnable() {
-                        @Override
-                        public void run() {
-                            transition_anim.cancel();
-                            transition_end_runnable.run();
-                        }
-                    };
-
-                    transition_anim.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            transition_end_runnable.run();
-                        }
-                    });
-
-                    transition_anim.setDuration(speed);
-                    transition_anim.start();
-                }
+                transition_anim.start();
 
                 // reset transition type/speed - until next call to changeNextTransition()
                 transition_type = def_transition_type;
@@ -287,8 +257,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                 return speed;
             } else {
-                this.fractal_canvas.setImageBitmap(display_bm = bm);
-                this.fractal_canvas.invalidate();
+                fractal_canvas.setImageBitmap(display_bm = bm);
+                fractal_canvas.invalidate();
                 return 0;
             }
         } finally {
@@ -342,7 +312,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             buffer = new BufferTimer(this);
         }
 
-        buffer.primeBuffer(display_bm);
+        buffer.startDraw(display_bm);
         completed_render = false;
     }
 
@@ -374,14 +344,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void update(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.flush();
+        buffer.update();
     }
 
     @UiThread
     public void endDraw(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.endBuffer(false);
+        buffer.endDraw(false);
         buffer = null;
         setBackgroundColor(background_colour);
         completed_render = true;
@@ -392,7 +362,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void cancelDraw(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.endBuffer(true);
+        buffer.endDraw(true);
         buffer = null;
         setBackgroundColor(background_colour);
         completed_render = false;
@@ -450,12 +420,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // use whatever image is currently visible as the basis for the new render
         // we do this with a smooth_transition if the image has been zoomed
         // see comments in fixateVisibleImage() for explanation
-        if (fractal_scale == 0) {
-            fixateVisibleImage(false);
-        } else {
-            setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-            fixateVisibleImage(true);
-        }
+        fixateVisibleImage(fractal_scale!=0);
 
         // start render thread
         mandelbrot.startRender(rendered_offset_x, rendered_offset_y, fractal_scale);
@@ -470,12 +435,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (mandelbrot != null)
             mandelbrot.stopRender();
 
-        // cancel transition animation and run end conditions
-        if (transition_anim_cancel != null) {
-            transition_anim_cancel.run();
+        if (setImageBitmap_anim_cancel != null) {
+            setImageBitmap_anim_cancel.run();
         }
     }
-
 
     /*** GestureHandler implementation ***/
     @Override // View
@@ -579,6 +542,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // calculate fractal_scale
         fractal_scale += amount / Math.hypot(getCanvasWidth(), getCanvasHeight());
 
+        LogTools.printDebug(DBG_TAG, "fractal scale: "+fractal_scale);
+
         // limit fractal_scale between max in/out ranges
         fractal_scale = Math.max(gesture_settings.max_pinch_zoom_out,
                 Math.min(gesture_settings.max_pinch_zoom_in, fractal_scale));
@@ -601,8 +566,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         fixateVisibleImage(false);
 
-        // we've reset the image transformation (normaliseCanvas() call in fixateVisibleImage())
-        // so we need to reset the mandelbrot transformation
         mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale);
         fractal_scale = 0;
         rendered_offset_x = 0;
@@ -634,9 +597,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             if (smooth_transition) {
                 Bitmap from_bm = getVisibleImage(true);
                 Bitmap to_bm = getVisibleImage(false);
-                normaliseCanvas();
+
                 setImageBitmap(from_bm);
+                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
                 setImageBitmap(to_bm, true);
+
+                normaliseCanvas();
             } else {
                 Bitmap bm = getVisibleImage(false);
                 setImageBitmap(bm);

@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.graphics.Bitmap;
+import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -25,18 +26,19 @@ public class BufferSimple extends Buffer {
     }
 
     @Override
-    void primeBuffer(Bitmap bitmap) {
+    void startDraw(Bitmap bitmap) {
         this.buffer_bitmap = bitmap.copy(bitmap.getConfig(), true);
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     }
 
     @Override
-    void flush() {
+    void update() {
         buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
     }
 
-    @Override void endBuffer(boolean cancelled) {
-        flush();
+    @UiThread
+    @Override void endDraw(boolean cancelled) {
+        update();
         render_canvas.setImageBitmap(buffer_bitmap, !cancelled);
 
         if (!cancelled) {
@@ -44,6 +46,7 @@ public class BufferSimple extends Buffer {
         }
     }
 
+    // any thread
     @Override
     public void plotIterations(int iterations[]) {
         for (int i = 0; i < iterations.length; ++ i) {

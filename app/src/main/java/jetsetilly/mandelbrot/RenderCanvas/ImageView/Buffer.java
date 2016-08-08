@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.graphics.Bitmap;
+import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 
@@ -14,9 +15,9 @@ abstract class Buffer {
         height = canvas.getCanvasHeight();
     }
 
-    abstract void primeBuffer(Bitmap bitmap);
-    abstract void flush();
-    abstract void endBuffer(boolean cancelled);
+    abstract void startDraw(Bitmap bitmap);
+    abstract void update();
+    abstract void endDraw(boolean cancelled);
 
     void plotIteration(int cx, int cy, int iteration) {}
 

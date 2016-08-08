@@ -40,7 +40,7 @@ public class BufferTimer extends Buffer {
     }
 
     @Override
-    public void primeBuffer(Bitmap bitmap) {
+    public void startDraw(Bitmap bitmap) {
         this.bitmap = bitmap;
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         pixel_scheduler.schedule(pixel_scheduler_task, 0, PIXEL_UPDATE_FREQ);
@@ -48,16 +48,16 @@ public class BufferTimer extends Buffer {
     }
 
     @Override
-    public void flush() {
+    public void update() {
         render_canvas.invalidate();
         render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
     }
 
     @Override
-    public void endBuffer(boolean cancelled) {
+    public void endDraw(boolean cancelled) {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        flush();
+        update();
     }
 
     @Override

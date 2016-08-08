@@ -105,17 +105,10 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void endDraw(long canvas_id) {
+    public void endDraw(long canvas_id, boolean cancelled) {
         texture_view.unlockCanvasAndPost(canvas);
         canvas = null;
         complete_render = true;
-    }
-
-    @Override
-    public void cancelDraw(long canvas_id) {
-        texture_view.unlockCanvasAndPost(canvas);
-        canvas = null;
-        complete_render = false;
     }
 
     @Override

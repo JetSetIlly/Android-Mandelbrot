@@ -22,6 +22,7 @@ import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.tools.LogTools;
+import jetsetilly.tools.SimpleAsyncTask;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
@@ -161,11 +162,17 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF initialisation ***/
 
     @Override // View
+    // thread safe
     public void invalidate() {
-        super.invalidate();
-        this.fractal_canvas.invalidate();
-        this.static_background.invalidate();
-        this.static_foreground.invalidate();
+        main_activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // intentionally not calling super.invalidate()
+                fractal_canvas.invalidate();
+                static_background.invalidate();
+                static_foreground.invalidate();
+            }
+        });
     }
 
     @Override // View
@@ -184,10 +191,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         static_background.setBackgroundColor(color);
     }
 
+    // thread safe
     protected void setImageBitmap(Bitmap bm) {
         setImageBitmap(bm, false);
     }
 
+    // thread safe
     protected int setImageBitmap(final Bitmap bm, boolean transition) {
         // returns actual speed of transition (in milliseconds)
         // NOTE: this implementation of setImageBitmap is thread safe
@@ -225,12 +234,22 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 };
 
                 // prepare foreground. this is the image we transition from
-                static_foreground.setImageBitmap(display_bm);
-                static_foreground.setVisibility(VISIBLE);
-                static_foreground.setAlpha(1.0f);
+                main_activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        static_foreground.setImageBitmap(display_bm);
+                        static_foreground.setVisibility(VISIBLE);
+                        static_foreground.setAlpha(1.0f);
+                    }
+                });
 
                 // prepare final image. the image we transition to
-                fractal_canvas.setImageBitmap(display_bm = bm);
+                main_activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fractal_canvas.setImageBitmap(display_bm = bm);
+                    }
+                });
 
                 // set up animation based on type
                 final ViewPropertyAnimator transition_anim = static_foreground.animate();
@@ -245,11 +264,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     }
                 };
 
-                transition_anim.withEndAction(transition_end_runnable);
-                transition_anim.setDuration(speed);
-                transition_anim.alpha(0.0f);
-
-                transition_anim.start();
+                main_activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        transition_anim.withEndAction(transition_end_runnable);
+                        transition_anim.setDuration(speed);
+                        transition_anim.alpha(0.0f);
+                        transition_anim.start();
+                    }
+                });
 
                 // reset transition type/speed - until next call to changeNextTransition()
                 transition_type = def_transition_type;
@@ -257,8 +280,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                 return speed;
             } else {
-                fractal_canvas.setImageBitmap(display_bm = bm);
-                fractal_canvas.invalidate();
+                main_activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fractal_canvas.setImageBitmap(display_bm = bm);
+                        fractal_canvas.invalidate();
+                    }
+                });
                 return 0;
             }
         } finally {
@@ -348,25 +376,24 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     @UiThread
-    public void endDraw(long canvas_id) {
+    public void endDraw(long canvas_id, final boolean cancelled) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
-        buffer.endDraw(false);
-        buffer = null;
-        setBackgroundColor(background_colour);
-        completed_render = true;
-        this_canvas_id = NO_CANVAS_ID;
-    }
-
-    @UiThread
-    public void cancelDraw(long canvas_id) {
-        if (this_canvas_id != canvas_id || buffer == null) return;
-
-        buffer.endDraw(true);
-        buffer = null;
-        setBackgroundColor(background_colour);
-        completed_render = false;
-        this_canvas_id = NO_CANVAS_ID;
+        new SimpleAsyncTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        buffer.endDraw(cancelled);
+                        buffer = null;
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        setBackgroundColor(background_colour);
+                        completed_render = !cancelled;
+                        this_canvas_id = NO_CANVAS_ID;
+                    }
+                });
     }
 
     // any thread
@@ -411,24 +438,35 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         long canvas_id = System.currentTimeMillis();
         startDraw(canvas_id);
         plotIterations(canvas_id, cached_iterations, true);
-        endDraw(canvas_id);
+        endDraw(canvas_id, false);
     }
 
     public void startRender() {
         stopRender();
 
-        // use whatever image is currently visible as the basis for the new render
-        // we do this with a smooth_transition if the image has been zoomed
-        // see comments in fixateVisibleImage() for explanation
-        fixateVisibleImage(fractal_scale!=0);
+        new SimpleAsyncTask(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        // use whatever image is currently visible as the basis for the new render
+                        // we do this with a smooth_transition if the image has been zoomed
+                        // see comments in fixateVisibleImage() for explanation
+                        fixateVisibleImage(fractal_scale!=0);
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        // start render thread
+                        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, fractal_scale);
 
-        // start render thread
-        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, fractal_scale);
-
-        // reset transformation variables
-        rendered_offset_x = 0;
-        rendered_offset_y = 0;
-        fractal_scale = 0;
+                        // reset transformation variables
+                        rendered_offset_x = 0;
+                        rendered_offset_y = 0;
+                        fractal_scale = 0;
+                    }
+                }
+        );
     }
 
     public void stopRender() {

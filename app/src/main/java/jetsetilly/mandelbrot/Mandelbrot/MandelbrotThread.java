@@ -49,6 +49,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onPreExecute() {
         canvas_id = System.currentTimeMillis();
+        MainActivity.progress.startSession();
     }
 
     @Override

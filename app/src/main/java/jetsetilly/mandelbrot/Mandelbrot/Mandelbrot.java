@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Trace;
 import android.widget.TextView;
 
-import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -186,8 +185,6 @@ public class Mandelbrot {
             fractal_info.setText(this.toString());
 
             // start render
-            MainActivity.progress.startSession();
-
             if (mandelbrot_settings.render_mode == RenderMode.HARDWARE) {
                 render_thr = new MandelbrotThread_renderscript(this);
             } else {

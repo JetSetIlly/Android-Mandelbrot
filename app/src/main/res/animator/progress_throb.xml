@@ -4,7 +4,7 @@
         android:propertyName="rotation"
         android:repeatCount="-1"
         android:repeatMode="restart"
-        android:duration="1000"
+        android:duration="1500"
         android:valueFrom="0f"
         android:valueTo="360f"
         android:valueType="floatType"

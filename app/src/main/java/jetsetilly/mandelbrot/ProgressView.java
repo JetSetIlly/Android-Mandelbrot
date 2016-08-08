@@ -20,7 +20,8 @@ public class ProgressView extends ImageView {
 
     private AnimatorSet throb_anim;
     private Animator throb_anim_rotation;
-    private long throb_repeat_start;
+    private long throb_start_time; // start (in milliseconds) of throb anim reset on repeat
+    private boolean throb_anim_ending;
 
     private AnimatorSet off_anim;
     final private AnimatorSet no_anim = null;
@@ -40,9 +41,9 @@ public class ProgressView extends ImageView {
         init();
     }
 
-    private long waitTime_ThrobAnimRotation() {
-        // the time in milliseconds until throb anim has finished a full rotation
-        return throb_repeat_start+throb_anim_rotation.getDuration()-System.currentTimeMillis();
+    private long timeToAnimEnd(Animator anim) {
+        // the time in milliseconds until the start of the next throb anim cycle
+        return throb_start_time+anim.getDuration()-System.currentTimeMillis();
     }
 
     private void init() {
@@ -52,6 +53,7 @@ public class ProgressView extends ImageView {
         off_anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_off);
         throb_anim = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.animator.progress_throb);
         throb_anim_rotation = throb_anim.getChildAnimations().get(0);
+        throb_anim_ending = false;
         on_anim.setTarget(this);
         off_anim.setTarget(this);
         throb_anim.setTarget(this);
@@ -79,12 +81,12 @@ public class ProgressView extends ImageView {
         throb_anim_rotation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                throb_repeat_start = System.currentTimeMillis();
+                throb_start_time = System.currentTimeMillis();
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-                throb_repeat_start = System.currentTimeMillis();
+                throb_start_time = System.currentTimeMillis();
             }
         });
 
@@ -111,11 +113,28 @@ public class ProgressView extends ImageView {
             }
         }
 
-        // run on-animation if necessary
-        if (running_anim == on_anim || running_anim == throb_anim ) return;
-        if (running_anim == off_anim) running_anim.end();
+        // do nothing if any of the following conditions are met
+        if (running_anim == on_anim) return;
+        if (running_anim == throb_anim) {
+            throb_anim_ending = false;
+            return;
+        }
+
+        // run on-animation
         running_anim = on_anim;
-        on_anim.start();
+        if (running_anim == off_anim) {
+            // progressView is about to disappear. wait until it has done so before
+            // bringing it back into view
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    on_anim.start();
+                }
+            }, timeToAnimEnd(off_anim));
+        } else {
+            // run without delay
+            on_anim.start();
+        }
     }
 
     public void unregister() {
@@ -134,12 +153,16 @@ public class ProgressView extends ImageView {
                 if (running_anim == on_anim) {
                     running_anim.end();
                 } else if (running_anim == throb_anim) {
+                    throb_anim_ending = true;
                     postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            throb_anim.end();
+                            if (running_anim == throb_anim && throb_anim_ending) {
+                                running_anim = null;
+                                throb_anim.end();
+                            }
                         }
-                    }, waitTime_ThrobAnimRotation());
+                    }, timeToAnimEnd(throb_anim_rotation));
                 }
             }
         }, UNREGISTER_DELAY);

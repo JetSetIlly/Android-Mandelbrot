@@ -10,8 +10,6 @@ public class SimpleAsyncTask {
     private Runnable completion_runnable;
     private Runnable cancelled_runnable;
 
-    private Task task;
-
     public SimpleAsyncTask(Runnable background_runnable) {
         init(background_runnable, null, null);
     }
@@ -34,16 +32,8 @@ public class SimpleAsyncTask {
         this.completion_runnable = completion_runnable;
         this.cancelled_runnable = cancelled_runnable;
 
-        task = new Task();
+        Task task = new Task();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    public void cancel() {
-        task.cancel(false);
-    }
-
-    public boolean isCancelled() {
-        return task.isCancelled();
     }
 
     private class Task extends AsyncTask<Void, Void, Void> {

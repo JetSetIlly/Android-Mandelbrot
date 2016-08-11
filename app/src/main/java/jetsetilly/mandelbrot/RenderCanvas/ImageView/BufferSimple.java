@@ -38,10 +38,10 @@ public class BufferSimple extends Buffer {
 
     @UiThread
     @Override void endDraw(boolean cancelled) {
-        update();
-        render_canvas.showBitmap(buffer_bitmap, !cancelled);
-
         if (!cancelled) {
+            update();
+            render_canvas.setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE);
+            render_canvas.showBitmap(buffer_bitmap);
             render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
         }
     }

@@ -209,7 +209,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setBackgroundColor(background_colour);
         clear_bm.eraseColor(background_colour);
         setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
-        int speed = showBitmap(clear_bm, true);
+        int speed = showBitmap(clear_bm);
         // END OF clear image
 
         // clumsily wait for transition anim to finish
@@ -324,7 +324,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = false;
     }
 
-    private void setNextTransition(TransitionType type, TransitionSpeed speed) {
+    public void setNextTransition(TransitionType type) {
+        setNextTransition(type, def_transition_speed);
+    }
+
+    public void setNextTransition(TransitionType type, TransitionSpeed speed) {
         transition_type = type;
         transition_speed = speed;
     }
@@ -366,7 +370,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         // we do this with a smooth_transition if the image has been zoomed
                         // see comments in fixateVisibleImage() for explanation
                         if (this_canvas_id == NO_CANVAS_ID) {
-                            fixateVisibleImage(fractal_scale!=0);
+                            fixateVisibleImage(fractal_scale != 0);
                         } else {
                             LogTools.printDebug(DBG_TAG, "choosing not to fixate visible image");
                         }
@@ -400,8 +404,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** GestureHandler implementation ***/
     @Override // View
     public void scroll(int x, int y) {
-        // no need to stop rendering except that there is an effect where the dominant
-        // background colour will change while the existing render is ongoing
         stopRender();
 
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
@@ -415,6 +417,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this.fractal_canvas.setY(this.fractal_canvas.getY() - (y * image_scale));
 
         scrolled_since_last_normalise = true;
+    }
+
+    public void finishScroll() {
+        startRender();
     }
 
     public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
@@ -474,12 +480,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
+                startRender();
+
                 // gestures were blocked at the head of this implementation of animatedZoom()
                 // unblocking it here will allow the gesture sequence to complete once
                 // the animation has completed (see GestureOverlay.block()/unblock() for details)
-                gestures.unblock(null);
+                gestures.unblock();
             }
         });
+
         anim.start();
         scrolled_since_last_normalise = true;
     }
@@ -531,10 +540,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // and we also need to mark the render as incomplete in order to force a complete re-render
         completed_render = false;
     }
-
-    public void finishGesture() {
-        startRender();
-    }
     /*** END OF GestureHandler implementation ***/
 
     private void fixateVisibleImage(boolean smooth_transition) {
@@ -554,10 +559,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             if (smooth_transition) {
                 Bitmap from_bm = getVisibleImage(true);
                 Bitmap to_bm = getVisibleImage(false);
-                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
+
+                setNextTransition(TransitionType.NONE);
                 showBitmap(from_bm);
                 setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-                showBitmap(to_bm, true);
+                showBitmap(to_bm);
             } else {
                 Bitmap bm = getVisibleImage(false);
                 showBitmap(bm);
@@ -618,16 +624,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     // thread safe
-    protected void showBitmap(Bitmap bm) {
-        showBitmap(bm, false);
-    }
-
-    // thread safe
-    protected int showBitmap(final Bitmap bm, boolean transition) {
+    protected int showBitmap(final Bitmap bm) {
         // returns actual speed of transition (in milliseconds)
-        Trace.beginSection("showBitmap() transition=" + transition);
+        Trace.beginSection("showBitmap() transition=" + transition_type);
         try {
-            if (transition && transition_type == TransitionType.CROSS_FADE) {
+            if (transition_type == TransitionType.CROSS_FADE) {
                 // get speed of animation (we'll actually set the speed later)
                 final int speed;
                 switch (transition_speed) {

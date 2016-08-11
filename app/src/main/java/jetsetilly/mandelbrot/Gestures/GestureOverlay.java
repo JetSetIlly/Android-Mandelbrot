@@ -1,8 +1,6 @@
 package jetsetilly.mandelbrot.Gestures;
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Process;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -10,8 +8,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
-
-import java.util.concurrent.Semaphore;
 
 import jetsetilly.tools.LogTools;
 
@@ -21,22 +17,18 @@ public class GestureOverlay extends ImageView implements
         ScaleGestureDetector.OnScaleGestureListener
 {
     private static final String DEBUG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
-    private static final long ADDITIONAL_ON_UP_DELAY = 0;
 
     private GestureHandler gesture_handler;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
-    private Semaphore up_delay_sem;
-    private Runnable up_delay_runnable;
-    private AsyncTask up_delay_thr;
+
+    // whether the canvas has been scrolled somehow
+    private boolean scrolling_canvas;
 
     // used by onScroll() to exit early if it is set to true
-    // scaling == true between calls to onScaleBegin() and onScaleEnd()
-    private boolean scaling;
-
-    // whether the canvas has been altered somehow (ie. scaled or moved)
-    private boolean altered_canvas;
+    // scaling_canvas == true between calls to onScaleBegin() and onScaleEnd()
+    private boolean scaling_canvas;
 
     public GestureOverlay(Context context) {
         super(context);
@@ -47,13 +39,10 @@ public class GestureOverlay extends ImageView implements
     }
 
     /* initialisation */
-    public void setup(Context context, final GestureHandler canvas) {
-        this.gesture_handler = canvas;
+    public void setup(Context context, final GestureHandler gesture_handler) {
+        this.gesture_handler = gesture_handler;
         this.blocked = false;
-        this.up_delay_sem = new Semaphore(1);
-        this.up_delay_runnable = null;
-        this.up_delay_thr = null;
-        this.scaling = false;
+        this.scaling_canvas = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
@@ -69,59 +58,13 @@ public class GestureOverlay extends ImageView implements
                 so that we can kick-start canvas rendering.
 
                 note that onSingleTapUp() is not the same thing because it is not
-                after a scroll event
+                called after a scroll event
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    if (altered_canvas) {
-                        LogTools.printDebug(DEBUG_TAG, "onUp (after altered_canvas): " + event.toString());
-
-                        if (up_delay_thr == null || up_delay_thr.getStatus() != AsyncTask.Status.RUNNING) {
-                            // separate thread to test for delay
-                            // allows animated zoom to finish before running canvas.finishGesture()
-                            up_delay_thr = new AsyncTask() {
-                                @Override
-                                protected Object doInBackground(Object[] params) {
-                                    Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
-                                    try {
-                                        up_delay_sem.acquire();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                    up_delay_sem.release();
-
-                                    // sleep for ADDITIONAL_ON_UP_DELAY milliseconds
-                                    synchronized (this) {
-                                        try {
-                                            if (ADDITIONAL_ON_UP_DELAY > 0)
-                                                wait(ADDITIONAL_ON_UP_DELAY);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                    return null;
-                                }
-
-                                @Override
-                                protected void onPostExecute(Object o) {
-                                    super.onPostExecute(o);
-                                    if (up_delay_runnable != null) {
-                                        up_delay_runnable.run();
-                                        up_delay_runnable = null;
-                                    }
-
-                                    canvas.finishGesture();
-                                }
-
-                                @Override
-                                protected void onCancelled() {
-                                    super.onCancelled();
-                                    LogTools.printDebug(DEBUG_TAG, "up_delay_thr.onCancelled()");
-                                }
-                            };
-
-                            up_delay_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
+                    if (scrolling_canvas) {
+                        scrolling_canvas = false;
+                        LogTools.printDebug(DEBUG_TAG, "onUp (after scrolled canvas): " + event.toString());
+                        gesture_handler.finishScroll();
                     }
                 }
 
@@ -134,17 +77,10 @@ public class GestureOverlay extends ImageView implements
 
     public void block() {
         blocked = true;
-        try {
-            up_delay_sem.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
-    public void unblock(Runnable runnable) {
+    public void unblock() {
         blocked = false;
-        up_delay_runnable = runnable;
-        up_delay_sem.release();
     }
 
     /* implementation of onGesturesListener */
@@ -152,24 +88,19 @@ public class GestureOverlay extends ImageView implements
     public boolean onDown(MotionEvent event) {
         if (blocked) return false;
 
-        if (up_delay_thr != null) {
-            up_delay_thr.cancel(true);
-        }
-
         LogTools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
         gesture_handler.checkActionBar(event.getX(), event.getY(), false);
-        altered_canvas = false;
         return true;
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (blocked) return false;
-        if (scaling) return true;
+        if (scaling_canvas) return true;
 
         LogTools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll((int) distanceX, (int) distanceY);
-        altered_canvas = true;
+        scrolling_canvas = true;
         return true;
     }
 
@@ -194,7 +125,6 @@ public class GestureOverlay extends ImageView implements
         // no offset when we're zooming out
 
         gesture_handler.animatedZoom(0, 0, true);
-        altered_canvas = true;
     }
 
     /* END OF implementation of onGesturesListener */
@@ -208,7 +138,6 @@ public class GestureOverlay extends ImageView implements
         LogTools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
         gesture_handler.animatedZoom((int) event.getX(), (int) event.getY(), false);
-        altered_canvas = true;
 
         return true;
     }
@@ -221,7 +150,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
 
         LogTools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
-        scaling = true;
+        scaling_canvas = true;
         return true;
     }
 
@@ -241,8 +170,7 @@ public class GestureOverlay extends ImageView implements
 
         LogTools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.zoomCorrection(false);
-        altered_canvas = true;
-        scaling = false;
+        scaling_canvas = false;
     }
     /* END OF implementation of OnScaleGesture interface */
 

@@ -9,7 +9,9 @@ import android.os.Handler;
 import android.os.Trace;
 import android.os.Process;
 import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
@@ -23,6 +25,7 @@ import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
+import jetsetilly.tools.SimpleRunOnUI;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
@@ -109,7 +112,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
-    private Runnable setImageBitmap_anim_cancel = null;
+    private Runnable showBitmap_anim_cancel = null;
+
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -125,46 +129,42 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void initialise(final MainActivity main_activity) {
+        this.main_activity = main_activity;
+
         post(new Runnable() {
             @Override
             public void run() {
-                setup(main_activity);
+                // create the views used for rendering
+                fractal_canvas = new ImageView(main_activity);
+                static_background = new ImageView(main_activity);
+                static_foreground = new ImageView(main_activity);
+
+                // add the views in order - from back to front
+                addView(static_background);
+                addView(fractal_canvas);
+                addView(static_foreground);
+
+                // set scale type of fractal canvas to reckon from the centre of the view
+                fractal_canvas.setScaleType(ImageView.ScaleType.CENTER);
+
+                // set to hardware acceleration if available
+                // TODO: proper hardware acceleration using SurfaceView
+                fractal_canvas.setLayerType(LAYER_TYPE_HARDWARE, null);
+                static_foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
+                static_background.setLayerType(LAYER_TYPE_HARDWARE, null);
+
+                // reset canvas will start the new render
+                resetCanvas();
             }
         });
         super.initialise(main_activity);
-    }
-
-    private void setup(MainActivity main_activity) {
-        this.main_activity = main_activity;
-
-        // create the views used for rendering
-        this.fractal_canvas = new ImageView(main_activity);
-        this.static_background = new ImageView(main_activity);
-        this.static_foreground = new ImageView(main_activity);
-
-        // add the views in order - from back to front
-        addView(this.static_background);
-        addView(this.fractal_canvas);
-        addView(this.static_foreground);
-
-        // set scale type of fractal canvas to reckon from the centre of the view
-        this.fractal_canvas.setScaleType(ImageView.ScaleType.CENTER);
-
-        // set to hardware acceleration if available
-        // TODO: proper hardware acceleration using SurfaceView
-        this.fractal_canvas.setLayerType(LAYER_TYPE_HARDWARE, null);
-        this.static_foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
-        this.static_background.setLayerType(LAYER_TYPE_HARDWARE, null);
-
-        // reset canvas will start the new render
-        resetCanvas();
     }
     /*** END OF initialisation ***/
 
     @Override // View
     // thread safe
     public void invalidate() {
-        main_activity.runOnUiThread(new Runnable() {
+        SimpleRunOnUI.run(main_activity, new Runnable() {
             @Override
             public void run() {
                 // intentionally not calling super.invalidate()
@@ -191,108 +191,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         static_background.setBackgroundColor(color);
     }
 
-    // thread safe
-    protected void showBitmap(Bitmap bm) {
-        showBitmap(bm, false);
-    }
-
-    // thread safe
-    protected int showBitmap(final Bitmap bm, boolean transition) {
-        // returns actual speed of transition (in milliseconds)
-        // NOTE: this implementation of showBitmap is thread safe
-        // cancel transition animation and run end conditions
-        Trace.beginSection("showBitmap() transition=" + transition);
-        try {
-            if (transition && transition_type == TransitionType.CROSS_FADE) {
-                // get speed of animation (we'll actually set the speed later)
-                final int speed;
-                switch (transition_speed) {
-                    case VFAST:
-                        speed = getResources().getInteger(R.integer.transition_duration_vfast);
-                        break;
-                    case FAST:
-                        speed = getResources().getInteger(R.integer.transition_duration_fast);
-                        break;
-                    case SLOW:
-                        speed = getResources().getInteger(R.integer.transition_duration_slow);
-                        break;
-                    case VSLOW:
-                        speed = getResources().getInteger(R.integer.transition_duration_vslow);
-                        break;
-                    default:
-                    case NORMAL:
-                        speed = getResources().getInteger(R.integer.transition_duration_slow);
-                        break;
-                }
-
-                // prepare end runnable for animation
-                final Runnable transition_end_runnable = new Runnable() {
-                    @Override public void run() {
-                        setImageBitmap_anim_cancel = null;
-                        static_foreground.setVisibility(INVISIBLE);
-                    }
-                };
-
-                // prepare foreground. this is the image we transition from
-                main_activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        static_foreground.setImageBitmap(display_bm);
-                        static_foreground.setVisibility(VISIBLE);
-                        static_foreground.setAlpha(1.0f);
-                    }
-                });
-
-                // prepare final image. the image we transition to
-                main_activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fractal_canvas.setImageBitmap(display_bm = bm);
-                    }
-                });
-
-                // set up animation based on type
-                final ViewPropertyAnimator transition_anim = static_foreground.animate();
-
-                // prepare setImageBitmap_anim_cancel - ran if we need to stop animation prematurely
-                setImageBitmap_anim_cancel = new Runnable() {
-                    @Override
-                    public void run() {
-                        Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
-                        transition_anim.cancel();
-                        transition_end_runnable.run();
-                    }
-                };
-
-                main_activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        transition_anim.withEndAction(transition_end_runnable);
-                        transition_anim.setDuration(speed);
-                        transition_anim.alpha(0.0f);
-                        transition_anim.start();
-                    }
-                });
-
-                // reset transition type/speed - until next call to changeNextTransition()
-                transition_type = def_transition_type;
-                transition_speed = def_transition_speed;
-
-                return speed;
-            } else {
-                main_activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fractal_canvas.setImageBitmap(display_bm = bm);
-                        fractal_canvas.invalidate();
-                    }
-                });
-                return 0;
-            }
-        } finally {
-            Trace.endSection();
-        }
-    }
 
     public void resetCanvas() {
         // new render cache
@@ -326,11 +224,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
 
     /*** MandelbrotCanvas implementation ***/
-    // any thread
+    @WorkerThread
     public void startDraw(long canvas_id) {
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
             LogTools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
+
         this_canvas_id = canvas_id;
 
         if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE ||
@@ -344,7 +243,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         completed_render = false;
     }
 
-    // any thread
+    @WorkerThread
     public void plotIterations(long canvas_id, int iterations[], boolean complete_plot) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
@@ -360,7 +259,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
     }
 
-    // any thread
+    @WorkerThread
     public void plotIteration(long canvas_id, int cx, int cy, int iteration) {
         if (this_canvas_id != canvas_id || buffer == null) return;
 
@@ -377,7 +276,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @UiThread
     public void endDraw(long canvas_id, final boolean cancelled) {
-        if (this_canvas_id != canvas_id || buffer == null) return;
+        if (this_canvas_id != canvas_id || buffer == null) {
+            return;
+        }
 
         new SimpleAsyncTask(new Runnable() {
                     @Override
@@ -393,7 +294,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         completed_render = !cancelled;
                         this_canvas_id = NO_CANVAS_ID;
                     }
-                });
+                }, true);
     }
 
     // any thread
@@ -414,10 +315,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
 
     private void normaliseCanvas(){
-        this.fractal_canvas.setScaleX(1f);
-        this.fractal_canvas.setScaleY(1f);
-        this.fractal_canvas.setX(0);
-        this.fractal_canvas.setY(0);
+        fractal_canvas.setScaleX(1f);
+        fractal_canvas.setScaleY(1f);
+        fractal_canvas.setX(0);
+        fractal_canvas.setY(0);
+        fractal_canvas.invalidate();
 
         scrolled_since_last_normalise = false;
     }
@@ -435,10 +337,22 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         stopRender();
 
-        long canvas_id = System.currentTimeMillis();
-        startDraw(canvas_id);
-        plotIterations(canvas_id, cached_iterations, true);
-        endDraw(canvas_id, false);
+        final long canvas_id = System.currentTimeMillis();
+        new SimpleAsyncTask(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        startDraw(canvas_id);
+                        plotIterations(canvas_id, cached_iterations, true);
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        endDraw(canvas_id, false);
+                    }
+                }
+        );
     }
 
     public void startRender() {
@@ -451,7 +365,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         // use whatever image is currently visible as the basis for the new render
                         // we do this with a smooth_transition if the image has been zoomed
                         // see comments in fixateVisibleImage() for explanation
-                        fixateVisibleImage(fractal_scale!=0);
+                        if (this_canvas_id == NO_CANVAS_ID) {
+                            fixateVisibleImage(fractal_scale!=0);
+                        } else {
+                            LogTools.printDebug(DBG_TAG, "choosing not to fixate visible image");
+                        }
                     }
                 },
                 new Runnable() {
@@ -470,11 +388,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender() {
-        if (mandelbrot != null)
-            mandelbrot.stopRender();
+        if (showBitmap_anim_cancel != null) {
+            showBitmap_anim_cancel.run();
+        }
 
-        if (setImageBitmap_anim_cancel != null) {
-            setImageBitmap_anim_cancel.run();
+        if (mandelbrot != null) {
+            mandelbrot.stopRender();
         }
     }
 
@@ -635,23 +554,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             if (smooth_transition) {
                 Bitmap from_bm = getVisibleImage(true);
                 Bitmap to_bm = getVisibleImage(false);
-
+                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
                 showBitmap(from_bm);
                 setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
                 showBitmap(to_bm, true);
-
-                normaliseCanvas();
             } else {
                 Bitmap bm = getVisibleImage(false);
                 showBitmap(bm);
-                normaliseCanvas();
             }
         } finally {
             Trace.endSection();
         }
     }
 
-    public Bitmap getVisibleImage (final boolean bilinear_filter) {
+    public Bitmap getVisibleImage(final boolean bilinear_filter) {
         // getVisibleImage() returns just the portion of the bitmap that is visible. used so
         // we can reset the scrolling and scaling of the RenderCanvas_ImageView ImageView
 
@@ -665,10 +581,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         Trace.beginSection("getVisibleImage(" + bilinear_filter + ")");
         try {
-            // use display_bm as the source bitmap -- this allows us to chain zooming and scrolling
-            // in any order. the image may lose definition after several cycles of this but
-            // it shouldn't be too noticeable
-
             // do offset
             offset_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
             offset_canvas = new Canvas(offset_bm);
@@ -703,6 +615,108 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         return scaled_bm;
+    }
+
+    // thread safe
+    protected void showBitmap(Bitmap bm) {
+        showBitmap(bm, false);
+    }
+
+    // thread safe
+    protected int showBitmap(final Bitmap bm, boolean transition) {
+        // returns actual speed of transition (in milliseconds)
+        Trace.beginSection("showBitmap() transition=" + transition);
+        try {
+            if (transition && transition_type == TransitionType.CROSS_FADE) {
+                // get speed of animation (we'll actually set the speed later)
+                final int speed;
+                switch (transition_speed) {
+                    case VFAST:
+                        speed = getResources().getInteger(R.integer.transition_duration_vfast);
+                        break;
+                    case FAST:
+                        speed = getResources().getInteger(R.integer.transition_duration_fast);
+                        break;
+                    case SLOW:
+                        speed = getResources().getInteger(R.integer.transition_duration_slow);
+                        break;
+                    case VSLOW:
+                        speed = getResources().getInteger(R.integer.transition_duration_vslow);
+                        break;
+                    default:
+                    case NORMAL:
+                        speed = getResources().getInteger(R.integer.transition_duration_slow);
+                        break;
+                }
+
+                // prepare end runnable for animation
+                final Runnable transition_end_runnable = new Runnable() {
+                    @Override public void run() {
+                        showBitmap_anim_cancel = null;
+                        static_foreground.setVisibility(INVISIBLE);
+                    }
+                };
+
+                // prepare foreground. this is the image we transition from
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        static_foreground.setImageBitmap(display_bm);
+                        static_foreground.setVisibility(VISIBLE);
+                        static_foreground.setAlpha(1.0f);
+                    }
+                });
+
+                // prepare final image. the image we transition to
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        normaliseCanvas();
+                        fractal_canvas.setImageBitmap(display_bm = bm);
+                    }
+                });
+
+                // set up animation based on type
+                final ViewPropertyAnimator transition_anim = static_foreground.animate();
+
+                // prepare showBitmap_anim_cancel - ran if we need to stop animation prematurely
+                showBitmap_anim_cancel = new Runnable() {
+                    @Override
+                    public void run() {
+                        Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
+                        transition_anim.cancel();
+                        transition_end_runnable.run();
+                    }
+                };
+
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        transition_anim.withEndAction(transition_end_runnable);
+                        transition_anim.setDuration(speed);
+                        transition_anim.alpha(0.0f);
+                        transition_anim.start();
+                    }
+                });
+
+                // reset transition type/speed - until next call to changeNextTransition()
+                transition_type = def_transition_type;
+                transition_speed = def_transition_speed;
+
+                return speed;
+            } else {
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        normaliseCanvas();
+                        fractal_canvas.setImageBitmap(display_bm = bm);
+                    }
+                });
+                return 0;
+            }
+        } finally {
+            Trace.endSection();
+        }
     }
 }
 

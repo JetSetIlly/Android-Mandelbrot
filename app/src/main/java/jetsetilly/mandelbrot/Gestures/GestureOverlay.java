@@ -81,7 +81,7 @@ public class GestureOverlay extends ImageView implements
                             up_delay_thr = new AsyncTask() {
                                 @Override
                                 protected Object doInBackground(Object[] params) {
-                                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                                    Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
                                     try {
                                         up_delay_sem.acquire();
                                     } catch (InterruptedException e) {
@@ -122,7 +122,6 @@ public class GestureOverlay extends ImageView implements
 
                             up_delay_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                         }
-
                     }
                 }
 

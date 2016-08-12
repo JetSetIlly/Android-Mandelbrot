@@ -11,7 +11,6 @@ import android.os.Process;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
@@ -366,6 +365,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 new Runnable() {
                     @Override
                     public void run() {
+
                         // use whatever image is currently visible as the basis for the new render
                         // we do this with a smooth_transition if the image has been zoomed
                         // see comments in fixateVisibleImage() for explanation
@@ -380,12 +380,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         // start render thread
-                        mandelbrot.startRender(rendered_offset_x, rendered_offset_y, fractal_scale);
-
-                        // reset transformation variables
-                        rendered_offset_x = 0;
-                        rendered_offset_y = 0;
-                        fractal_scale = 0;
+                        mandelbrot.startRender();
                     }
                 }
         );
@@ -399,6 +394,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (mandelbrot != null) {
             mandelbrot.stopRender();
         }
+    }
+
+    private void transformMandelbrot() {
+        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale);
+        fractal_scale = 0;
+        rendered_offset_x = 0;
+        rendered_offset_y = 0;
     }
 
     /*** GestureHandler implementation ***/
@@ -532,17 +534,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         fixateVisibleImage(false);
 
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale);
-        fractal_scale = 0;
-        rendered_offset_x = 0;
-        rendered_offset_y = 0;
-
         // and we also need to mark the render as incomplete in order to force a complete re-render
         completed_render = false;
     }
     /*** END OF GestureHandler implementation ***/
 
-    private void fixateVisibleImage(boolean smooth_transition) {
+    private int fixateVisibleImage(boolean smooth_transition) {
         // smooth_transition fixates the image but does it twice, once with a bilinear filter
         // applied to the image, the second without. showBitmap() is called the second time with
         // the transition flag set to true.
@@ -559,14 +556,17 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             if (smooth_transition) {
                 Bitmap from_bm = getVisibleImage(true);
                 Bitmap to_bm = getVisibleImage(false);
+                transformMandelbrot();
 
                 setNextTransition(TransitionType.NONE);
                 showBitmap(from_bm);
                 setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-                showBitmap(to_bm);
+                return showBitmap(to_bm);
             } else {
                 Bitmap bm = getVisibleImage(false);
-                showBitmap(bm);
+                transformMandelbrot();
+                setNextTransition(TransitionType.NONE);
+                return showBitmap(bm);
             }
         } finally {
             Trace.endSection();

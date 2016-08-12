@@ -166,7 +166,8 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
 
     @Override
     public void startRender() {
-        mandelbrot.startRender(offset_x, offset_y, zoom_factor);
+        mandelbrot.transformMandelbrot(offset_x, offset_y, zoom_factor);
+        mandelbrot.startRender();
     }
 
     @Override

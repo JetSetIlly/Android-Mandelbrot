@@ -156,37 +156,35 @@ public class Mandelbrot {
         // this function updates the mandelbrot co-ordinates. stopping any current threads.
         stopRender();
         transform(offset_x, offset_y, fractal_scale);
-    }
 
-    public void startRender(double offset_x, double offset_y, double fractal_scale) {
-        Trace.beginSection("starting mandelbrot");
-        try {
-            transformMandelbrot(offset_x, offset_y, fractal_scale);
+        // initialise render_area
+        render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
 
-            // initialise render_area
-            render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
+        // make sure render mode etc. is set correctly
+        rescaling_render = fractal_scale != 0;
 
-            // make sure render mode etc. is set correctly
-            rescaling_render = fractal_scale != 0;
-
-            // define render_area
-            if (fractal_scale == 0 && canvas.isCompleteRender()) {
-                if (offset_x < 0) {
-                    render_area.right = (int) -offset_x;
-                } else if (offset_x > 0) {
-                    render_area.left = canvas.getCanvasWidth() - (int) offset_x;
-                }
-
-                if (offset_y < 0) { // moving down
-                    render_area.bottom = (int) -offset_y;
-                } else if (offset_y > 0) { // moving up
-                    render_area.top = canvas.getCanvasHeight() - (int) offset_y;
-                }
+        // define render_area
+        if (fractal_scale == 0 && canvas.isCompleteRender()) {
+            if (offset_x < 0) {
+                render_area.right = (int) -offset_x;
+            } else if (offset_x > 0) {
+                render_area.left = canvas.getCanvasWidth() - (int) offset_x;
             }
 
-            // display mandelbrot info
-            fractal_info.setText(this.toString());
+            if (offset_y < 0) { // moving down
+                render_area.bottom = (int) -offset_y;
+            } else if (offset_y > 0) { // moving up
+                render_area.top = canvas.getCanvasHeight() - (int) offset_y;
+            }
+        }
 
+        // display mandelbrot info
+        fractal_info.setText(this.toString());
+    }
+
+    public void startRender() {
+        Trace.beginSection("starting mandelbrot");
+        try {
             // start render
             MainActivity.progress.startSession();
 

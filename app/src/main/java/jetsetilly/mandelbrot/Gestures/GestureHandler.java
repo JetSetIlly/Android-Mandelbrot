@@ -4,7 +4,7 @@ public interface GestureHandler {
     void checkActionBar(float x, float y, boolean show);
     void scroll(int x, int y);
     void finishScroll();
-    void animatedZoom(int offset_x, int offset_y, boolean zoom_out);
-    void pinchZoom(float amount);
-    void zoomCorrection(boolean force);
+    void autoZoom(int offset_x, int offset_y, boolean zoom_out);
+    void manualZoom(float amount);
+    void endManualZoom(boolean force);
 }

@@ -124,7 +124,7 @@ public class GestureOverlay extends ImageView implements
 
         // no offset when we're zooming out
 
-        gesture_handler.animatedZoom(0, 0, true);
+        gesture_handler.autoZoom(0, 0, true);
     }
 
     /* END OF implementation of onGesturesListener */
@@ -137,7 +137,7 @@ public class GestureOverlay extends ImageView implements
 
         LogTools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
 
-        gesture_handler.animatedZoom((int) event.getX(), (int) event.getY(), false);
+        gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
 
         return true;
     }
@@ -159,7 +159,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return false;
 
         LogTools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
-        gesture_handler.pinchZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
+        gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
 
         return true;
     }
@@ -169,7 +169,7 @@ public class GestureOverlay extends ImageView implements
         if (blocked) return;
 
         LogTools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
-        gesture_handler.zoomCorrection(false);
+        gesture_handler.endManualZoom(false);
         scaling_canvas = false;
     }
     /* END OF implementation of OnScaleGesture interface */

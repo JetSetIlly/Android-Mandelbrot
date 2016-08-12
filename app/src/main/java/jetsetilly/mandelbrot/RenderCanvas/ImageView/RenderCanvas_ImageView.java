@@ -425,7 +425,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         startRender();
     }
 
-    public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
+    public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
         // animation can take a while -- we don't want gestures to be honoured
         // while the animation is taking place. call block() here
         // and unblock() in the animation's endAction
@@ -484,7 +484,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             public void run() {
                 startRender();
 
-                // gestures were blocked at the head of this implementation of animatedZoom()
+                // gestures were blocked at the head of this implementation of autoZoom()
                 // unblocking it here will allow the gesture sequence to complete once
                 // the animation has completed (see GestureOverlay.block()/unblock() for details)
                 gestures.unblock();
@@ -495,14 +495,17 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = true;
     }
 
-    public void pinchZoom(float amount) {
+    public void manualZoom(float amount) {
         // WARNING: This doesn't work correctly in certain combination of zoom/move chains
-        // unless the canvas is reset (as it is in zoomCorrection() and startRender() methods)
+        // unless the canvas is reset (as it is in endManualZoom() and startRender() methods)
         if (amount == 0)
             return;
 
-        if (scrolled_since_last_normalise)
-            zoomCorrection(true);
+        completed_render = false;
+
+        if (scrolled_since_last_normalise) {
+            fixateVisibleImage(false);
+        }
 
         // stop render to avoid smearing
         stopRender();
@@ -522,20 +525,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this.fractal_canvas.setScaleY(image_scale);
     }
 
-    public void zoomCorrection(boolean force) {
-        // force == true -> called by pinchZoom() when scrolled_since_last_normalise is true
-        // force == false -> called by GestureOverlay().onScaleEnd()
-
+    public void endManualZoom(boolean force) {
         // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
         // and without losing any of the image after the image has been rescaled
-        if (!force && fractal_scale >= 0) {
+        if (fractal_scale >= 0) {
             return;
         }
 
-        fixateVisibleImage(false);
-
-        // and we also need to mark the render as incomplete in order to force a complete re-render
         completed_render = false;
+        fixateVisibleImage(false);
+        startRender();
     }
     /*** END OF GestureHandler implementation ***/
 

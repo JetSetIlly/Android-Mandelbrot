@@ -46,15 +46,15 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void animatedZoom(int offset_x, int offset_y, boolean zoom_out) {
+    public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
     }
 
     @Override
-    public void pinchZoom(float amount) {
+    public void manualZoom(float amount) {
     }
 
     @Override
-    public void zoomCorrection(boolean force) {
+    public void endManualZoom(boolean force) {
 
     }
 

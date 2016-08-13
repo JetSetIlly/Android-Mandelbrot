@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/animator/progress_off.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/animator/progress_off.xml"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/animator/progress_throb.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/animator/progress_throb.xml"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/animator/progress_on.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/animator/progress_on.xml"
+    }
+]

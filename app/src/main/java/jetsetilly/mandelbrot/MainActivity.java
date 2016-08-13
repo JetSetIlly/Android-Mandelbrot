@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -14,6 +15,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     // and onActivityResult() implementation
     private static final int PALETTE_ACTIVITY_ID = 1;
     private static final int SETTINGS_ACTIVITY_ID = 2;
+
+    private static final int PERMISSIONS_SAVE_IMAGE = 1;
 
     // allow other classes to access resources (principally PaletteDefinition)
     // not sure if there is a more elegant way to do this - this seems heavy handed
@@ -154,12 +159,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_save:
-                if (saveImage()) {
-                    Toast.makeText(this, R.string.action_save_success, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
-                }
-
+                trySaveImage();
                 return true;
 
             case R.id.action_reset:
@@ -288,7 +288,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean saveImage() {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_SAVE_IMAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    saveImage();
+                } else {
+                    Toast.makeText(this, R.string.action_save_no_permission, Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+        }
+    }
+
+    private void trySaveImage() {
+        int permission_check = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission_check != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_SAVE_IMAGE);
+        } else {
+            saveImage();
+        }
+    }
+
+    private void saveImage() {
         long curr_time = System.currentTimeMillis();
 
         String title = String.format("%s_%s.jpeg", getString(R.string.app_name), new SimpleDateFormat("yyyymmdd_hhmmss", Locale.ENGLISH).format(curr_time));
@@ -311,10 +334,10 @@ public class MainActivity extends AppCompatActivity {
             OutputStream output_stream = cr.openOutputStream(url);
             render_canvas.getVisibleImage(false).compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {
-            // security exception?
-            return false;
+            Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        return true;
+        Toast.makeText(this, R.string.action_save_success, Toast.LENGTH_SHORT).show();
     }
 }

@@ -56,8 +56,22 @@
         android:visibility="visible"
         android:elevation="@dimen/progress_view_elevation"
         android:background="@drawable/progress_background"
-        android:layout_margin="20dp"
-        android:padding="7dp" />
+        android:layout_margin="@dimen/progress_margin"
+        android:padding="@dimen/progress_padding" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:contentDescription="@string/description_gesture_icon"
+        android:src="@drawable/ic_pause_black_24dp"
+        android:id="@+id/gesture_block"
+        android:visibility="invisible"
+        android:elevation="@dimen/progress_view_elevation"
+        android:background="@drawable/progress_background"
+        android:layout_margin="@dimen/gesture_margin"
+        android:padding="@dimen/gesture_padding" />
 
 </RelativeLayout>
 

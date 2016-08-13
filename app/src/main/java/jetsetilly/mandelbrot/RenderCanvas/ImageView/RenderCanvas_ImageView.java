@@ -365,15 +365,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 new Runnable() {
                     @Override
                     public void run() {
+                        // block gestures -- will unblock at end of fixateVisibleImage() routine
+                        // note that fixateVisibleImage() routine may return significantly before
+                        // the routine finishes due to animated transitions
+                        //
+                        // also note that gestures may have already been blocked
+                        // - eg. in the autoZoom() method
+                        gestures.block();
 
                         // use whatever image is currently visible as the basis for the new render
                         // we do this with a smooth_transition if the image has been zoomed
                         // see comments in fixateVisibleImage() for explanation
-                        if (this_canvas_id == NO_CANVAS_ID) {
-                            fixateVisibleImage(fractal_scale != 0);
-                        } else {
-                            LogTools.printDebug(DBG_TAG, "choosing not to fixate visible image");
-                        }
+                        fixateVisibleImage(fractal_scale != 0);
                     }
                 },
                 new Runnable() {
@@ -421,7 +424,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = true;
     }
 
-    public void finishScroll() {
+    public void finishManualGesture() {
         startRender();
     }
 
@@ -482,12 +485,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
+                // gestures.block() was called at the head of the autoZoom() method
+                // the unblock() method will be called at conclusion of fixateVisibleImage()
+                // which is called by the following call to startRender()
                 startRender();
-
-                // gestures were blocked at the head of this implementation of autoZoom()
-                // unblocking it here will allow the gesture sequence to complete once
-                // the animation has completed (see GestureOverlay.block()/unblock() for details)
-                gestures.unblock();
             }
         });
 
@@ -534,11 +535,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         completed_render = false;
         fixateVisibleImage(false);
-        startRender();
     }
     /*** END OF GestureHandler implementation ***/
 
-    private int fixateVisibleImage(boolean smooth_transition) {
+    private void fixateVisibleImage(boolean smooth_transition) {
         // smooth_transition fixates the image but does it twice, once with a bilinear filter
         // applied to the image, the second without. showBitmap() is called the second time with
         // the transition flag set to true.
@@ -550,6 +550,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // the two images (smooth to pixelated)
         // if we didn't create the pixelated image, then multiple zooms without a re-rendering of the
         // image will result in a blurry mess. the pixelated image looks better.
+        int speed = 0;
+
         Trace.beginSection("fixateVisibleImage()");
         try {
             if (smooth_transition) {
@@ -559,16 +561,35 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                 setNextTransition(TransitionType.NONE);
                 showBitmap(from_bm);
-                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.FAST);
-                return showBitmap(to_bm);
+                setNextTransition(TransitionType.CROSS_FADE, TransitionSpeed.VFAST);
+                speed = showBitmap(to_bm);
             } else {
                 Bitmap bm = getVisibleImage(false);
                 transformMandelbrot();
                 setNextTransition(TransitionType.NONE);
-                return showBitmap(bm);
+                speed = showBitmap(bm);
             }
         } finally {
             Trace.endSection();
+
+            if (speed > 0) {
+                final int delay_speed = speed;
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        // clumsily wait for transition anim to finish
+                        Handler h = new Handler();
+                        h.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                gestures.unblock();
+                            }
+                        }, delay_speed);
+                    }
+                });
+            } else {
+                gestures.unblock();
+            }
         }
     }
 
@@ -649,6 +670,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         break;
                 }
 
+                // reset transition type/speed - until next call to changeNextTransition()
+                transition_type = def_transition_type;
+                transition_speed = def_transition_speed;
+
                 // prepare end runnable for animation
                 final Runnable transition_end_runnable = new Runnable() {
                     @Override public void run() {
@@ -698,10 +723,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         transition_anim.start();
                     }
                 });
-
-                // reset transition type/speed - until next call to changeNextTransition()
-                transition_type = def_transition_type;
-                transition_speed = def_transition_speed;
 
                 return speed;
             } else {

@@ -7,6 +7,7 @@
     <string name="description_gesture_overlay">static overlay used to listed for gestures</string>
     <string name="description_palette_swatch">palette swatch</string>
     <string name="description_palette_swatch_selected">palette swatch selected</string>
+    <string name="description_gesture_icon">icon that indicates gestures are being attempted but are being blocked</string>
 
     <string name="action_palette">Palette</string>
     <string name="action_settings">Settings</string>
@@ -40,6 +41,7 @@
 
     <string name="action_save_success">Image Saved</string>
     <string name="action_save_fail">Error Saving Image</string>
+    <string name="action_save_no_permission">Can\'t save image - no permission</string>
 
     <string name="scale_limit_reached">Scaling limit reached!</string>
 

@@ -59,7 +59,7 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void finishScroll() {
+    public void finishManualGesture() {
     }
     /* END OF GestureHandler implementation */
 

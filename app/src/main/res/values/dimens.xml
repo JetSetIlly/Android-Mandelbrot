@@ -23,4 +23,10 @@
     for this to work info_pane_z needs to be more than progress view's elevation -->
     <dimen name="progress_view_elevation">10dp</dimen>
     <dimen name="info_pane_z">20dp</dimen>
+
+    <dimen name="progress_margin">20dp</dimen>
+    <dimen name="progress_padding">7dp</dimen>
+
+    <dimen name="gesture_margin">20dp</dimen>
+    <dimen name="gesture_padding">7dp</dimen>
 </resources>

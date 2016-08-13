@@ -36,6 +36,10 @@
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_item_background_holo_light.xml"
     },
     {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/ic_pause_circle_filled_white_24dp.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/drawable/ic_pause_circle_filled_white_24dp.xml"
+    },
+    {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/abc_seekbar_thumb_material.xml",
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_seekbar_thumb_material.xml"
     },
@@ -46,6 +50,14 @@
     {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/abc_textfield_search_material.xml",
         "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_textfield_search_material.xml"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/ic_pause_circle_outline_white_24dp.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/drawable/ic_pause_circle_outline_white_24dp.xml"
+    },
+    {
+        "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/ic_pause_black_24dp.xml",
+        "source": "/home/steve/AndroidStudioProjects/Mandelbrot/app/src/main/res/drawable/ic_pause_black_24dp.xml"
     },
     {
         "merged": "/home/steve/AndroidStudioProjects/Mandelbrot/app/build/intermediates/res/merged/debug/drawable/ic_undo_24dp.xml",

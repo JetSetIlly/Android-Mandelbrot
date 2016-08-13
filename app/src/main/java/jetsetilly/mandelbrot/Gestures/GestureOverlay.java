@@ -1,7 +1,9 @@
 package jetsetilly.mandelbrot.Gestures;
 
 import android.content.Context;
+import android.os.Vibrator;
 import android.support.v4.view.GestureDetectorCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -9,6 +11,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
 
+import jetsetilly.mandelbrot.R;
 import jetsetilly.tools.LogTools;
 
 public class GestureOverlay extends ImageView implements
@@ -16,15 +19,18 @@ public class GestureOverlay extends ImageView implements
         GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener
 {
-    private static final String DEBUG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
+    private static final String DBG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
 
     private GestureHandler gesture_handler;
+    private ImageView gesture_block_icon;
+    private long gesture_block_icon_visibility_time;
+    private final long MIN_GESTURE_BLOCK_ICON_SHOW_DURATION = 1000;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
 
-    // whether the canvas has been scrolled somehow
-    private boolean scrolling_canvas;
+    // whether the canvas has been altered somehow
+    private boolean altered_canvas;
 
     // used by onScroll() to exit early if it is set to true
     // scaling_canvas == true between calls to onScaleBegin() and onScaleEnd()
@@ -49,6 +55,8 @@ public class GestureOverlay extends ImageView implements
         scale_detector.setQuickScaleEnabled(false);
         gestures_detector.setOnDoubleTapListener(this);
 
+        gesture_block_icon = (ImageView) ((AppCompatActivity)context).findViewById(R.id.gesture_block);
+
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -61,10 +69,10 @@ public class GestureOverlay extends ImageView implements
                 called after a scroll event
                 */
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    if (scrolling_canvas) {
-                        scrolling_canvas = false;
-                        LogTools.printDebug(DEBUG_TAG, "onUp (after scrolled canvas): " + event.toString());
-                        gesture_handler.finishScroll();
+                    if (altered_canvas) {
+                        altered_canvas = false;
+                        LogTools.printDebug(DBG_TAG, "onUp (after altered canvas): " + event.toString());
+                        gesture_handler.finishManualGesture();
                     }
                 }
 
@@ -81,36 +89,56 @@ public class GestureOverlay extends ImageView implements
 
     public void unblock() {
         blocked = false;
+
+        long delay_time = System.currentTimeMillis() - gesture_block_icon_visibility_time;
+        if (delay_time > MIN_GESTURE_BLOCK_ICON_SHOW_DURATION) {
+            gesture_block_icon.setVisibility(INVISIBLE);
+        } else {
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    gesture_block_icon.setVisibility(INVISIBLE);
+                }
+            }, MIN_GESTURE_BLOCK_ICON_SHOW_DURATION - delay_time);
+        }
+    }
+
+    private boolean testBlock() {
+        if (blocked) {
+            Vibrator vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            long[] pattern = new long[]{
+                    0,10,0,10,0,10,0,10,0,10,0,
+                    0,10,0,10,0,10,0,10,0,10,0,
+                    0,10,0,10,0,10,0,10,0,10,0,
+                    0,10,0,10,0,10,0,10,0,10,0
+            };
+            vibrator.vibrate(pattern, -1);
+            gesture_block_icon.setVisibility(VISIBLE);
+            gesture_block_icon_visibility_time = System.currentTimeMillis();
+            return true;
+        }
+        return false;
     }
 
     /* implementation of onGesturesListener */
     @Override
-    public boolean onDown(MotionEvent event) {
-        if (blocked) return false;
-
-        LogTools.printDebug(DEBUG_TAG, "onDown: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
-        return true;
-    }
-
-    @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (blocked) return false;
+        if (testBlock()) return false;
         if (scaling_canvas) return true;
 
-        LogTools.printDebug(DEBUG_TAG, "onScroll: " + e1.toString() + e2.toString());
+        LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll((int) distanceX, (int) distanceY);
-        scrolling_canvas = true;
+        altered_canvas = true;
         return true;
     }
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         /* implementation of onDoubleTapListener interface */
-        if (blocked) return false;
+        if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
+        LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
+        gesture_handler.checkActionBar(event.getX(), event.getY());
 
         return true;
     }
@@ -118,12 +146,13 @@ public class GestureOverlay extends ImageView implements
     @Override
     public void onLongPress(MotionEvent event) {
         /* implementation of onGesturesListener */
-        if (blocked) return;
+        if (testBlock()) return;
 
-        LogTools.printDebug(DEBUG_TAG, "onLongPress: " + event.toString());
+        LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
 
         // no offset when we're zooming out
 
+        gesture_handler.checkActionBar(event.getX(), event.getY());
         gesture_handler.autoZoom(0, 0, true);
     }
 
@@ -133,10 +162,11 @@ public class GestureOverlay extends ImageView implements
     /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
-        if (blocked) return false;
+        if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onDoubleTap: " + event.toString());
+        LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
 
+        gesture_handler.checkActionBar(event.getX(), event.getY());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
 
         return true;
@@ -147,28 +177,30 @@ public class GestureOverlay extends ImageView implements
     /* implementation of OnScaleGestureListener interface */
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        if (blocked) return false;
+        if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onScaleBegin: " + detector.toString());
+        LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
+        gesture_handler.checkActionBar(detector.getFocusX(), detector.getFocusY());
         scaling_canvas = true;
         return true;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        if (blocked) return false;
+        if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onScale: " + detector.toString());
+        LogTools.printDebug(DBG_TAG, "onScale: " + detector.toString());
         gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
+        altered_canvas = true;
 
         return true;
     }
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        if (blocked) return;
+        if (testBlock()) return;
 
-        LogTools.printDebug(DEBUG_TAG, "onScaleEnd: " + detector.toString());
+        LogTools.printDebug(DBG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.endManualZoom(false);
         scaling_canvas = false;
     }
@@ -177,37 +209,45 @@ public class GestureOverlay extends ImageView implements
 
     /* following methods are not used */
     @Override
+    public boolean onDown(MotionEvent event) {
+        //if (testBlock()) return false;
+
+        LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
+        return true;
+    }
+
+    @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         /* implementation of onGesturesListener */
-        if (blocked) return false;
+        //if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+        LogTools.printDebug(DBG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
     }
 
     @Override
     public void onShowPress(MotionEvent event) {
         /* implementation of onGesturesListener */
-        if (blocked) return;
+        //if (testBlock()) return;
 
-        LogTools.printDebug(DEBUG_TAG, "onShowPress: " + event.toString());
+        LogTools.printDebug(DBG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
         /* implementation of onGesturesListener */
-        if (blocked) return false;
+        //if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onSingleTapUp: " + event.toString());
+        LogTools.printDebug(DBG_TAG, "onSingleTapUp: " + event.toString());
         return true;
     }
 
     @Override
     public boolean onDoubleTapEvent(MotionEvent event) {
         /* implementation of onDoubleTapListener interface */
-        if (blocked) return false;
+        //if (testBlock()) return false;
 
-        LogTools.printDebug(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
+        LogTools.printDebug(DBG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 

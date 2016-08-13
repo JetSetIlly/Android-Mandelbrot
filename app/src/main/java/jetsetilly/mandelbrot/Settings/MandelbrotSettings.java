@@ -16,8 +16,8 @@ public class MandelbrotSettings {
     public double bailout_value;
     public int max_iterations;
     public Mandelbrot.IterationsRate iterations_rate;
-    public int num_passes;
     public Mandelbrot.RenderMode render_mode;
+    public int num_passes;
     public Mandelbrot.CalculationMethod calculation_method;
 
     public void reset() {

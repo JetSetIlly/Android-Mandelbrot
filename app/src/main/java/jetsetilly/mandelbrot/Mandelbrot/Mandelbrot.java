@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Trace;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -11,6 +12,7 @@ import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
 import jetsetilly.tools.LogTools;
+import jetsetilly.tools.SimpleRunOnUI;
 
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
@@ -23,7 +25,7 @@ public class Mandelbrot {
     public enum IterationsRate {SLOW, NORMAL, FAST}
     private int[] IterationsRateValues = {50, 40, 30};
 
-    private final Context context;
+    private final AppCompatActivity context;
     protected final MandelbrotCanvas canvas;
     private final TextView fractal_info;
 
@@ -53,7 +55,7 @@ public class Mandelbrot {
     // is this render a rescaling render - we use this so that progress view is shown immediately
     boolean rescaling_render;
 
-    public Mandelbrot(Context context, MandelbrotCanvas canvas, TextView fractal_info) {
+    public Mandelbrot(AppCompatActivity context, MandelbrotCanvas canvas, TextView fractal_info) {
         this.context = context;
         this.canvas = canvas;
         this.fractal_info = fractal_info;
@@ -179,7 +181,14 @@ public class Mandelbrot {
         }
 
         // display mandelbrot info
-        fractal_info.setText(this.toString());
+        final String info = this.toString();
+        SimpleRunOnUI.run(context, new Runnable() {
+                    @Override
+                    public void run() {
+                        fractal_info.setText(info);
+                    }
+                }
+        );
     }
 
     public void startRender() {

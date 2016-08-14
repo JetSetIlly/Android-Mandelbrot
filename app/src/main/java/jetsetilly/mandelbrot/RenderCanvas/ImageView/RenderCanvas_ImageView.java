@@ -14,6 +14,8 @@ import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
+import java.util.concurrent.Semaphore;
+
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
@@ -64,6 +66,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // buffer implementation
     private Buffer buffer;
+    private Semaphore buffer_latch = new Semaphore(1);
 
     // the iterations array that was last sent to plotIterations()
     // we use this to quickly redraw a render with different colours
@@ -113,6 +116,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // if null then no animation is running. otherwise, animation IS running
     private Runnable showBitmap_anim_cancel = null;
 
+    // latch preventing a second showBitmap animation starting before a previous one has completed
+    private Semaphore showBitmap_anim_latch = new Semaphore(1);
+
+    // whether to wait for showBitmap animation to finish before calling gestures.unblock()
+    private final boolean UNBLOCK_ON_SHOWBITMAP_ANIM_COMPLETE = false;
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -225,6 +233,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** MandelbrotCanvas implementation ***/
     @WorkerThread
     public void startDraw(long canvas_id) {
+        try {
+            buffer_latch.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
             LogTools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
@@ -269,7 +283,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     @UiThread
     public void update(long canvas_id) {
         if (this_canvas_id != canvas_id || buffer == null) return;
-
         buffer.update();
     }
 
@@ -292,6 +305,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         setBackgroundColor(background_colour);
                         completed_render = !cancelled;
                         this_canvas_id = NO_CANVAS_ID;
+                        buffer_latch.release();
                     }
                 }, true);
     }
@@ -390,7 +404,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender() {
-        if (showBitmap_anim_cancel != null) {
+        stopRender(true);
+    }
+
+    public void stopRender(boolean stop_animations) {
+        if (stop_animations && showBitmap_anim_cancel != null) {
             showBitmap_anim_cancel.run();
         }
 
@@ -572,7 +590,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         } finally {
             Trace.endSection();
 
-            if (speed > 0) {
+            if (UNBLOCK_ON_SHOWBITMAP_ANIM_COMPLETE && speed > 0) {
                 final int delay_speed = speed;
                 SimpleRunOnUI.run(main_activity, new Runnable() {
                     @Override
@@ -588,7 +606,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     }
                 });
             } else {
-                gestures.unblock();
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        gestures.unblock();
+                    }
+                });
             }
         }
     }
@@ -674,14 +697,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 transition_type = def_transition_type;
                 transition_speed = def_transition_speed;
 
-                // prepare end runnable for animation
-                final Runnable transition_end_runnable = new Runnable() {
-                    @Override public void run() {
-                        showBitmap_anim_cancel = null;
-                        static_foreground.setVisibility(INVISIBLE);
-                    }
-                };
-
                 // prepare foreground. this is the image we transition from
                 SimpleRunOnUI.run(main_activity, new Runnable() {
                     @Override
@@ -704,6 +719,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 // set up animation based on type
                 final ViewPropertyAnimator transition_anim = static_foreground.animate();
 
+                // prepare end runnable for animation
+                final Runnable transition_end_runnable = new Runnable() {
+                    @Override public void run() {
+                        showBitmap_anim_cancel = null;
+                        static_foreground.setVisibility(INVISIBLE);
+                        static_foreground.setImageBitmap(null);
+                        showBitmap_anim_latch.release();
+                    }
+                };
+
                 // prepare showBitmap_anim_cancel - ran if we need to stop animation prematurely
                 showBitmap_anim_cancel = new Runnable() {
                     @Override
@@ -720,6 +745,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         transition_anim.withEndAction(transition_end_runnable);
                         transition_anim.setDuration(speed);
                         transition_anim.alpha(0.0f);
+
+                        try {
+                            showBitmap_anim_latch.acquire();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
                         transition_anim.start();
                     }
                 });

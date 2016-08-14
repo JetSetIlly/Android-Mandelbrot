@@ -33,13 +33,15 @@ public class BufferSimple extends Buffer {
 
     @Override
     void update() {
-        buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        // in this buffer implementation update() does nothing
+        // we don't actually show the bitmap until endDraw() is called
+        // so there's nothing meaningful to do
     }
 
     @UiThread
     @Override void endDraw(boolean cancelled) {
         if (!cancelled) {
-            update();
+            buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
             render_canvas.setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE);
             render_canvas.showBitmap(buffer_bitmap);
             render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
@@ -47,7 +49,6 @@ public class BufferSimple extends Buffer {
     }
 
     // any thread
-    @Override
     public void plotIterations(int iterations[]) {
         for (int i = 0; i < iterations.length; ++ i) {
             int iteration = iterations[i];

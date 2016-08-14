@@ -1,7 +1,6 @@
 package jetsetilly.mandelbrot.Gestures;
 
 import android.content.Context;
-import android.os.Vibrator;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
@@ -9,6 +8,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.R;
@@ -89,7 +89,6 @@ public class GestureOverlay extends ImageView implements
 
     public void unblock() {
         blocked = false;
-
         long delay_time = System.currentTimeMillis() - gesture_block_icon_visibility_time;
         if (delay_time > MIN_GESTURE_BLOCK_ICON_SHOW_DURATION) {
             gesture_block_icon.setVisibility(INVISIBLE);
@@ -97,7 +96,16 @@ public class GestureOverlay extends ImageView implements
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    gesture_block_icon.setVisibility(INVISIBLE);
+                    ViewPropertyAnimator anim = gesture_block_icon.animate();
+                    anim.alpha(0.0f);
+                    anim.withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            gesture_block_icon.setVisibility(INVISIBLE);
+                            gesture_block_icon.setAlpha(1.0f);
+                        }
+                    });
+                    anim.start();
                 }
             }, MIN_GESTURE_BLOCK_ICON_SHOW_DURATION - delay_time);
         }
@@ -105,22 +113,23 @@ public class GestureOverlay extends ImageView implements
 
     private boolean testBlock() {
         if (blocked) {
-            Vibrator vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-            long[] pattern = new long[]{
-                    0,10,0,10,0,10,0,10,0,10,0,
-                    0,10,0,10,0,10,0,10,0,10,0,
-                    0,10,0,10,0,10,0,10,0,10,0,
-                    0,10,0,10,0,10,0,10,0,10,0
-            };
-            vibrator.vibrate(pattern, -1);
-            gesture_block_icon.setVisibility(VISIBLE);
             gesture_block_icon_visibility_time = System.currentTimeMillis();
+            gesture_block_icon.setVisibility(VISIBLE);
             return true;
         }
         return false;
     }
 
     /* implementation of onGesturesListener */
+    @Override
+    public boolean onDown(MotionEvent event) {
+        // no need to call testBlock() with this as we're not going to affect
+        // the mandelbrot image, just the action bar
+        LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
+        gesture_handler.checkActionBar(event.getX(), event.getY());
+        return true;
+    }
+
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (testBlock()) return false;
@@ -138,7 +147,6 @@ public class GestureOverlay extends ImageView implements
         if (testBlock()) return false;
 
         LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY());
 
         return true;
     }
@@ -152,7 +160,6 @@ public class GestureOverlay extends ImageView implements
 
         // no offset when we're zooming out
 
-        gesture_handler.checkActionBar(event.getX(), event.getY());
         gesture_handler.autoZoom(0, 0, true);
     }
 
@@ -166,7 +173,6 @@ public class GestureOverlay extends ImageView implements
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
 
-        gesture_handler.checkActionBar(event.getX(), event.getY());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
 
         return true;
@@ -180,7 +186,6 @@ public class GestureOverlay extends ImageView implements
         if (testBlock()) return false;
 
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
-        gesture_handler.checkActionBar(detector.getFocusX(), detector.getFocusY());
         scaling_canvas = true;
         return true;
     }
@@ -208,14 +213,6 @@ public class GestureOverlay extends ImageView implements
 
 
     /* following methods are not used */
-    @Override
-    public boolean onDown(MotionEvent event) {
-        //if (testBlock()) return false;
-
-        LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
-        return true;
-    }
-
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         /* implementation of onGesturesListener */

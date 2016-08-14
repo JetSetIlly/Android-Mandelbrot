@@ -51,8 +51,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private ImageView static_foreground;
 
     // colour which is used to color the background - the actual colour, not the index
-    // into the current palette. consequently, in some instances a colour may be used that is not
-    // in the current palette definition.
+    // updated by Buffer implementations
     protected int background_colour;
 
     // special widget used to listen for gestures -- better than listening for gestures
@@ -101,10 +100,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // controls the transition between bitmaps when using this class's setBitmap() with
     // the transition flag set
-    public enum TransitionType {
-        NONE, CROSS_FADE
-    }
-
+    public enum TransitionType {NONE, CROSS_FADE}
     public enum TransitionSpeed {VFAST, FAST, NORMAL, SLOW, VSLOW}
 
     private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
@@ -114,10 +110,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
-    private Runnable showBitmap_anim_cancel = null;
+    private Runnable show_bitmap_anim_cancel = null;
 
     // latch preventing a second showBitmap animation starting before a previous one has completed
-    private Semaphore showBitmap_anim_latch = new Semaphore(1);
+    private Semaphore show_bitmap_anim_latch = new Semaphore(1);
 
     // whether to wait for showBitmap animation to finish before calling gestures.unblock()
     private final boolean UNBLOCK_ON_SHOWBITMAP_ANIM_COMPLETE = false;
@@ -408,8 +404,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender(boolean stop_animations) {
-        if (stop_animations && showBitmap_anim_cancel != null) {
-            showBitmap_anim_cancel.run();
+        if (stop_animations && show_bitmap_anim_cancel != null) {
+            show_bitmap_anim_cancel.run();
         }
 
         if (mandelbrot != null) {
@@ -722,15 +718,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 // prepare end runnable for animation
                 final Runnable transition_end_runnable = new Runnable() {
                     @Override public void run() {
-                        showBitmap_anim_cancel = null;
+                        show_bitmap_anim_cancel = null;
                         static_foreground.setVisibility(INVISIBLE);
                         static_foreground.setImageBitmap(null);
-                        showBitmap_anim_latch.release();
+                        show_bitmap_anim_latch.release();
                     }
                 };
 
-                // prepare showBitmap_anim_cancel - ran if we need to stop animation prematurely
-                showBitmap_anim_cancel = new Runnable() {
+                // prepare show_bitmap_anim_cancel - ran if we need to stop animation prematurely
+                show_bitmap_anim_cancel = new Runnable() {
                     @Override
                     public void run() {
                         Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
@@ -747,7 +743,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         transition_anim.alpha(0.0f);
 
                         try {
-                            showBitmap_anim_latch.acquire();
+                            show_bitmap_anim_latch.acquire();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

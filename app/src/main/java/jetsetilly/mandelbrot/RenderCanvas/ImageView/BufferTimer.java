@@ -19,8 +19,7 @@ public class BufferTimer extends Buffer {
     final static long PIXEL_THRESHOLD = 10000;
     final static long PIXEL_UPDATE_FREQ = 100; // in milliseconds; 100 == 10fps
 
-    private int[] palette_frequency;
-    private int most_frequent_palette_entry;
+    private int[] palette_frequencies;
 
     Timer pixel_scheduler = new Timer();
     TimerTask pixel_scheduler_task = new TimerTask() {
@@ -36,7 +35,7 @@ public class BufferTimer extends Buffer {
     public BufferTimer(RenderCanvas_ImageView canvas) {
         super(canvas);
         pixels = new int[height * width];
-        palette_frequency = new int[palette_settings.numColors() + 1];
+        palette_frequencies = new int[palette_settings.numColors() + 1];
     }
 
     @Override
@@ -50,13 +49,13 @@ public class BufferTimer extends Buffer {
     @Override
     public void update() {
         render_canvas.invalidate();
-        render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
     }
 
     @Override
     public void endDraw(boolean cancelled) {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        render_canvas.background.mostFrequent(palette_frequencies);
         update();
     }
 
@@ -80,10 +79,7 @@ public class BufferTimer extends Buffer {
         // we don't want to consider colours[0] for the colour_cnt_highest
         // it's the zero space color it's not really a color
         if (palette_entry > 0) {
-            palette_frequency[palette_entry]++;
-            if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
-                most_frequent_palette_entry = palette_entry;
-            }
+            palette_frequencies[palette_entry]++;
         }
 
         pixel_ct ++;

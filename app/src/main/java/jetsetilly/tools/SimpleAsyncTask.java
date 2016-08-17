@@ -40,7 +40,7 @@ public class SimpleAsyncTask {
         @Override
         @WorkerThread
         protected Void doInBackground(Void... v) {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
             background_runnable.run();
             return null;
         }

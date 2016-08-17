@@ -8,6 +8,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
+import java.util.concurrent.Semaphore;
+
 public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 

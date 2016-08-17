@@ -5,7 +5,7 @@ import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 
 import jetsetilly.mandelbrot.MainActivity;
-import jetsetilly.mandelbrot.ScriptC_iterations;
+import jetsetilly.mandelbrot.ScriptC_mandelbrot;
 
 public class MandelbrotThread_renderscript extends MandelbrotThread {
     final static public String DBG_TAG = "mandelbrot thread (renderscript)";
@@ -13,6 +13,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
     public MandelbrotThread_renderscript(Mandelbrot context) {
         super(context);
     }
+    private ScriptC_mandelbrot script;
 
     @Override
     @WorkerThread
@@ -25,7 +26,8 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         Allocation allocation_iterations = Allocation.createSized(MainActivity.render_script,
                 Element.I32(MainActivity.render_script), canvas_height * canvas_width,
                 Allocation.USAGE_SCRIPT);
-        ScriptC_iterations script = new ScriptC_iterations(MainActivity.render_script);
+
+        script = new ScriptC_mandelbrot(MainActivity.render_script);
 
         // set variables/arguments for this render
         script.set_canvas_height(canvas_height);
@@ -42,6 +44,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         script.set_render_right(m.render_area.right);
         script.set_render_top(m.render_area.top);
         script.set_render_bottom(m.render_area.bottom);
+        script.set_cancel_flag(false);
 
         // launch script
         script.forEach_pixel(allocation_iterations);

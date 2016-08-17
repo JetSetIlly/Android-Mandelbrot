@@ -11,23 +11,20 @@ public class BufferSimple extends Buffer {
 
     private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
-    private Bitmap buffer_bitmap;
     private int[] pixels;
 
-    private int[] palette_frequency;
-    private int most_frequent_palette_entry;
+    private int[] palette_frequencies;
     private int num_colours;
 
     public BufferSimple(RenderCanvas_ImageView canvas) {
         super(canvas);
         pixels = new int[height * width];
         num_colours = palette_settings.numColors();
-        palette_frequency = new int[num_colours + 1];
+        palette_frequencies = new int[num_colours + 1];
     }
 
     @Override
     void startDraw(Bitmap bitmap) {
-        this.buffer_bitmap = bitmap.copy(bitmap.getConfig(), true);
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     }
 
@@ -41,10 +38,9 @@ public class BufferSimple extends Buffer {
     @UiThread
     @Override void endDraw(boolean cancelled) {
         if (!cancelled) {
-            buffer_bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
             render_canvas.setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE);
-            render_canvas.showBitmap(buffer_bitmap);
-            render_canvas.background_colour = palette_settings.colours[most_frequent_palette_entry];
+            render_canvas.setDisplay(pixels);
+            render_canvas.background.mostFrequent(palette_frequencies);
         }
     }
 
@@ -66,10 +62,7 @@ public class BufferSimple extends Buffer {
                 // we don't want to consider colours[0] for the colour_cnt_highest
                 // it's the zero space color it's not really a color
                 if (palette_entry > 0) {
-                    palette_frequency[palette_entry]++;
-                    if (palette_frequency[palette_entry] > palette_frequency[most_frequent_palette_entry]) {
-                        most_frequent_palette_entry = palette_entry;
-                    }
+                    palette_frequencies[palette_entry]++;
                 }
             }
         }

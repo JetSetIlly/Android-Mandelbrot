@@ -104,11 +104,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // render script instance -- alive for the entire lifespan of the app
+        render_script = RenderScript.create(context, RenderScript.ContextType.DEBUG);
+
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
-
-        // render script instance -- alive for the entire lifespan of the app
-        render_script = RenderScript.create(this, RenderScript.ContextType.NORMAL);
 
         // create new DialogReceiver
         dialog_receiver = new DialogReceiver();

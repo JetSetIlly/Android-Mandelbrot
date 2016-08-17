@@ -1,6 +1,5 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
-import android.content.Context;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Trace;

@@ -5,7 +5,7 @@
 //#pragma rs_fp_relaxed
 //#pragma rs_fp_imprecise
 
-static const char * DBG_TAG = "iteration.rs";
+static const char * DBG_TAG = "mandelbrot.rs";
 
 int canvas_height, canvas_width;
 int max_iterations;
@@ -17,6 +17,8 @@ double pixel_scale;
 
 int render_left, render_right;
 int render_top, render_bottom;
+
+bool cancel_flag;
 
 static int doIterations(double x, double y) {
     double U, V, A, B;

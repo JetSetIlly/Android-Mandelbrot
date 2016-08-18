@@ -2,7 +2,6 @@ package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
@@ -11,17 +10,28 @@ public class Background extends ImageView {
     protected int[] colours = new int[3];
     private PaletteSettings palette_settings = PaletteSettings.getInstance();
 
+    private RenderCanvas_ImageView render_canvas;
+    private Bitmap background_bm;
+
+    private int width;
+    private int height;
+
     /* initialisation */
-    public Background(Context context) {
+    public Background(RenderCanvas_ImageView render_canvas, Context context) {
         super(context);
+        this.render_canvas = render_canvas;
     }
 
-    public Background(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
+    protected void initialise() {
+        width = render_canvas.getWidth();
+        height = render_canvas.getHeight();
 
-    public Background(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        // needs to be run in the parent view's post() phase
+        setMinimumWidth(width);
+        setMinimumHeight(height);
+
+        background_bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        setImageBitmap(background_bm);
     }
     /* END OF initialisation */
 
@@ -30,7 +40,7 @@ public class Background extends ImageView {
         int max_freq = Integer.MAX_VALUE;
         for (int i = 0; i < colours.length; ++ i) {
             int x = 0;
-            for (int j = 0; j < frequencies.length; ++ j) {
+            for (int j = 1; j < frequencies.length; ++ j) {
                 if (frequencies[j] > frequencies[x] && frequencies[j] < max_freq) {
                     x = j;
                 }
@@ -41,7 +51,8 @@ public class Background extends ImageView {
     }
 
     protected void setBackground() {
-        setBackgroundColor(colours[0]);
+        background_bm.eraseColor(colours[0]);
+        invalidate();
     }
 
     protected void resetBackground() {
@@ -52,8 +63,6 @@ public class Background extends ImageView {
     }
 
     protected Bitmap cloneBackground() {
-        Bitmap cloned_bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        cloned_bitmap.eraseColor(colours[0]);
-        return cloned_bitmap;
+        return Bitmap.createBitmap(background_bm);
     }
 }

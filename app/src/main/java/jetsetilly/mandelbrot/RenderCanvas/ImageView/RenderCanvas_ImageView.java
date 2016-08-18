@@ -18,6 +18,7 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
+import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -140,20 +141,17 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // create the views used for rendering
         display_canvas = new ImageView(main_activity);
-        background = new Background(main_activity);
+        background = new Background(this, main_activity);
         foreground = new ImageView(main_activity);
+
+        // add the views in order - from back to front
+        addView(background);
+        addView(display_canvas);
+        addView(foreground);
 
         post(new Runnable() {
             @Override
             public void run() {
-                // add the views in order - from back to front
-                addView(background);
-                addView(display_canvas);
-                addView(foreground);
-
-                background.setMinimumWidth(getWidth());
-                background.setMinimumHeight(getHeight());
-
                 // set scale type of fractal canvas to reckon from the centre of the view
                 display_canvas.setScaleType(ImageView.ScaleType.CENTER);
 
@@ -162,6 +160,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 display_canvas.setLayerType(LAYER_TYPE_HARDWARE, null);
                 foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
                 background.setLayerType(LAYER_TYPE_HARDWARE, null);
+
+                // set up background
+                background.initialise();
 
                 // create foreground bitmap
                 foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
@@ -440,18 +441,40 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // stop render to avoid smearing
         stopRender();
 
+        int half_canvas_width = canvas_width / 2;
+        int half_canvas_height = canvas_height / 2;
+
         // correct offset values
         if (!zoom_out) {
-            offset_x -= (canvas_width / 2);
-            offset_y -= (canvas_height / 2);
+            offset_x -= half_canvas_width;
+            offset_y -= half_canvas_height;
         }
 
         // transform offsets by current scroll/image_scale state
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
-        offset_x -= getX();
-        offset_y -= getY();
-        offset_x /= old_image_scale;
-        offset_y /= old_image_scale;
+
+        if (getX() == 0 && getY() == 0 && old_image_scale == 1.0f) {
+            // restrict offset_x and offset_y so that the zoomed image doesn't show
+            // the background image
+            if (offset_x > half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
+                offset_x = half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale);
+            } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
+                offset_x = - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale);
+            }
+
+            if (offset_y > half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
+                offset_y = half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale);
+            } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
+                offset_y = - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale);
+            }
+        } else {
+            // this code path shouldn't ever be used
+            LogTools.printWTF(DBG_TAG, "auto-zoom after scroll/manual zoom (?)");
+            offset_x -= getX();
+            offset_y -= getY();
+            offset_x /= old_image_scale;
+            offset_y /= old_image_scale;
+        }
 
         // get new image_scale value - old_image_scale will be 1 if this is the first scale in the sequence
         float image_scale;
@@ -652,6 +675,107 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_pnt);
 
         return scaled_bm;
+    }
+
+    protected int _setDisplay(final int pixels[]) {
+        try {
+            if (transition_type == TransitionType.CROSS_FADE) {
+                // get speed of animation (we'll actually set the speed later)
+                final int speed = getTransitionSpeed();
+
+                // prepare foreground. this is the image we transition from
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        int pixels[] = new int[canvas_width * canvas_height];
+                        display_bm.getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                        foreground_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                        foreground.setVisibility(VISIBLE);
+                        foreground.setAlpha(1.0f);
+                    }
+                });
+
+                // prepare final image. the image we transition to
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        normaliseCanvas();
+                        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                    }
+                });
+
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        foreground.setVisibility(VISIBLE);
+                        foreground.setAlpha(1.0f);
+                    }
+                });
+
+                // prepare final image. the image we transition to
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        normaliseCanvas();
+                        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                    }
+                });
+
+                // set up animation based on type
+                final ViewPropertyAnimator transition_anim = foreground.animate();
+
+                // prepare end runnable for animation
+                final Runnable transition_end_runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        set_display_anim_cancel = null;
+                        foreground.setVisibility(INVISIBLE);
+                        set_display_latch.release();
+                    }
+                };
+
+                // prepare set_display_anim_cancel - ran if we need to stop animation prematurely
+                set_display_anim_cancel = new Runnable() {
+                    @Override
+                    public void run() {
+                        transition_anim.cancel();
+                        transition_end_runnable.run();
+                    }
+                };
+
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            set_display_latch.acquire();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        transition_anim.withEndAction(transition_end_runnable);
+                        transition_anim.setDuration(speed);
+                        transition_anim.alpha(0.0f);
+                        transition_anim.start();
+                    }
+                });
+
+                return speed;
+            } else {
+                SimpleRunOnUI.run(main_activity, new Runnable() {
+                    @Override
+                    public void run() {
+                        normaliseCanvas();
+                        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                        set_display_latch.release();
+                    }
+                });
+
+                return 0;
+            }
+        } finally {
+            // reset transition type/speed - until next call to changeNextTransition()
+            transition_type = def_transition_type;
+            transition_speed = def_transition_speed;
+        }
     }
 
     protected int setDisplay(final int pixels[]) {

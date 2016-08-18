@@ -173,7 +173,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 gesture_settings.double_tap_scale = double_tap.getFloat();
                 mandelbrot_settings.num_passes = num_passes.getInteger();
-                mandelbrot_settings.iterations_rate = Mandelbrot.IterationsRate.values()[iterations_rate.getProgress()];
+                mandelbrot_settings.iterations_rate = iterations_rate.getProgress();
 
                 // changes to these settings DO have an effect on final render image
                 if (iterations.hasChanged() || bailout.hasChanged()) {

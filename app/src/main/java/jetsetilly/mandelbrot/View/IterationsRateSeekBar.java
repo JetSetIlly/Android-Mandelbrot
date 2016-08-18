@@ -21,16 +21,16 @@ public class IterationsRateSeekBar extends ReportingSeekBar {
     }
 
     public void reset() {
-        set(mandelbrot_settings.iterations_rate.ordinal(), 0, Mandelbrot.IterationsRate.values().length-1);
+        set(mandelbrot_settings.iterations_rate, 0, Mandelbrot.IterationsRate.COUNT-1);
     }
 
     @Override
     public String translateValue(Object value) {
-        if (value == Mandelbrot.IterationsRate.FAST.ordinal())
+        if (value == Mandelbrot.IterationsRate.FAST)
             return getResources().getString(R.string.settings_iterations_rate_fast);
-        else if (value == Mandelbrot.IterationsRate.NORMAL.ordinal())
+        else if (value == Mandelbrot.IterationsRate.NORMAL)
             return getResources().getString(R.string.settings_iterations_rate_normal);
-        else if (value == Mandelbrot.IterationsRate.SLOW.ordinal())
+        else if (value == Mandelbrot.IterationsRate.SLOW)
             return getResources().getString(R.string.settings_iterations_rate_slow);
 
         return getResources().getString(R.string.error_ui_alert);

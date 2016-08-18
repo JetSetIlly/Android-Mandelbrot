@@ -3,9 +3,9 @@ package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.support.annotation.IntDef;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
@@ -21,7 +21,6 @@ import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleRunOnUI;
@@ -95,13 +94,25 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // controls the transition between bitmaps when using this class's setDisplay()
     // with the transition flag set
-    public enum TransitionType {NONE, CROSS_FADE}
-    public enum TransitionSpeed {VFAST, FAST, NORMAL, SLOW, VSLOW}
+    @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
+    @interface TransitionType {
+        int NONE = 0;
+        int CROSS_FADE = 1;
+    }
 
-    private final TransitionType def_transition_type = TransitionType.CROSS_FADE;
-    private final TransitionSpeed def_transition_speed = TransitionSpeed.NORMAL;
-    private TransitionType transition_type = def_transition_type;
-    private TransitionSpeed transition_speed = def_transition_speed;
+    @IntDef({TransitionSpeed.VFAST, TransitionSpeed.FAST, TransitionSpeed.NORMAL, TransitionSpeed.SLOW, TransitionSpeed.VSLOW})
+    @interface TransitionSpeed {
+        int VFAST = 0;
+        int FAST = 1;
+        int NORMAL = 2;
+        int SLOW = 3;
+        int VSLOW = 4;
+    }
+
+    private final @TransitionType  int def_transition_type = TransitionType.CROSS_FADE;
+    private final @TransitionSpeed int def_transition_speed = TransitionSpeed.NORMAL;
+    private @TransitionType int transition_type = def_transition_type;
+    private @TransitionSpeed int transition_speed = def_transition_speed;
 
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
@@ -127,21 +138,21 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void initialise(final MainActivity main_activity) {
         this.main_activity = main_activity;
 
+        // create the views used for rendering
+        display_canvas = new ImageView(main_activity);
+        background = new Background(main_activity);
+        foreground = new ImageView(main_activity);
+
         post(new Runnable() {
             @Override
             public void run() {
-                // create the views used for rendering
-                display_canvas = new ImageView(main_activity);
-                background = new Background(main_activity);
-                foreground = new ImageView(main_activity);
-
-                background.setMinimumWidth(getWidth());
-                background.setMinimumHeight(getHeight());
-
                 // add the views in order - from back to front
                 addView(background);
                 addView(display_canvas);
                 addView(foreground);
+
+                background.setMinimumWidth(getWidth());
+                background.setMinimumHeight(getHeight());
 
                 // set scale type of fractal canvas to reckon from the centre of the view
                 display_canvas.setScaleType(ImageView.ScaleType.CENTER);
@@ -309,11 +320,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = false;
     }
 
-    public void setNextTransition(TransitionType type) {
+    public void setNextTransition(@TransitionType int type) {
         setNextTransition(type, def_transition_speed);
     }
 
-    public void setNextTransition(TransitionType type, TransitionSpeed speed) {
+    public void setNextTransition(@TransitionType int type, @TransitionSpeed int speed) {
         transition_type = type;
         transition_speed = speed;
     }
@@ -399,7 +410,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** GestureHandler implementation ***/
     @Override // View
     public void scroll(int x, int y) {
-        stopRender(false);
+        stopRender();
 
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
         x /= image_scale;
@@ -612,6 +623,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
 
         // do zoom
+        /*
+        scaled_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
+
+        // in case the source image has been offset (we won't check for it, it's not worth it) we
+        // fill the final bitmap with a colour wash of mostFrequentColor(). if we don't then animating
+        // reveals with showBitmap() may not work as expected
+        scaled_bm.eraseColor(background.colours[0]);
+        */
 
         // use background image as the base for our scaled image
         scaled_bm = background.cloneBackground();
@@ -636,12 +655,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     protected int setDisplay(final int pixels[]) {
-        try {
-            set_display_latch.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         try {
             if (transition_type == TransitionType.CROSS_FADE) {
                 // get speed of animation (we'll actually set the speed later)
@@ -710,6 +723,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 SimpleRunOnUI.run(main_activity, new Runnable() {
                     @Override
                     public void run() {
+                        try {
+                            set_display_latch.acquire();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         transition_anim.withEndAction(transition_end_runnable);
                         transition_anim.setDuration(speed);
                         transition_anim.alpha(0.0f);
@@ -741,20 +759,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // get speed of animation (we'll actually set the speed later)
         final int speed;
         switch (transition_speed) {
-            case VFAST:
+            case TransitionSpeed.VFAST:
                 speed = getResources().getInteger(R.integer.transition_duration_vfast);
                 break;
-            case FAST:
+            case TransitionSpeed.FAST:
                 speed = getResources().getInteger(R.integer.transition_duration_fast);
                 break;
-            case SLOW:
+            case TransitionSpeed.SLOW:
                 speed = getResources().getInteger(R.integer.transition_duration_slow);
                 break;
-            case VSLOW:
+            case TransitionSpeed.VSLOW:
                 speed = getResources().getInteger(R.integer.transition_duration_vslow);
                 break;
             default:
-            case NORMAL:
+            case TransitionSpeed.NORMAL:
                 speed = getResources().getInteger(R.integer.transition_duration_slow);
                 break;
         }

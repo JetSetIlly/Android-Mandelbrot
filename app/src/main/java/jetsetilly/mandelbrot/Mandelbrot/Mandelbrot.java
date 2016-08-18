@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Trace;
+import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
@@ -18,11 +19,28 @@ public class Mandelbrot {
 
     public static final int NULL_ITERATIONS = -1;
 
-    public enum CalculationMethod {NATIVE, BIG_DECIMAL}
+    public @IntDef({CalculationMethod.NATIVE, CalculationMethod.BIG_DECIMAL})
+    @interface CalculationMethod {
+        int NATIVE = 0;
+        int BIG_DECIMAL = 1;
+    }
 
-    public enum RenderMode {HARDWARE, SOFTWARE_TOP_DOWN, SOFTWARE_CENTRE, SOFTWARE_SIMPLEST}
-    public enum IterationsRate {SLOW, NORMAL, FAST}
-    private int[] IterationsRateValues = {50, 40, 30};
+    public @IntDef({RenderMode.HARDWARE, RenderMode.SOFTWARE_TOP_DOWN, RenderMode.SOFTWARE_CENTRE, RenderMode.SOFTWARE_SIMPLEST})
+    @interface RenderMode {
+        int HARDWARE = 0;
+        int SOFTWARE_TOP_DOWN =1;
+        int SOFTWARE_CENTRE = 2;
+        int SOFTWARE_SIMPLEST = 3;
+    }
+
+    public @IntDef({IterationsRate.SLOW, IterationsRate.NORMAL, IterationsRate.FAST})
+    @interface IterationsRate {
+        int SLOW = 0;
+        int NORMAL = 1;
+        int FAST =2;
+        int COUNT =3;
+    }
+    public int[] IterationsRateValues = {50, 40, 30};
 
     private final AppCompatActivity context;
     protected final MandelbrotCanvas canvas;
@@ -122,7 +140,7 @@ public class Mandelbrot {
             mandelbrot_settings.imaginary_upper -= fractal_scale * fractal_height;
             mandelbrot_settings.imaginary_lower += fractal_scale * fractal_height;
 
-            double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate.ordinal()];
+            double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate];
             if (image_scale > 1)
                 // scale up
                 mandelbrot_settings.max_iterations = mandelbrot_settings.max_iterations + (int) (mandelbrot_settings.max_iterations * image_scale / iterations_rate);

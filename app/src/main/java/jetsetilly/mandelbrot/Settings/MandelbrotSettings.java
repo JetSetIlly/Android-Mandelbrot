@@ -15,10 +15,10 @@ public class MandelbrotSettings {
     public double imaginary_lower;
     public double bailout_value;
     public int max_iterations;
-    public Mandelbrot.IterationsRate iterations_rate;
-    public Mandelbrot.RenderMode render_mode;
+    public int iterations_rate;     // @Mandelbrot.IterationsRate
+    public int render_mode;         // @Mandelbrot.RenderMode
     public int num_passes;
-    public Mandelbrot.CalculationMethod calculation_method;
+    public int calculation_method;  // @Mandelbrot.CalculationMethod
 
     public void reset() {
         real_left = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left;
@@ -42,10 +42,10 @@ public class MandelbrotSettings {
         putDouble(prefs_editor, "imaginary_lower", imaginary_lower);
         putDouble(prefs_editor, "bailout_value", bailout_value);
         prefs_editor.putInt("max_iterations", max_iterations);
-        prefs_editor.putInt("iterations_rate", iterations_rate.ordinal());
-        prefs_editor.putInt("render_mode", render_mode.ordinal());
+        prefs_editor.putInt("iterations_rate", iterations_rate);
+        prefs_editor.putInt("render_mode", render_mode);
         prefs_editor.putInt("num_passes", num_passes);
-        prefs_editor.putInt("calculation_method", calculation_method.ordinal());
+        prefs_editor.putInt("calculation_method", calculation_method);
 
         // Commit the edits!
         prefs_editor.apply();
@@ -61,10 +61,10 @@ public class MandelbrotSettings {
         imaginary_lower = getDouble(prefs, "imaginary_lower", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_lower);
         bailout_value = getDouble(prefs, "bailout_value", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].bailout_value);
         max_iterations = prefs.getInt("max_iterations", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].max_iterations);
-        iterations_rate = Mandelbrot.IterationsRate.values()[prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL.ordinal())];
-        render_mode = Mandelbrot.RenderMode.values()[prefs.getInt("render_mode", Mandelbrot.RenderMode.SOFTWARE_CENTRE.ordinal())];
+        iterations_rate = prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL);
+        render_mode = prefs.getInt("render_mode", Mandelbrot.RenderMode.SOFTWARE_CENTRE);
         num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
-        calculation_method = Mandelbrot.CalculationMethod.values()[prefs.getInt("calculation_method", Mandelbrot.CalculationMethod.NATIVE.ordinal())];
+        calculation_method = prefs.getInt("calculation_method", Mandelbrot.CalculationMethod.NATIVE);
     }
 
     /* double width float support for SharedPreferences */

@@ -3,7 +3,6 @@ package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -20,7 +19,6 @@ import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
-import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -82,6 +80,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
     private double fractal_scale;
 
+    // the amount of scaling since the last rendered image
+    private double cumulative_image_scale = 1.0f;
+
     // hack solution to the problem of pinch zooming after a image move (which includes animated
     // zoom). i think that the problem has something to do with pivot points but i couldn't
     // figure it out properly. it's such a fringe case however that this hack seems reasonable.
@@ -91,7 +92,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // completed render is true if last render was finished to completion. set to true
     // if render was interrupted prematurely (call to cancelDraw())
-    private boolean completed_render;
+    private boolean complete_render;
 
     // controls the transition between bitmaps when using this class's setDisplay()
     // with the transition flag set
@@ -118,10 +119,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // runnable that handles cancelling of transition anim
     // if null then no animation is running. otherwise, animation IS running
     private Runnable set_display_anim_cancel = null;
-
-    // latch preventing a second call to showBitmap() starting before a previous one has completed
-    private Semaphore set_display_latch = new Semaphore(1);
-
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -222,10 +219,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         if (this_canvas_id != canvas_id && this_canvas_id != NO_CANVAS_ID) {
-            LogTools.printDebug(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
+            // this shouldn't happen because of the buffer latch
+            LogTools.printWTF(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
 
         this_canvas_id = canvas_id;
+
+        complete_render = false;
 
         if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE ||
                 MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.SOFTWARE_SIMPLEST) {
@@ -235,7 +235,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         buffer.startDraw(display_bm);
-        completed_render = false;
     }
 
     @WorkerThread
@@ -285,10 +284,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         setBackgroundColor(background_color);
-                        completed_render = !cancelled;
+                        complete_render = !cancelled;
                         this_canvas_id = NO_CANVAS_ID;
                         buffer_latch.release();
-                        gestures.unblock();
+
+                        unblockGestures();
                     }
                 }, true);
     }
@@ -305,10 +305,28 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // any thread
     public boolean isCompleteRender() {
-        return completed_render;
+        return complete_render;
     }
     /*** END OF MandelbrotCanvas implementation ***/
 
+    /*** wrappers for gestures block()/unblock() ***/
+    // allows us to add some additional logic
+    private void blockGestures() {
+        gestures.block();
+    }
+
+    private void unblockGestures() {
+        if (isCompleteRender()) {
+            cumulative_image_scale = 1.0f;
+        }
+
+        LogTools.printDebug(DBG_TAG, "cumulative image scale: " + cumulative_image_scale);
+
+        if (cumulative_image_scale < 27.0) {
+            gestures.unblock();
+        }
+    }
+    /*** END OF wrappers for gestures block/unblock() ***/
 
     private void normaliseCanvas(){
         display_canvas.setScaleX(1f);
@@ -377,7 +395,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender() {
-        stopRender(true);
+        stopRender(false);
     }
 
     public void stopRender(boolean stop_animations) {
@@ -425,7 +443,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // and unblock() in the animation's endAction
         // this also has the effect of delaying the call to startRender() until
         // after the animation has finished
-        gestures.block();
+        blockGestures();
 
         // stop render to avoid smearing
         stopRender();
@@ -475,13 +493,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             image_scale = old_image_scale * gesture_settings.double_tap_scale;
         }
 
+        // update cumulative image scale
+        cumulative_image_scale *= image_scale;
+
         // set zoom_factor and offsets ready for the new render
         fractal_scale = Transforms.fractalScaleFromImageScale(image_scale);
         rendered_offset_x = offset_x;
         rendered_offset_y = offset_y;
 
         // do animation
-        ViewPropertyAnimator anim = this.display_canvas.animate();
+        final ViewPropertyAnimator anim = this.display_canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * image_scale);
         anim.y(-offset_y * image_scale);
@@ -498,7 +519,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
-                // gestures.block() was called at the head of the autoZoom() method
+                // blockGestures() was called at the head of the autoZoom() method
                 // the unblock() method will be called at conclusion of fixateVisibleImage()
                 // which is called by the following call to startRender()
                 startRender();
@@ -515,8 +536,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (amount == 0)
             return;
 
-        completed_render = false;
-
         if (scrolled_since_last_normalise) {
             fixateVisibleImage();
         }
@@ -527,13 +546,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // calculate fractal_scale
         fractal_scale += amount / Math.hypot(canvas_width, canvas_height);
 
-        LogTools.printDebug(DBG_TAG, "fractal scale: "+fractal_scale);
-
         // limit fractal_scale between max in/out ranges
         fractal_scale = Math.max(gesture_settings.max_pinch_zoom_out,
                 Math.min(gesture_settings.max_pinch_zoom_in, fractal_scale));
 
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
+
+        // update cumulative image scale
+        cumulative_image_scale *= image_scale;
 
         this.display_canvas.setScaleX(image_scale);
         this.display_canvas.setScaleY(image_scale);
@@ -546,13 +566,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return;
         }
 
-        completed_render = false;
         fixateVisibleImage();
     }
     /*** END OF GestureHandler implementation ***/
 
     private void fixateVisibleImage() {
-        gestures.block();
+        blockGestures();
 
         int pixels[] = new int[canvas_width * canvas_height];
         getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
@@ -560,7 +579,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setNextTransition(TransitionType.NONE);
         setDisplay(pixels);
 
-        gestures.unblock();
+        unblockGestures();
     }
 
     public Bitmap getVisibleImage(boolean bilinear_filter) {
@@ -626,37 +645,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     }
                 });
 
-                SimpleRunOnUI.run(main_activity, new Runnable() {
-                    @Override
-                    public void run() {
-                        foreground.setVisibility(VISIBLE);
-                        foreground.setAlpha(1.0f);
-                    }
-                });
+                // do animation
 
-                // prepare final image. the image we transition to
-                SimpleRunOnUI.run(main_activity, new Runnable() {
-                    @Override
-                    public void run() {
-                        normaliseCanvas();
-                        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-                    }
-                });
-
-                // set up animation based on type
                 final ViewPropertyAnimator transition_anim = foreground.animate();
 
-                // prepare end runnable for animation
                 final Runnable transition_end_runnable = new Runnable() {
                     @Override
                     public void run() {
                         set_display_anim_cancel = null;
                         foreground.setVisibility(INVISIBLE);
-                        set_display_latch.release();
                     }
                 };
 
-                // prepare set_display_anim_cancel - ran if we need to stop animation prematurely
                 set_display_anim_cancel = new Runnable() {
                     @Override
                     public void run() {
@@ -668,11 +668,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 SimpleRunOnUI.run(main_activity, new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            set_display_latch.acquire();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                         transition_anim.withEndAction(transition_end_runnable);
                         transition_anim.setDuration(speed);
                         transition_anim.alpha(0.0f);

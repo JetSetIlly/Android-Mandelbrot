@@ -33,14 +33,14 @@ public class SimpleAsyncTask {
         this.cancelled_runnable = cancelled_runnable;
 
         Task task = new Task();
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private class Task extends AsyncTask<Void, Void, Void> {
         @Override
         @WorkerThread
         protected Void doInBackground(Void... v) {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             background_runnable.run();
             return null;
         }

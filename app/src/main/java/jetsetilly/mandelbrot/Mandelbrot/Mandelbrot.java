@@ -220,7 +220,7 @@ public class Mandelbrot {
                 render_thr = new MandelbrotThread_dalvik(this);
             }
 
-            render_thr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            render_thr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         } finally {
             Trace.endSection();
         }

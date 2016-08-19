@@ -494,6 +494,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         // update cumulative image scale
+        complete_render = false;
         cumulative_image_scale *= image_scale;
 
         // set zoom_factor and offsets ready for the new render
@@ -553,6 +554,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
 
         // update cumulative image scale
+        complete_render = false;
         cumulative_image_scale *= image_scale;
 
         this.display_canvas.setScaleX(image_scale);

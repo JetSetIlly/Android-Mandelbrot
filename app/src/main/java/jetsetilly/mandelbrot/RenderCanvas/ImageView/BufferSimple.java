@@ -40,7 +40,15 @@ public class BufferSimple extends Buffer {
         if (!cancelled) {
             render_canvas.setNextTransition(RenderCanvas_ImageView.TransitionType.CROSS_FADE);
             render_canvas.setDisplay(pixels);
-            render_canvas.background.mostFrequent(palette_frequencies);
+
+            // update the most frequent color so we can use it as the background colour
+            int most_frequent = 0;
+            for (int i = 0; i < palette_frequencies.length; ++ i) {
+                if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
+                    most_frequent = i;
+                }
+            }
+            render_canvas.background_color = palette_settings.colours[most_frequent];
         }
     }
 

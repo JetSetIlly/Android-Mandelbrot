@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // render script instance -- alive for the entire lifespan of the app
-        render_script = RenderScript.create(context, RenderScript.ContextType.DEBUG);
+        render_script = RenderScript.create(context, RenderScript.ContextType.NORMAL);
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);

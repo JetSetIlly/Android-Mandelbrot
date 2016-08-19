@@ -31,12 +31,14 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         super(context, attrs, defStyleAttr);
     }
 
-    public void checkActionBar(float x, float y) {
+    public void checkActionBar(float x, float y, boolean allow_show) {
         // returns false if coordinates are in action bar, otherwise true
-       if (MainActivity.action_bar.inActionBar(y)) {
-           MainActivity.action_bar.setVisibility(false);
+       if (!MainActivity.action_bar.inActionBar(y)) {
+           MainActivity.action_bar.setVisibility(true);
         } else {
-            MainActivity.action_bar.setVisibility(true);
+           if (allow_show) {
+               MainActivity.action_bar.setVisibility(false);
+           }
         }
     }
 

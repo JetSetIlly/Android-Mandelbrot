@@ -123,10 +123,8 @@ public class GestureOverlay extends ImageView implements
     /* implementation of onGesturesListener */
     @Override
     public boolean onDown(MotionEvent event) {
-        // no need to call testBlock() with this as we're not going to affect
-        // the mandelbrot image, just the action bar
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY());
+        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
         return true;
     }
 
@@ -142,18 +140,7 @@ public class GestureOverlay extends ImageView implements
     }
 
     @Override
-    public boolean onSingleTapConfirmed(MotionEvent event) {
-        /* implementation of onDoubleTapListener interface */
-        if (testBlock()) return false;
-
-        LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
-
-        return true;
-    }
-
-    @Override
     public void onLongPress(MotionEvent event) {
-        /* implementation of onGesturesListener */
         if (testBlock()) return;
 
         LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
@@ -162,7 +149,6 @@ public class GestureOverlay extends ImageView implements
 
         gesture_handler.autoZoom(0, 0, true);
     }
-
     /* END OF implementation of onGesturesListener */
 
 
@@ -172,9 +158,14 @@ public class GestureOverlay extends ImageView implements
         if (testBlock()) return false;
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
-
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
+        return true;
+    }
 
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
+        LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
+        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
         return true;
     }
     /* END OF implementation of onDoubleTapListener interface */
@@ -212,12 +203,12 @@ public class GestureOverlay extends ImageView implements
     /* END OF implementation of OnScaleGesture interface */
 
 
-    /* following methods are not used */
+    /* UNUSED METHODS */
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         /* implementation of onGesturesListener */
-        //if (testBlock()) return false;
 
+        //if (testBlock()) return false;
         LogTools.printDebug(DBG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
     }
@@ -225,16 +216,16 @@ public class GestureOverlay extends ImageView implements
     @Override
     public void onShowPress(MotionEvent event) {
         /* implementation of onGesturesListener */
-        //if (testBlock()) return;
 
+        //if (testBlock()) return;
         LogTools.printDebug(DBG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
         /* implementation of onGesturesListener */
-        //if (testBlock()) return false;
 
+        //if (testBlock()) return false;
         LogTools.printDebug(DBG_TAG, "onSingleTapUp: " + event.toString());
         return true;
     }
@@ -242,10 +233,11 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onDoubleTapEvent(MotionEvent event) {
         /* implementation of onDoubleTapListener interface */
-        //if (testBlock()) return false;
 
+        //if (testBlock()) return false;
         LogTools.printDebug(DBG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 
+    /* END OF UNUSED METHODS */
 }

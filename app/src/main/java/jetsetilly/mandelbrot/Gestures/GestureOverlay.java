@@ -11,8 +11,10 @@ import android.view.View;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
+import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.tools.LogTools;
+import jetsetilly.tools.SimpleRunOnUI;
 
 public class GestureOverlay extends ImageView implements
         GestureDetector.OnGestureListener,
@@ -20,6 +22,8 @@ public class GestureOverlay extends ImageView implements
         ScaleGestureDetector.OnScaleGestureListener
 {
     private static final String DBG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
+
+    MainActivity context;
 
     private GestureHandler gesture_handler;
     private ImageView gesture_block_icon;
@@ -45,7 +49,8 @@ public class GestureOverlay extends ImageView implements
     }
 
     /* initialisation */
-    public void setup(Context context, final GestureHandler gesture_handler) {
+    public void setup(MainActivity context, final GestureHandler gesture_handler) {
+        this.context = context;
         this.gesture_handler = gesture_handler;
         this.blocked = false;
         this.scaling_canvas = false;
@@ -91,7 +96,12 @@ public class GestureOverlay extends ImageView implements
         blocked = false;
         long delay_time = System.currentTimeMillis() - gesture_block_icon_visibility_time;
         if (delay_time > MIN_GESTURE_BLOCK_ICON_SHOW_DURATION) {
-            gesture_block_icon.setVisibility(INVISIBLE);
+            SimpleRunOnUI.run(context, new Runnable() {
+                @Override
+                public void run() {
+                    gesture_block_icon.setVisibility(INVISIBLE);
+                }
+            });
         } else {
             postDelayed(new Runnable() {
                 @Override

@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
@@ -24,6 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
     public final static String INITIAL_ITERATIONS_VALUE = "INITIAL_ITERATIONS_VALUE";
     public static final Integer ACTIVITY_RESULT_NO_RENDER = 1;
     public static final Integer ACTIVITY_RESULT_RENDER = 2;
+    public static final Integer ACTIVITY_RESULTS_REINITIALISE = 3;
 
     private IterationsSeekBar iterations;
     private IterationsRateSeekBar iterations_rate;
@@ -31,6 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
     private ReportingSeekBar double_tap;
     private ReportingSeekBar num_passes;
     private RadioGroup render_mode;
+    private Switch deep_colour;
     private RadioGroup orientation;
 
     private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
@@ -57,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
         double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
+        deep_colour = (Switch) findViewById(R.id.deep_colour) ;
         orientation = (RadioGroup) findViewById(R.id.orientation);
 
         // get the max_iterations as passed by intent
@@ -125,6 +129,9 @@ public class SettingsActivity extends AppCompatActivity {
             render_mode.check(R.id.rendermode_simplest);
         }
 
+        // deep colour switch
+        deep_colour.setChecked(system_settings.deep_colour);
+
         // set screen orientation radio button
         if (system_settings.allow_screen_rotation) {
             orientation.check(R.id.orientation_sensor);
@@ -180,6 +187,12 @@ public class SettingsActivity extends AppCompatActivity {
                     mandelbrot_settings.max_iterations = iterations.getInteger();
                     mandelbrot_settings.bailout_value = bailout.getDouble();
                     setResult(ACTIVITY_RESULT_RENDER);
+                }
+
+                // changes to deep_colour setting require reinitialisation
+                if (system_settings.deep_colour != deep_colour.isChecked()) {
+                    system_settings.deep_colour = deep_colour.isChecked();
+                    setResult(ACTIVITY_RESULTS_REINITIALISE);
                 }
 
                 finish();

@@ -19,7 +19,7 @@ public class PaletteSwatch {
         int entry_width = swatch_size / swatch_dimensions[0];
         int entry_height = swatch_size / swatch_dimensions[1];
 
-        Bitmap bm = Bitmap.createBitmap(swatch_size, swatch_size, Bitmap.Config.ARGB_8888);
+        Bitmap bm = Bitmap.createBitmap(swatch_size, swatch_size, Bitmap.Config.RGB_565);
         Canvas cnv = new Canvas(bm);
         Paint pnt = new Paint();
 

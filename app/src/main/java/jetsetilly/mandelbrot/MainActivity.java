@@ -243,6 +243,11 @@ public class MainActivity extends AppCompatActivity {
                     applyOrientation();
                 }
 
+                if (result_code == SettingsActivity.ACTIVITY_RESULTS_REINITIALISE) {
+                    render_canvas.initialise(this);
+                    render_canvas.startRender();
+                }
+
                 if (result_code == SettingsActivity.ACTIVITY_RESULT_RENDER) {
                     render_canvas.startRender();
                 }

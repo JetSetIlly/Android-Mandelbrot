@@ -23,14 +23,26 @@ import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.GestureSettings;
 import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.SystemSettings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleRunOnUI;
+
+/*
+ * note that we prefer the reduced colour space bitmap = Bitmap.Config = RGB_565
+ * except for the offset bitmap in fixateVisibleImage(). it's a very short lived bitmap but...
+ * TODO: figure out if we can make this a 565 bitmap too
+ */
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
     MainActivity main_activity;
+
+    // bitmap config to use depending on SystemSettings.deep_colour. this is used everywhere
+    // except for the offset bitmap in fixateVisibleImage(). it's a very short lived bitmap but...
+    // TODO: figure out if we can make this a 565 bitmap too if deep_colour==false
+    Bitmap.Config bitmap_config;
 
     // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
     // which are only callable from the UIThread
@@ -137,6 +149,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void initialise(final MainActivity main_activity) {
         this.main_activity = main_activity;
 
+        if (SystemSettings.getInstance().deep_colour == true) {
+            bitmap_config = Bitmap.Config.ARGB_8888;
+        } else {
+            bitmap_config = Bitmap.Config.RGB_565;
+        }
+
         // create the views used for rendering
         display_canvas = new ImageView(main_activity);
         foreground = new ImageView(main_activity);
@@ -162,12 +180,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
 
                 // create display canvas
-                display_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
+                display_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
                 //display_bm.eraseColor(Color.TRANSPARENT);
                 display_canvas.setImageBitmap(display_bm);
 
                 // create foreground bitmap
-                foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
+                foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
                 foreground.setImageBitmap(foreground_bm);
 
                 invalidate();
@@ -244,13 +262,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         buffer.plotIterations(iterations);
 
-        // if the set of iterations is complete
-        // (ie. every iteration has resulted in a new pixel) then
-        // store iterations for future calls to reRender()
-        if (complete_plot) {
-            cached_iterations = iterations;
-        } else {
-            cached_iterations = null;
+        // use a little bit of extra memory if we're using software rendering
+        if (MandelbrotSettings.getInstance().render_mode != Mandelbrot.RenderMode.HARDWARE) {
+            // if the set of iterations is complete (ie. every iteration has resulted in a new pixel)
+            // then store iterations for future calls to reRender()
+            if (complete_plot) {
+                cached_iterations = iterations;
+            } else {
+                cached_iterations = null;
+            }
         }
     }
 
@@ -646,7 +666,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // do zoom
 
         // set background colour, otherwise faded reveals in setDisplay() won't work
-        scaled_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
+        scaled_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
         scaled_bm.eraseColor(background_color);
 
         new_left = (int) (fractal_scale * canvas_width);
@@ -656,10 +676,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         blit_to = new Rect(0, 0, canvas_width, canvas_height);
         blit_from = new Rect(new_left, new_top, new_right, new_bottom);
 
-        Paint scale_pnt = null;
+        Paint scale_pnt = new Paint();
+        scale_pnt.setDither(false);
         if (bilinear_filter) {
-            scale_pnt = new Paint();
             scale_pnt.setFilterBitmap(true);
+        } else {
+            scale_pnt.setFilterBitmap(false);
         }
 
         scale_canvas = new Canvas(scaled_bm);

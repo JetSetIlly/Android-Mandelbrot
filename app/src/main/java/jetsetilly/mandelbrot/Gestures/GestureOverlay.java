@@ -121,6 +121,10 @@ public class GestureOverlay extends ImageView implements
         }
     }
 
+    public boolean isBlocked() {
+        return blocked;
+    }
+
     private boolean testBlock() {
         if (blocked) {
             gesture_block_icon_visibility_time = System.currentTimeMillis();
@@ -130,7 +134,7 @@ public class GestureOverlay extends ImageView implements
         return false;
     }
 
-    /* implementation of onGesturesListener */
+    /* implementation of onGestureListener */
     @Override
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
@@ -140,7 +144,7 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (testBlock()) return false;
+        if (testBlock()) return true;
         if (scaling_canvas) return true;
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
@@ -159,13 +163,13 @@ public class GestureOverlay extends ImageView implements
 
         gesture_handler.autoZoom(0, 0, true);
     }
-    /* END OF implementation of onGesturesListener */
+    /* END OF implementation of onGestureListener */
 
 
     /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
-        if (testBlock()) return false;
+        if (testBlock()) return true;
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
@@ -184,7 +188,7 @@ public class GestureOverlay extends ImageView implements
     /* implementation of OnScaleGestureListener interface */
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        if (testBlock()) return false;
+        if (testBlock()) return true;
 
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
         scaling_canvas = true;
@@ -193,8 +197,6 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        if (testBlock()) return false;
-
         LogTools.printDebug(DBG_TAG, "onScale: " + detector.toString());
         gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
         altered_canvas = true;
@@ -204,8 +206,6 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        if (testBlock()) return;
-
         LogTools.printDebug(DBG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.endManualZoom(false);
         scaling_canvas = false;
@@ -216,36 +216,26 @@ public class GestureOverlay extends ImageView implements
     /* UNUSED METHODS */
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-        /* implementation of onGesturesListener */
-
-        //if (testBlock()) return false;
+        /* implementation of onGestureListener */
         LogTools.printDebug(DBG_TAG, "onFling: " + event1.toString() + event2.toString());
         return true;
     }
 
     @Override
     public void onShowPress(MotionEvent event) {
-        /* implementation of onGesturesListener */
-
-        //if (testBlock()) return;
+        /* implementation of onGestureListener */
         LogTools.printDebug(DBG_TAG, "onShowPress: " + event.toString());
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
-        /* implementation of onGesturesListener */
-
-        //if (testBlock()) return false;
-        LogTools.printDebug(DBG_TAG, "onSingleTapUp: " + event.toString());
+        /* implementation of onGestureListener */
         return true;
     }
 
     @Override
     public boolean onDoubleTapEvent(MotionEvent event) {
         /* implementation of onDoubleTapListener interface */
-
-        //if (testBlock()) return false;
-        LogTools.printDebug(DBG_TAG, "onDoubleTapEvent: " + event.toString());
         return true;
     }
 

@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -267,28 +268,64 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.update();
     }
 
+    private int auto_auto_zoom = 0;
+
     @UiThread
     public void endDraw(long canvas_id, final boolean cancelled) {
         if (this_canvas_id != canvas_id || buffer == null) {
             return;
         }
 
+        // one-dimensional array so that we can assign to it even though it is declared final
+        final int[] speed = new int[1];
+
         new SimpleAsyncTask(new Runnable() {
                     @Override
                     public void run() {
-                        buffer.endDraw(cancelled);
+                        blockGestures();
+                        speed[0] = buffer.endDraw(cancelled);
                         buffer = null;
                     }
                 },
                 new Runnable() {
                     @Override
                     public void run() {
-                        setBackgroundColor(background_color);
-                        complete_render = !cancelled;
-                        this_canvas_id = NO_CANVAS_ID;
-                        buffer_latch.release();
+                        /* there's a race condition where a user may start a gestured change
+                        but the setDisplay() transition animation (called in buffer.endDraw()) has
+                        begun and the set_display_anim_cancel is not available to stopRender() (called
+                        from autoZoom() or whatever).
 
-                        unblockGestures();
+                        the problem effect is of two images that fade into one another. it's actually
+                        quite nice but because it's sporadic it is a surprise to the user.
+
+                        the following code simulates an auto_zoom gesture at this problem point:
+
+                            if (++ auto_auto_zoom < 2) {
+                                autoZoom(getCanvasWidth()/2, getCanvasHeight()/2, false);
+                            } else {
+                                auto_auto_zoom = 0;
+                            }
+
+                        rather than mess around with semaphores and what-not we'll simply make sure
+                        gestures are blocked just prior to endDraw() being called and waiting for
+                        the transition animation to finish before unblocking gestures.
+
+                        if there is still a hole in this logic it's not a problem. the effect isn't
+                        destructive and we at least understand where the problem is so we can
+                        rework the solution.
+                        */
+
+                        Handler h = new Handler();
+                        h.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                setBackgroundColor(background_color);
+                                complete_render = !cancelled;
+                                this_canvas_id = NO_CANVAS_ID;
+                                buffer_latch.release();
+                                unblockGestures();
+                            }
+                        }, speed[0]);
                     }
                 }, true);
     }
@@ -333,6 +370,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_canvas.setScaleY(1f);
         display_canvas.setX(0);
         display_canvas.setY(0);
+
+        foreground.setScaleX(1f);
+        foreground.setScaleY(1f);
+        foreground.setX(0);
+        foreground.setY(0);
 
         invalidate();
         scrolled_since_last_normalise = false;
@@ -443,6 +485,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // and unblock() in the animation's endAction
         // this also has the effect of delaying the call to startRender() until
         // after the animation has finished
+
+        if (gestures.isBlocked()) return;
+
+        LogTools.printDebug(DBG_TAG, "autoZoom");
+
         blockGestures();
 
         // stop render to avoid smearing
@@ -503,7 +550,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y = offset_y;
 
         // do animation
-        final ViewPropertyAnimator anim = this.display_canvas.animate();
+        ViewPropertyAnimator anim = this.display_canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * image_scale);
         anim.y(-offset_y * image_scale);
@@ -528,6 +575,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
 
         anim.start();
+
         scrolled_since_last_normalise = true;
     }
 

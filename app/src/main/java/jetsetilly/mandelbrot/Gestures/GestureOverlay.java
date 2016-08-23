@@ -156,12 +156,8 @@ public class GestureOverlay extends ImageView implements
     @Override
     public void onLongPress(MotionEvent event) {
         if (testBlock()) return;
-
         LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
-
-        // no offset when we're zooming out
-
-        gesture_handler.autoZoom(0, 0, true);
+        gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), true);
     }
     /* END OF implementation of onGestureListener */
 
@@ -199,16 +195,15 @@ public class GestureOverlay extends ImageView implements
     public boolean onScale(ScaleGestureDetector detector) {
         LogTools.printDebug(DBG_TAG, "onScale: " + detector.toString());
         gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
-        altered_canvas = true;
-
         return true;
     }
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         LogTools.printDebug(DBG_TAG, "onScaleEnd: " + detector.toString());
-        gesture_handler.endManualZoom(false);
+        gesture_handler.endManualZoom();
         scaling_canvas = false;
+        altered_canvas = true;
     }
     /* END OF implementation of OnScaleGesture interface */
 

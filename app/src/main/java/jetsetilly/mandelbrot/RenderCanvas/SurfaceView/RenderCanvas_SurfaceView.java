@@ -54,8 +54,7 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void endManualZoom(boolean force) {
-
+    public void endManualZoom() {
     }
 
     @Override

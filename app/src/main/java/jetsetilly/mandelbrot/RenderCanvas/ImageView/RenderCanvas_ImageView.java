@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -46,8 +47,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
     // which are only callable from the UIThread
-    private int canvas_width;
-    private int canvas_height;
+    private int canvas_width, half_canvas_width;
+    private int canvas_height, half_canvas_height;
 
     protected int background_color;
 
@@ -96,11 +97,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // the amount of scaling since the last rendered image
     private double cumulative_image_scale = 1.0f;
 
-    // hack solution to the problem of pinch zooming after a image move (which includes animated
-    // zoom). i think that the problem has something to do with pivot points but i couldn't
-    // figure it out properly. it's such a fringe case however that this hack seems reasonable.
-    // plus, once we have properly stitched bitmaps we can remove the artificial ON_UP_DELAY
-    // in GestureOverlay
+    // hack solution to the problem of pinch zooming after a image move. i think that the
+    // problem has something to do with pivot points but i couldn't figure it out properly.
+    // it's such a fringe case however that this hack seems reasonable.
     private boolean scrolled_since_last_normalise;
 
     // completed render is true if last render was finished to completion. set to true
@@ -216,6 +215,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         super.onSizeChanged(w, h, old_w, old_h);
         canvas_width = w;
         canvas_height = h;
+        half_canvas_width = w / 2;
+        half_canvas_height = h / 2;
     }
 
     public void resetCanvas() {
@@ -391,11 +392,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_canvas.setX(0);
         display_canvas.setY(0);
 
-        foreground.setScaleX(1f);
-        foreground.setScaleY(1f);
-        foreground.setX(0);
-        foreground.setY(0);
-
         invalidate();
         scrolled_since_last_normalise = false;
     }
@@ -506,8 +502,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // this also has the effect of delaying the call to startRender() until
         // after the animation has finished
 
-        if (gestures.isBlocked()) return;
-
         LogTools.printDebug(DBG_TAG, "autoZoom");
 
         blockGestures();
@@ -515,14 +509,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // stop render to avoid smearing
         stopRender();
 
-        int half_canvas_width = canvas_width / 2;
-        int half_canvas_height = canvas_height / 2;
-
         // correct offset values
-        if (!zoom_out) {
-            offset_x -= half_canvas_width;
-            offset_y -= half_canvas_height;
-        }
+        offset_x -= half_canvas_width;
+        offset_y -= half_canvas_height;
 
         // transform offsets by current scroll/image_scale state
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
@@ -595,8 +584,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
 
         anim.start();
-
-        scrolled_since_last_normalise = true;
     }
 
     public void manualZoom(float amount) {
@@ -629,14 +616,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this.display_canvas.setScaleY(image_scale);
     }
 
-    public void endManualZoom(boolean force) {
-        // don't rescale image if we've zoomed in. this allows the zoomed image to be scrolled
-        // and without losing any of the image after the image has been rescaled
-        if (fractal_scale >= 0) {
-            return;
-        }
-
-        fixateVisibleImage();
+    public void endManualZoom() {
+        // do nothing
     }
     /*** END OF GestureHandler implementation ***/
 
@@ -644,7 +625,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         blockGestures();
 
         int pixels[] = new int[canvas_width * canvas_height];
-        getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        if (fractal_scale == 0) {
+            fast_getVisibleImage(pixels);
+        } else {
+            getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        }
         transformMandelbrot();
         setNextTransition(TransitionType.NONE);
         setDisplay(pixels);
@@ -652,42 +637,63 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         unblockGestures();
     }
 
-    public Bitmap getVisibleImage(boolean bilinear_filter) {
-        int new_left, new_right, new_top, new_bottom;
-        Bitmap offset_bm, scaled_bm;
-        Canvas offset_canvas, scale_canvas;
-        final Rect blit_to, blit_from;
+    public void fast_getVisibleImage(int pixels[]) {
+        int offset, x, y, width, height;
 
-        // do offset
-        offset_bm = Bitmap.createBitmap(canvas_width, canvas_height, Bitmap.Config.ARGB_8888);
-        offset_canvas = new Canvas(offset_bm);
-        offset_canvas.drawBitmap(display_bm, -rendered_offset_x, -rendered_offset_y, null);
+        Arrays.fill(pixels, background_color);
 
-        // do zoom
-
-        // set background colour, otherwise faded reveals in setDisplay() won't work
-        scaled_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-        scaled_bm.eraseColor(background_color);
-
-        new_left = (int) (fractal_scale * canvas_width);
-        new_right = canvas_width - new_left;
-        new_top = (int) (fractal_scale * canvas_height);
-        new_bottom = canvas_height - new_top;
-        blit_to = new Rect(0, 0, canvas_width, canvas_height);
-        blit_from = new Rect(new_left, new_top, new_right, new_bottom);
-
-        Paint scale_pnt = new Paint();
-        scale_pnt.setDither(false);
-        if (bilinear_filter) {
-            scale_pnt.setFilterBitmap(true);
+        if (rendered_offset_x >= 0) {
+            offset = 0;
+            x = rendered_offset_x;
+            width = canvas_width - rendered_offset_x;
         } else {
-            scale_pnt.setFilterBitmap(false);
+            int abs_x = Math.abs(rendered_offset_x);
+            x = 0;
+            offset = abs_x;
+            width = canvas_width - abs_x;
         }
 
-        scale_canvas = new Canvas(scaled_bm);
-        scale_canvas.drawBitmap(offset_bm, blit_from, blit_to, scale_pnt);
+        if (rendered_offset_y >= 0) {
+            y = rendered_offset_y;
+            height = canvas_height - rendered_offset_y;
+        } else {
+            int abs_y = Math.abs(rendered_offset_y);
+            y = 0;
+            offset += abs_y * canvas_width;
+            height = canvas_height - abs_y;
+        }
 
-        return scaled_bm;
+        display_bm.getPixels(pixels, offset, canvas_width, x, y, width, height);
+    }
+
+    public Bitmap getVisibleImage(boolean bilinear_filter) {
+        // set background colour, otherwise faded reveals in setDisplay() won't work
+        Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
+        bm.eraseColor(background_color);
+
+        int new_left = (int) (fractal_scale * canvas_width);
+        int new_right = canvas_width - new_left;
+        int new_top = (int) (fractal_scale * canvas_height);
+        int new_bottom = canvas_height - new_top;
+        new_left += rendered_offset_x;
+        new_right += rendered_offset_x;
+        new_top += rendered_offset_y;
+        new_bottom += rendered_offset_y;
+        Rect blit_to = new Rect(0, 0, canvas_width, canvas_height);
+        Rect blit_from = new Rect(new_left, new_top, new_right, new_bottom);
+
+        Paint paint = new Paint();
+        paint.setDither(false);
+        if (bilinear_filter) {
+            paint.setFilterBitmap(true);
+        } else {
+            paint.setFilterBitmap(false);
+        }
+
+        Canvas canvas = new Canvas(bm);
+        canvas.drawBitmap(display_bm, blit_from, blit_to, paint);
+
+        return bm;
     }
 
     protected int setDisplay(final int pixels[]) {

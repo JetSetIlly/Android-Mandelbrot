@@ -6,5 +6,5 @@ public interface GestureHandler {
     void finishManualGesture();
     void autoZoom(int offset_x, int offset_y, boolean zoom_out);
     void manualZoom(float amount);
-    void endManualZoom(boolean force);
+    void endManualZoom();
 }

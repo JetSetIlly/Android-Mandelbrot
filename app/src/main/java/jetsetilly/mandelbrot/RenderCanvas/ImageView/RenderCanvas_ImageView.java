@@ -252,7 +252,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.plotIterations(iterations);
 
         // use a little bit of extra memory if we're using software rendering
-        if (MandelbrotSettings.getInstance().render_mode != Mandelbrot.RenderMode.HARDWARE) {
+        if (buffer.getClass() == BufferSimple.class) {
             // if the set of iterations is complete (ie. every iteration has resulted in a new pixel)
             // then store iterations for future calls to reRender()
             if (complete_plot) {
@@ -283,7 +283,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return;
         }
 
-        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (buffer.getClass() == BufferSimple.class) {
             // one-dimensional array so that we can assign to it even though it is declared final
             final int[] speed = new int[1];
             new SimpleAsyncTask(new Runnable() {

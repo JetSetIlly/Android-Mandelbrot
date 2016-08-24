@@ -30,7 +30,6 @@ public class Mandelbrot {
         int HARDWARE = 0;
         int SOFTWARE_TOP_DOWN =1;
         int SOFTWARE_CENTRE = 2;
-        int SOFTWARE_SIMPLEST = 3;
     }
 
     public @IntDef({IterationsRate.SLOW, IterationsRate.NORMAL, IterationsRate.FAST})

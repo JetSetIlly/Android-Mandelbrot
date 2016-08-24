@@ -46,7 +46,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // canvas on which the fractal is drawn -- all transforms (scrolling, scaling) affect
     // this view only
-    private ImageView display_canvas;
+    private ImageView display;
 
     // that ImageView that sits in front of RenderCanvas_ImageView in the layout. used to disguise changes
     // to main RenderCanvas_ImageView and allows us to animate changes
@@ -57,7 +57,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // distance measurements
     private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
-    // the display_bm is a pointer to whatever bitmap is currently displayed in display_canvas
+    // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
     // foreground_bm is whatever bitmap is currently displayed in foreground
     private Bitmap foreground_bm;
@@ -140,6 +140,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void initialise(final MainActivity main_activity) {
         this.main_activity = main_activity;
 
+        removeAllViews();
+
         if (SystemSettings.getInstance().deep_colour == true) {
             bitmap_config = Bitmap.Config.ARGB_8888;
         } else {
@@ -147,34 +149,34 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         // create the views used for rendering
-        display_canvas = new ImageView(main_activity);
+        display = new ImageView(main_activity);
         foreground = new ImageView(main_activity);
+        foreground.setVisibility(INVISIBLE);
 
         // add the views in order - from back to front
-        addView(display_canvas);
+        addView(display);
         addView(foreground);
 
         post(new Runnable() {
             @Override
             public void run() {
                 // set scale type of fractal canvas to reckon from the centre of the view
-                display_canvas.setScaleType(ImageView.ScaleType.CENTER);
+                display.setScaleType(ImageView.ScaleType.CENTER);
 
                 // set to hardware acceleration if available
                 // TODO: proper hardware acceleration using SurfaceView
-                display_canvas.setLayerType(LAYER_TYPE_HARDWARE, null);
+                display.setLayerType(LAYER_TYPE_HARDWARE, null);
                 foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
 
                 // create display canvas
                 display_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-                display_canvas.setImageBitmap(display_bm);
+                display.setImageBitmap(display_bm);
 
                 // create foreground bitmap
                 foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
                 foreground.setImageBitmap(foreground_bm);
 
-                foreground.invalidate();
-                display_canvas.invalidate();
+                invalidate();
 
                 // reset canvas will start the new render
                 resetCanvas();
@@ -192,6 +194,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         half_canvas_width = w / 2;
         half_canvas_height = h / 2;
     }
+
+    @Override // View
+    public void invalidate() {
+        SimpleRunOnUI.run(main_activity, new Runnable() {
+            @Override
+            public void run() {
+                display.invalidate();
+                foreground.invalidate();
+            }
+        });
+
+        // not calling super method
+    }
+
 
     public void resetCanvas() {
         // new render cache
@@ -218,11 +234,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         this_canvas_id = canvas_id;
-
         complete_render = false;
 
-        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE ||
-                MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.SOFTWARE_SIMPLEST) {
+        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -269,20 +283,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return;
         }
 
-        // one-dimensional array so that we can assign to it even though it is declared final
-        final int[] speed = new int[1];
-
-        new SimpleAsyncTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        blockGestures();
-                        speed[0] = buffer.endDraw(cancelled);
-                        buffer = null;
-                    }
-                },
-                new Runnable() {
-                    @Override
-                    public void run() {
+        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
+            // one-dimensional array so that we can assign to it even though it is declared final
+            final int[] speed = new int[1];
+            new SimpleAsyncTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            blockGestures();
+                            speed[0] = buffer.endDraw(cancelled);
+                            buffer = null;
+                        }
+                    },
+                    new Runnable() {
+                        @Override
+                        public void run() {
                         /* there's a race condition where a user may start a gestured change
                         but the setDisplay() transition animation (called in buffer.endDraw()) has
                         begun and the set_display_anim_cancel is not available to stopRender() (called
@@ -300,19 +314,27 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         rework the solution.
                         */
 
-                        Handler h = new Handler();
-                        h.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                setBackgroundColor(background_colour);
-                                complete_render = !cancelled;
-                                this_canvas_id = NO_CANVAS_ID;
-                                buffer_latch.release();
-                                unblockGestures();
-                            }
-                        }, speed[0]);
-                    }
-                }, true);
+                            Handler h = new Handler();
+                            h.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setBackgroundColor(background_colour);
+                                    complete_render = !cancelled;
+                                    this_canvas_id = NO_CANVAS_ID;
+                                    buffer_latch.release();
+                                    unblockGestures();
+                                }
+                            }, speed[0]);
+                        }
+                    }, true);
+        } else {
+            buffer.endDraw(cancelled);
+            buffer = null;
+            setBackgroundColor(background_colour);
+            complete_render = !cancelled;
+            this_canvas_id = NO_CANVAS_ID;
+            buffer_latch.release();
+        }
     }
 
     // any thread
@@ -351,10 +373,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF wrappers for gestures block/unblock() ***/
 
     private void normaliseCanvas(){
-        display_canvas.setScaleX(1f);
-        display_canvas.setScaleY(1f);
-        display_canvas.setX(0);
-        display_canvas.setY(0);
+        display.setScaleX(1f);
+        display.setScaleY(1f);
+        display.setX(0);
+        display.setY(0);
         scrolled_since_last_normalise = false;
     }
 
@@ -447,8 +469,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y += y;
 
         // offset entire image view rather than using the scrolling ability
-        display_canvas.setX(display_canvas.getX() - (x * image_scale));
-        display_canvas.setY(display_canvas.getY() - (y * image_scale));
+        display.setX(display.getX() - (x * image_scale));
+        display.setY(display.getY() - (y * image_scale));
 
         scrolled_since_last_normalise = true;
     }
@@ -519,7 +541,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y = offset_y;
 
         // do animation
-        ViewPropertyAnimator anim = this.display_canvas.animate();
+        ViewPropertyAnimator anim = this.display.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * image_scale);
         anim.y(-offset_y * image_scale);
@@ -570,8 +592,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         complete_render = false;
         cumulative_image_scale *= image_scale;
 
-        this.display_canvas.setScaleX(image_scale);
-        this.display_canvas.setScaleY(image_scale);
+        this.display.setScaleX(image_scale);
+        this.display.setScaleY(image_scale);
     }
 
     public void endManualZoom() {
@@ -679,7 +701,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     public void run() {
                         normaliseCanvas();
                         display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-                        display_canvas.invalidate();
+                        display.invalidate();
                     }
                 });
 
@@ -720,7 +742,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     public void run() {
                         normaliseCanvas();
                         display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-                        display_canvas.invalidate();
+                        display.invalidate();
                     }
                 });
 

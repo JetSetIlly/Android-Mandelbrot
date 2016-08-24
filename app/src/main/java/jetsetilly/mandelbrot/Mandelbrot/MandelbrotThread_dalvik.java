@@ -48,23 +48,6 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
         super.doInBackground();
 
         switch (mandelbrot_settings.render_mode) {
-            case Mandelbrot.RenderMode.SOFTWARE_SIMPLEST:
-                my = mandelbrot_settings.imaginary_lower;
-                for (cy = 0; cy < canvas_height; cy ++ ) {
-                    mx = mandelbrot_settings.real_left;
-                    for (cx = 0; cx < canvas_width; cx ++ ) {
-                        m.canvas.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
-                        mx += m.pixel_scale;
-
-                        publishProgress();
-
-                        // exit early if necessary
-                        if (isCancelled()) return null;
-                    }
-                    my += m.pixel_scale;
-                }
-                break;
-
             case Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN:
                 for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
                     my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);

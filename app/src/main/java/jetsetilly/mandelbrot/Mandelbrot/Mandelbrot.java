@@ -25,7 +25,7 @@ public class Mandelbrot {
         int BIG_DECIMAL = 1;
     }
 
-    public @IntDef({RenderMode.HARDWARE, RenderMode.SOFTWARE_TOP_DOWN, RenderMode.SOFTWARE_CENTRE, RenderMode.SOFTWARE_SIMPLEST})
+    public @IntDef({RenderMode.HARDWARE, RenderMode.SOFTWARE_TOP_DOWN, RenderMode.SOFTWARE_CENTRE})
     @interface RenderMode {
         int HARDWARE = 0;
         int SOFTWARE_TOP_DOWN =1;

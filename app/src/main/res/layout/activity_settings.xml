@@ -149,16 +149,6 @@
                             android:text="@string/settings_rendermode_centre"
                             android:id="@+id/rendermode_centre" />
 
-                        <Space
-                            android:layout_width="match_parent"
-                            android:layout_height="10dp" />
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/settings_rendermode_simplest"
-                            android:id="@+id/rendermode_simplest" />
-
                     </RadioGroup>
 
                     <jetsetilly.mandelbrot.View.ReportingSeekBar

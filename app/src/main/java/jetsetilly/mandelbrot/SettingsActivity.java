@@ -83,7 +83,6 @@ public class SettingsActivity extends AppCompatActivity {
                 // TODO: animate visibility
                 switch (checkedId) {
                     case R.id.rendermode_hardware:
-                    case R.id.rendermode_simplest:
                         num_passes.setVisibility(View.GONE);
                         break;
                     default:
@@ -125,8 +124,6 @@ public class SettingsActivity extends AppCompatActivity {
             render_mode.check(R.id.rendermode_topdown);
         } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_CENTRE) {
             render_mode.check(R.id.rendermode_centre);
-        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_SIMPLEST) {
-            render_mode.check(R.id.rendermode_simplest);
         }
 
         // deep colour switch
@@ -162,9 +159,6 @@ public class SettingsActivity extends AppCompatActivity {
                         break;
                     case R.id.rendermode_centre:
                         mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_CENTRE;
-                        break;
-                    case R.id.rendermode_simplest:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_SIMPLEST;
                         break;
                 }
 

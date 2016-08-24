@@ -51,7 +51,7 @@ public class BufferSimple extends Buffer {
                     most_frequent = i;
                 }
             }
-            render_canvas.background_color = palette_settings.colours[most_frequent];
+            render_canvas.background_colour = palette_settings.colours[most_frequent];
 
             return speed;
         }

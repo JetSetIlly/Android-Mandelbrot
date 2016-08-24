@@ -3,7 +3,6 @@ package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -29,20 +28,12 @@ import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleRunOnUI;
 
-/*
- * note that we prefer the reduced colour space bitmap = Bitmap.Config = RGB_565
- * except for the offset bitmap in fixateVisibleImage(). it's a very short lived bitmap but...
- * TODO: figure out if we can make this a 565 bitmap too
- */
-
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
     MainActivity main_activity;
 
-    // bitmap config to use depending on SystemSettings.deep_colour. this is used everywhere
-    // except for the offset bitmap in fixateVisibleImage(). it's a very short lived bitmap but...
-    // TODO: figure out if we can make this a 565 bitmap too if deep_colour==false
+    // bitmap config to use depending on SystemSettings.deep_colour
     Bitmap.Config bitmap_config;
 
     // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
@@ -50,7 +41,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private int canvas_width, half_canvas_width;
     private int canvas_height, half_canvas_height;
 
-    protected int background_color;
+    // dominant colour to use as background colour - visible on scroll and zoom out events
+    protected int background_colour;
 
     // canvas on which the fractal is drawn -- all transforms (scrolling, scaling) affect
     // this view only
@@ -167,11 +159,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             public void run() {
                 // set scale type of fractal canvas to reckon from the centre of the view
                 display_canvas.setScaleType(ImageView.ScaleType.CENTER);
-                Matrix m = display_canvas.getMatrix();
-
-                display_canvas.setScaleType(ImageView.ScaleType.MATRIX);
-                Matrix display_canvas_matrix = new Matrix();
-                display_canvas.setImageMatrix(display_canvas_matrix);
 
                 // set to hardware acceleration if available
                 // TODO: proper hardware acceleration using SurfaceView
@@ -180,14 +167,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                 // create display canvas
                 display_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-                //display_bm.eraseColor(Color.TRANSPARENT);
                 display_canvas.setImageBitmap(display_bm);
 
                 // create foreground bitmap
                 foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
                 foreground.setImageBitmap(foreground_bm);
 
-                invalidate();
+                foreground.invalidate();
+                display_canvas.invalidate();
 
                 // reset canvas will start the new render
                 resetCanvas();
@@ -196,19 +183,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         super.initialise(main_activity);
     }
     /*** END OF initialisation ***/
-
-    @Override // View
-    // thread safe
-    public void invalidate() {
-        SimpleRunOnUI.run(main_activity, new Runnable() {
-            @Override
-            public void run() {
-                // intentionally not calling super.invalidate()
-                display_canvas.invalidate();
-                foreground.invalidate();
-            }
-        });
-    }
 
     @Override // View
     public void onSizeChanged(int w, int h, int old_w, int old_h) {
@@ -224,7 +198,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         super.resetCanvas();
-        setBackgroundColor(background_color);
+        setBackgroundColor(background_colour);
         startRender();
     }
 
@@ -289,8 +263,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.update();
     }
 
-    private int auto_auto_zoom = 0;
-
     @UiThread
     public void endDraw(long canvas_id, final boolean cancelled) {
         if (this_canvas_id != canvas_id || buffer == null) {
@@ -319,14 +291,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         the problem effect is of two images that fade into one another. it's actually
                         quite nice but because it's sporadic it is a surprise to the user.
 
-                        the following code simulates an auto_zoom gesture at this problem point:
-
-                            if (++ auto_auto_zoom < 2) {
-                                autoZoom(getCanvasWidth()/2, getCanvasHeight()/2, false);
-                            } else {
-                                auto_auto_zoom = 0;
-                            }
-
                         rather than mess around with semaphores and what-not we'll simply make sure
                         gestures are blocked just prior to endDraw() being called and waiting for
                         the transition animation to finish before unblocking gestures.
@@ -340,7 +304,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         h.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                setBackgroundColor(background_color);
+                                setBackgroundColor(background_colour);
                                 complete_render = !cancelled;
                                 this_canvas_id = NO_CANVAS_ID;
                                 buffer_latch.release();
@@ -391,8 +355,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_canvas.setScaleY(1f);
         display_canvas.setX(0);
         display_canvas.setY(0);
-
-        invalidate();
         scrolled_since_last_normalise = false;
     }
 
@@ -502,8 +464,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // this also has the effect of delaying the call to startRender() until
         // after the animation has finished
 
-        LogTools.printDebug(DBG_TAG, "autoZoom");
-
         blockGestures();
 
         // stop render to avoid smearing
@@ -587,17 +547,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void manualZoom(float amount) {
-        // WARNING: This doesn't work correctly in certain combination of zoom/move chains
-        // unless the canvas is reset (as it is in endManualZoom() and startRender() methods)
         if (amount == 0)
             return;
+
+        // stop render to avoid smearing
+        stopRender();
 
         if (scrolled_since_last_normalise) {
             fixateVisibleImage();
         }
-
-        // stop render to avoid smearing
-        stopRender();
 
         // calculate fractal_scale
         fractal_scale += amount / Math.hypot(canvas_width, canvas_height);
@@ -640,7 +598,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void fast_getVisibleImage(int pixels[]) {
         int offset, x, y, width, height;
 
-        Arrays.fill(pixels, background_color);
+        Arrays.fill(pixels, background_colour);
 
         if (rendered_offset_x >= 0) {
             offset = 0;
@@ -669,7 +627,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public Bitmap getVisibleImage(boolean bilinear_filter) {
         // set background colour, otherwise faded reveals in setDisplay() won't work
         Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-        bm.eraseColor(background_color);
+        bm.eraseColor(background_colour);
 
         int new_left = (int) (fractal_scale * canvas_width);
         int new_right = canvas_width - new_left;
@@ -711,6 +669,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         foreground_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
                         foreground.setVisibility(VISIBLE);
                         foreground.setAlpha(1.0f);
+                        foreground.invalidate();
                     }
                 });
 
@@ -720,6 +679,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     public void run() {
                         normaliseCanvas();
                         display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                        display_canvas.invalidate();
                     }
                 });
 
@@ -760,6 +720,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     public void run() {
                         normaliseCanvas();
                         display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                        display_canvas.invalidate();
                     }
                 });
 

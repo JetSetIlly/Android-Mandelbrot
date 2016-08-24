@@ -26,12 +26,18 @@ public class GestureOverlay extends ImageView implements
     MainActivity context;
 
     private GestureHandler gesture_handler;
-    private ImageView gesture_block_icon;
-    private long gesture_block_icon_visibility_time;
-    private final long MIN_GESTURE_BLOCK_ICON_SHOW_DURATION = 1000;
 
     // gestures will be ignored so long as blocked == true
     private boolean blocked;
+    private ImageView block_icon;
+    private long block_icon_time;
+    private final long MIN_BLOCK_ICON_DURATION = 1000;
+
+    // a blocked sequence is a sequence of gestures that was started between a block() and unblock()
+    // ie. if the onDown() event occurred while blocked == true
+    // this prevents gestures like scroll and pinch zoom from suddenly starting when unblock() is
+    // called. it feels clunky. with blocked_sequence, the user is forced to re-initiate the gesture
+    private boolean blocked_sequence;
 
     // whether the canvas has been altered somehow
     private boolean altered_canvas;
@@ -53,6 +59,7 @@ public class GestureOverlay extends ImageView implements
         this.context = context;
         this.gesture_handler = gesture_handler;
         this.blocked = false;
+        this.blocked_sequence = false;
         this.scaling_canvas = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
@@ -60,7 +67,7 @@ public class GestureOverlay extends ImageView implements
         scale_detector.setQuickScaleEnabled(false);
         gestures_detector.setOnDoubleTapListener(this);
 
-        gesture_block_icon = (ImageView) ((AppCompatActivity)context).findViewById(R.id.gesture_block);
+        block_icon = (ImageView) ((AppCompatActivity)context).findViewById(R.id.gesture_block);
 
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -79,6 +86,7 @@ public class GestureOverlay extends ImageView implements
                         LogTools.printDebug(DBG_TAG, "onUp (after altered canvas): " + event.toString());
                         gesture_handler.finishManualGesture();
                     }
+                    blocked_sequence = false;
                 }
 
                 boolean scale_ret = scale_detector.onTouchEvent(event);
@@ -94,44 +102,43 @@ public class GestureOverlay extends ImageView implements
 
     public void unblock() {
         blocked = false;
-        long delay_time = System.currentTimeMillis() - gesture_block_icon_visibility_time;
-        if (delay_time > MIN_GESTURE_BLOCK_ICON_SHOW_DURATION) {
+        long delay_time = System.currentTimeMillis() - block_icon_time;
+        if (delay_time > MIN_BLOCK_ICON_DURATION) {
             SimpleRunOnUI.run(context, new Runnable() {
                 @Override
                 public void run() {
-                    gesture_block_icon.setVisibility(INVISIBLE);
+                    block_icon.setVisibility(INVISIBLE);
                 }
             });
         } else {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    ViewPropertyAnimator anim = gesture_block_icon.animate();
+                    ViewPropertyAnimator anim = block_icon.animate();
                     anim.alpha(0.0f);
                     anim.withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            gesture_block_icon.setVisibility(INVISIBLE);
-                            gesture_block_icon.setAlpha(1.0f);
+                            block_icon.setVisibility(INVISIBLE);
+                            block_icon.setAlpha(1.0f);
                         }
                     });
                     anim.start();
                 }
-            }, MIN_GESTURE_BLOCK_ICON_SHOW_DURATION - delay_time);
+            }, MIN_BLOCK_ICON_DURATION - delay_time);
         }
-    }
-
-    public boolean isBlocked() {
-        return blocked;
     }
 
     private boolean testBlock() {
         if (blocked) {
-            gesture_block_icon_visibility_time = System.currentTimeMillis();
-            gesture_block_icon.setVisibility(VISIBLE);
+            block_icon_time = System.currentTimeMillis();
+            block_icon.setVisibility(VISIBLE);
             return true;
         }
-        return false;
+
+        // blocked sequence can be true even if blocked == false
+        // see ACTION_UP handler
+        return blocked_sequence;
     }
 
     /* implementation of onGestureListener */
@@ -139,6 +146,7 @@ public class GestureOverlay extends ImageView implements
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
         gesture_handler.checkActionBar(event.getX(), event.getY(), false);
+        blocked_sequence = blocked;
         return true;
     }
 

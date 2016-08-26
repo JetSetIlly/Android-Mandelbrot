@@ -28,6 +28,8 @@ public class ProgressView extends ImageView {
     private AnimatorSet off_anim;
     final private AnimatorSet no_anim = null;
 
+    private boolean use_progress_view = false;
+
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
@@ -103,10 +105,13 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
+        if (!use_progress_view) return;
         start_time = System.currentTimeMillis();
     }
 
     public void kick(boolean show_immediately) {
+        if (!use_progress_view) return;
+
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
@@ -147,6 +152,8 @@ public class ProgressView extends ImageView {
         // the delay should give enough time for a new render event
         // to start without the progress view bobbing out of view
 
+        if (!use_progress_view) return;
+
         final long unregister_time = System.currentTimeMillis();
 
         postDelayed(new Runnable() {
@@ -173,6 +180,7 @@ public class ProgressView extends ImageView {
         }, UNREGISTER_DELAY);
     }
 
+    // animator property
     public void setActivityVisibility(final float value) {
         if (value == 0f) {
             setVisibility(INVISIBLE);

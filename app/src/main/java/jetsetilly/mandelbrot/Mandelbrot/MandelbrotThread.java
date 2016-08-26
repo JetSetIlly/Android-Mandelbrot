@@ -31,7 +31,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @WorkerThread
     @CallSuper
     protected Void doInBackground(Void... v) {
-        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
         m.canvas.startDraw(canvas_id);
         return null;
     }

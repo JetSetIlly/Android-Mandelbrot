@@ -52,7 +52,7 @@ public class BufferTimer extends Buffer {
     }
 
     @Override
-    public int endDraw(boolean cancelled) {
+    public void endDraw(boolean cancelled) {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
@@ -66,7 +66,6 @@ public class BufferTimer extends Buffer {
         render_canvas.background_colour = palette_settings.colours[most_frequent];
 
         update();
-        return 0;
     }
 
     @Override

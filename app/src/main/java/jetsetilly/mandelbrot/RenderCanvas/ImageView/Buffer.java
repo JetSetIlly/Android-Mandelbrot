@@ -17,7 +17,7 @@ abstract class Buffer {
 
     abstract void startDraw(Bitmap bitmap);
     abstract void update();
-    abstract int endDraw(boolean cancelled);
+    abstract void endDraw(boolean cancelled);
 
     void plotIteration(int cx, int cy, int iteration) {}
 

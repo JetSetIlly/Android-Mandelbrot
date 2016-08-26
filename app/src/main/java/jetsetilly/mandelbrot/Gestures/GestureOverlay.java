@@ -2,7 +2,6 @@ package jetsetilly.mandelbrot.Gestures;
 
 import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -14,30 +13,23 @@ import android.widget.ImageView;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.tools.LogTools;
-import jetsetilly.tools.SimpleRunOnUI;
 
 public class GestureOverlay extends ImageView implements
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener
 {
-    private static final String DBG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
+    private static final String DBG_TAG = "gesture overlay";
 
     MainActivity context;
 
     private GestureHandler gesture_handler;
 
-    // gestures will be ignored so long as blocked == true
-    private boolean blocked;
-    private ImageView block_icon;
-    private long block_icon_time;
-    private final long MIN_BLOCK_ICON_DURATION = 1000;
-
-    // a blocked sequence is a sequence of gestures that was started between a block() and unblock()
-    // ie. if the onDown() event occurred while blocked == true
-    // this prevents gestures like scroll and pinch zoom from suddenly starting when unblock() is
-    // called. it feels clunky. with blocked_sequence, the user is forced to re-initiate the gesture
-    private boolean blocked_sequence;
+    // gestures will be ignored so long as pause_zoom == true
+    private boolean pause_zoom;
+    private ImageView pause_icon;
+    private long pause_icon_time;
+    private final long MIN_PAUSE_ICON_DURATION = 1000;
 
     // whether the canvas has been altered somehow
     private boolean altered_canvas;
@@ -58,8 +50,7 @@ public class GestureOverlay extends ImageView implements
     public void setup(MainActivity context, final GestureHandler gesture_handler) {
         this.context = context;
         this.gesture_handler = gesture_handler;
-        this.blocked = false;
-        this.blocked_sequence = false;
+        this.pause_zoom = false;
         this.scaling_canvas = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
@@ -67,7 +58,7 @@ public class GestureOverlay extends ImageView implements
         scale_detector.setQuickScaleEnabled(false);
         gestures_detector.setOnDoubleTapListener(this);
 
-        block_icon = (ImageView) ((AppCompatActivity)context).findViewById(R.id.gesture_block);
+        pause_icon = (ImageView) context.findViewById(R.id.pause_icon);
 
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -86,7 +77,6 @@ public class GestureOverlay extends ImageView implements
                         LogTools.printDebug(DBG_TAG, "onUp (after altered canvas): " + event.toString());
                         gesture_handler.finishManualGesture();
                     }
-                    blocked_sequence = false;
                 }
 
                 boolean scale_ret = scale_detector.onTouchEvent(event);
@@ -96,49 +86,32 @@ public class GestureOverlay extends ImageView implements
     }
     /* END OF initialisation */
 
-    public void block() {
-        blocked = true;
-    }
-
-    public void unblock() {
-        blocked = false;
-        long delay_time = System.currentTimeMillis() - block_icon_time;
-        if (delay_time > MIN_BLOCK_ICON_DURATION) {
-            SimpleRunOnUI.run(context, new Runnable() {
-                @Override
-                public void run() {
-                    block_icon.setVisibility(INVISIBLE);
-                }
-            });
-        } else {
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    ViewPropertyAnimator anim = block_icon.animate();
-                    anim.alpha(0.0f);
-                    anim.withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            block_icon.setVisibility(INVISIBLE);
-                            block_icon.setAlpha(1.0f);
-                        }
-                    });
-                    anim.start();
-                }
-            }, MIN_BLOCK_ICON_DURATION - delay_time);
+    public void pauseZoom(boolean show_pause_icon) {
+        pause_zoom = true;
+        if (show_pause_icon) {
+            pause_icon_time = System.currentTimeMillis();
+            pause_icon.setVisibility(VISIBLE);
         }
     }
 
-    private boolean testBlock() {
-        if (blocked) {
-            block_icon_time = System.currentTimeMillis();
-            block_icon.setVisibility(VISIBLE);
-            return true;
-        }
-
-        // blocked sequence can be true even if blocked == false
-        // see ACTION_UP handler
-        return blocked_sequence;
+    public void unpauseZoom() {
+        pause_zoom = false;
+        long delay_time = System.currentTimeMillis() - pause_icon_time;
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ViewPropertyAnimator anim = pause_icon.animate();
+                anim.alpha(0.0f);
+                anim.withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        pause_icon.setVisibility(INVISIBLE);
+                        pause_icon.setAlpha(1.0f);
+                    }
+                });
+                anim.start();
+            }
+        }, MIN_PAUSE_ICON_DURATION - delay_time);
     }
 
     /* implementation of onGestureListener */
@@ -146,13 +119,11 @@ public class GestureOverlay extends ImageView implements
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
         gesture_handler.checkActionBar(event.getX(), event.getY(), false);
-        blocked_sequence = blocked;
         return true;
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (testBlock()) return true;
         if (scaling_canvas) return true;
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
@@ -163,7 +134,6 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public void onLongPress(MotionEvent event) {
-        if (testBlock()) return;
         LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), true);
     }
@@ -173,7 +143,11 @@ public class GestureOverlay extends ImageView implements
     /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
-        if (testBlock()) return true;
+        if (pause_zoom) {
+            // call pauseZoom() but force display of icon in case it's not already visible
+            pauseZoom(true);
+            return true;
+        }
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
@@ -192,7 +166,7 @@ public class GestureOverlay extends ImageView implements
     /* implementation of OnScaleGestureListener interface */
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        if (testBlock()) return true;
+        if (pause_zoom) return true;
 
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
         scaling_canvas = true;

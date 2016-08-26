@@ -183,11 +183,6 @@ public class RenderCanvas_SurfaceView extends RenderCanvas_Base {
     }
 
     @Override
-    public void reRender() {
-
-    }
-
-    @Override
     public Bitmap getVisibleImage(boolean bilinear_filter) {
         return null;
     }

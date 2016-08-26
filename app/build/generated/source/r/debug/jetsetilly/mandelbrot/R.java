@@ -2552,7 +2552,6 @@ containing a value of this type.
         public static final int fixed=0x7f0d0038;
         public static final int fractalView=0x7f0d0069;
         public static final int gestureOverlay=0x7f0d006a;
-        public static final int gesture_block=0x7f0d006e;
         public static final int home=0x7f0d0004;
         public static final int homeAsUp=0x7f0d000f;
         public static final int icon=0x7f0d0042;
@@ -2591,6 +2590,7 @@ containing a value of this type.
         public static final int palette_swatch=0x7f0d0071;
         public static final int parallax=0x7f0d001b;
         public static final int parentPanel=0x7f0d0046;
+        public static final int pause_icon=0x7f0d006e;
         public static final int pin=0x7f0d001c;
         public static final int progressView=0x7f0d006d;
         public static final int progress_circular=0x7f0d0006;

@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                         h.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                render_canvas.reRender();
+                                render_canvas.startRender();
                             }
                         }, getResources().getInteger(R.integer.activity_transition_duration));
                     }

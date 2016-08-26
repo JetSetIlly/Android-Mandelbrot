@@ -9,6 +9,5 @@ public interface RenderCanvas {
     void startRender();
     void stopRender();
     void resetCanvas();
-    void reRender();
     Bitmap getVisibleImage (boolean bilinear_filter);
 }

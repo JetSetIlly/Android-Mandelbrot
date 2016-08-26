@@ -99,6 +99,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean complete_render;
 
+    // reference to MandelbrotSettings singleton
+    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+
 
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
@@ -230,7 +233,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this_canvas_id = canvas_id;
         complete_render = false;
 
-        if (MandelbrotSettings.getInstance().render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -318,8 +321,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         // start render thread
                         mandelbrot.startRender();
 
-                        if (cumulative_image_scale < MAX_IMAGE_SCALE) {
-                            LogTools.printDebug(DBG_TAG, "unpause");
+                        if (mandelbrot_settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
                             gestures.unpauseZoom();
                         }
                     }
@@ -364,7 +366,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
         // check for pause condition
-        if (cumulative_image_scale >= MAX_IMAGE_SCALE) {
+        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_image_scale >= MAX_IMAGE_SCALE) {
             gestures.pauseZoom(true);
             // this pause condition will persist until a render has been completed - see endDraw()
             return;

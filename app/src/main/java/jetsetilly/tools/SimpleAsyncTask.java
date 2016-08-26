@@ -1,5 +1,6 @@
 package jetsetilly.tools;
 
+import android.os.DropBoxManager;
 import android.os.Process;
 import android.os.AsyncTask;
 import android.support.annotation.UiThread;
@@ -40,7 +41,7 @@ public class SimpleAsyncTask {
         @Override
         @WorkerThread
         protected Void doInBackground(Void... v) {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            // priority will be THREAD_PRIORITY_BACKGROUND unless overridden
             background_runnable.run();
             return null;
         }

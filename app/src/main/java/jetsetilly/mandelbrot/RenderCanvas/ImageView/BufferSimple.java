@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.graphics.Bitmap;
+import android.os.Process;
 import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;

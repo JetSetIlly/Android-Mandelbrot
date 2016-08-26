@@ -19,7 +19,7 @@ public class GestureOverlay extends ImageView implements
         GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener
 {
-    private static final String DBG_TAG = "gesture overlay";
+    private static final String DBG_TAG = LogTools.NO_LOG_PREFIX + "gesture overlay";
 
     MainActivity context;
 

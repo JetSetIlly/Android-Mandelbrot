@@ -45,6 +45,7 @@ public class BufferSimple extends Buffer {
             new SimpleAsyncTask(new Runnable() {
                 @Override
                 public void run() {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST);
                     render_canvas.setDisplay(pixels);
                 }
             });

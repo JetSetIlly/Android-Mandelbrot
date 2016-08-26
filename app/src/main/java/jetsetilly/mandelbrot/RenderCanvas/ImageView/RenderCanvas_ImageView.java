@@ -562,6 +562,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     protected int setDisplay(final int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
+        if (SimpleRunOnUI.isUIThread()) LogTools.printDebug(DBG_TAG, "setDisplay() running on UI thread");
+
         if (transition_type == TransitionType.CROSS_FADE) {
             // get speed of animation (we'll actually set the speed later)
             final int speed;
@@ -579,12 +581,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             }
 
             // prepare foreground. this is the image we transition from
+            final int foreground_pixels[] = new int[canvas_width * canvas_height];
+            display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+            foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             SimpleRunOnUI.run(main_activity, new Runnable() {
                 @Override
                 public void run() {
-                    int pixels[] = new int[canvas_width * canvas_height];
-                    display_bm.getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-                    foreground_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
                     foreground.setVisibility(VISIBLE);
                     foreground.setAlpha(1.0f);
                     foreground.invalidate();
@@ -592,11 +594,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             });
 
             // prepare final image. the image we transition to
+            display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             SimpleRunOnUI.run(main_activity, new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();
-                    display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
                     display.invalidate();
                 }
             });
@@ -624,11 +626,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
             return speed;
         } else {
+            display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             SimpleRunOnUI.run(main_activity, new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();
-                    display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
                     display.invalidate();
                 }
             });

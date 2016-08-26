@@ -8,8 +8,15 @@ import java.util.concurrent.Semaphore;
 public class SimpleRunOnUI {
     static private final String DBG_TAG = "SimpleRunOnUI";
 
-    static public void run(AppCompatActivity activity, final Runnable runnable) {
+    static public boolean isUIThread() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
+            return true;
+        }
+        return false;
+    }
+
+    static public void run(AppCompatActivity activity, final Runnable runnable) {
+        if (isUIThread()) {
             runnable.run();
         } else {
             final Semaphore sync = new Semaphore(1);

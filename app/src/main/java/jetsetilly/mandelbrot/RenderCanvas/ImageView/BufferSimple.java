@@ -6,7 +6,6 @@ import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class BufferSimple extends Buffer {

@@ -321,6 +321,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         // start render thread
                         mandelbrot.startRender();
 
+                        // unpause zoom gesture if we're below that maximum image scale or
+                        // if we're using software rendering
                         if (mandelbrot_settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
                             gestures.unpauseZoom();
                         }
@@ -553,15 +555,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         return bm;
     }
 
-    protected int setDisplay(final int pixels[]) {
+    protected int setDisplay(int pixels[]) {
         return setDisplay(pixels, TransitionType.CROSS_FADE, TransitionSpeed.NORMAL);
     }
 
-    protected int setDisplay(final int pixels[], @TransitionType int transition_type) {
+    protected int setDisplay(int pixels[], @TransitionType int transition_type) {
         return setDisplay(pixels, transition_type, TransitionSpeed.NORMAL);
     }
 
-    protected int setDisplay(final int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
+    protected int setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
         if (SimpleRunOnUI.isUIThread()) LogTools.printDebug(DBG_TAG, "setDisplay() running on UI thread");
 
         if (transition_type == TransitionType.CROSS_FADE) {
@@ -581,7 +583,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             }
 
             // prepare foreground. this is the image we transition from
-            final int foreground_pixels[] = new int[canvas_width * canvas_height];
+            int foreground_pixels[] = new int[canvas_width * canvas_height];
             display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             SimpleRunOnUI.run(main_activity, new Runnable() {

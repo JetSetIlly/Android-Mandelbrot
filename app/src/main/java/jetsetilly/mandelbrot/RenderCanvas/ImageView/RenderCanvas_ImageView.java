@@ -326,6 +326,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         if (mandelbrot_settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
                             gestures.unpauseZoom();
                         }
+                        gestures.unpauseScroll();
                     }
                 }
         );
@@ -367,6 +368,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
+        float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
+        if (!(canvas.getX() == 0 && canvas.getY() == 0 && old_image_scale == 1.0f)) {
+            // some combinations of scroll and zooming don't work
+            LogTools.printWTF(DBG_TAG, "not auto zooming because we've moved and scaled since last render");
+            gestures.pauseZoom(true);
+            return;
+        }
+
+        stopRender();
+
         // check for pause condition
         if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_image_scale >= MAX_IMAGE_SCALE) {
             gestures.pauseZoom(true);
@@ -377,37 +388,24 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             // startRender() and unpause there
             gestures.pauseZoom(false);
         }
-
-        stopRender();
+        gestures.pauseScroll();
 
         // correct offset values
         offset_x -= half_canvas_width;
         offset_y -= half_canvas_height;
 
-        // transform offsets by current scroll/image_scale state
-        float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
+        // restrict offset_x and offset_y so that the zoomed image doesn't show
+        // the background image
+        if (offset_x > half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
+            offset_x = half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale);
+        } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
+            offset_x = - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale);
+        }
 
-        if (canvas.getX() == 0 && canvas.getY() == 0 && old_image_scale == 1.0f) {
-            // restrict offset_x and offset_y so that the zoomed image doesn't show
-            // the background image
-            if (offset_x > half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
-                offset_x = half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale);
-            } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
-                offset_x = - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale);
-            }
-
-            if (offset_y > half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
-                offset_y = half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale);
-            } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
-                offset_y = - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale);
-            }
-        } else {
-            // this code path shouldn't ever be used
-            LogTools.printWTF(DBG_TAG, "auto-zoom after scroll/manual zoom (?)");
-            offset_x -= canvas.getX();
-            offset_y -= canvas.getY();
-            offset_x /= old_image_scale;
-            offset_y /= old_image_scale;
+        if (offset_y > half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
+            offset_y = half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale);
+        } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
+            offset_y = - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale);
         }
 
         // get new image_scale value - old_image_scale will be 1 if this is the first scale in the sequence

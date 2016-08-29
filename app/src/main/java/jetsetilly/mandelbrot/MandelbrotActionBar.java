@@ -41,9 +41,9 @@ public class MandelbrotActionBar extends Toolbar {
         setVisibility(false);
     }
 
-    public void show_noanim() {
+    public void enforceVisibility() {
         if (getVisibility() == INVISIBLE) {
-            status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            status_bar.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
             setX(0f);
             setVisibility(VISIBLE);
         }

@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Process;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -129,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onResume() {
-        action_bar.show_noanim();
+        action_bar.enforceVisibility();
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(dialog_receiver, new IntentFilter(IterationsDialog.ITERATIONS_DIALOG_INTENT));
     }

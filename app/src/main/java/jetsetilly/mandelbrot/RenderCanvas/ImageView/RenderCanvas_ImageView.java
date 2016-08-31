@@ -31,8 +31,6 @@ import jetsetilly.tools.SimpleRunOnUI;
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
-    MainActivity main_activity;
-
     // bitmap config to use depending on SystemSettings.deep_colour
     Bitmap.Config bitmap_config;
 
@@ -132,8 +130,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         super(context, attrs, defStyleAttr);
     }
 
-    public void initialise(final MainActivity main_activity) {
-        this.main_activity = main_activity;
+    public void initialise(final MainActivity context) {
+        super.initialise(context);
 
         removeAllViews();
 
@@ -143,44 +141,32 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             bitmap_config = Bitmap.Config.RGB_565;
         }
 
-        // create the views used for rendering
-        canvas = new RelativeLayout(main_activity);
-        addView(canvas);
+        canvas = new RelativeLayout(context);
 
-        display = new ImageView(main_activity);
-        foreground = new ImageView(main_activity);
+        display = new ImageView(context);
+        display.setScaleType(ImageView.ScaleType.CENTER);
+        display.setLayerType(LAYER_TYPE_HARDWARE, null);
+
+        foreground = new ImageView(context);
+        foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
         foreground.setVisibility(INVISIBLE);
 
-        // add the views in order - from back to front
+        addView(canvas);
         canvas.addView(display);
         canvas.addView(foreground);
 
         post(new Runnable() {
             @Override
             public void run() {
-                // set scale type of fractal canvas to reckon from the centre of the view
-                display.setScaleType(ImageView.ScaleType.CENTER);
-
-                // set to hardware acceleration if available
-                // TODO: proper hardware acceleration using SurfaceView
-                display.setLayerType(LAYER_TYPE_HARDWARE, null);
-                foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
-
-                // create display canvas
                 display_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-                display.setImageBitmap(display_bm);
-
-                // create foreground bitmap
                 foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
+
+                display.setImageBitmap(display_bm);
                 foreground.setImageBitmap(foreground_bm);
-
                 invalidate();
-
-                // reset canvas will start the new render
                 resetCanvas();
             }
         });
-        super.initialise(main_activity);
     }
     /*** END OF initialisation ***/
 
@@ -195,7 +181,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void invalidate() {
-        SimpleRunOnUI.run(main_activity, new Runnable() {
+        SimpleRunOnUI.run(context, new Runnable() {
             @Override
             public void run() {
                 display.invalidate();
@@ -584,7 +570,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             int foreground_pixels[] = new int[canvas_width * canvas_height];
             display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(main_activity, new Runnable() {
+            SimpleRunOnUI.run(context, new Runnable() {
                 @Override
                 public void run() {
                     foreground.setVisibility(VISIBLE);
@@ -595,7 +581,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
             // prepare final image. the image we transition to
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(main_activity, new Runnable() {
+            SimpleRunOnUI.run(context, new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();
@@ -614,7 +600,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 }
             };
 
-            SimpleRunOnUI.run(main_activity, new Runnable() {
+            SimpleRunOnUI.run(context, new Runnable() {
                 @Override
                 public void run() {
                     transition_anim.withEndAction(transition_end_runnable);
@@ -627,7 +613,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return speed;
         } else {
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(main_activity, new Runnable() {
+            SimpleRunOnUI.run(context, new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();

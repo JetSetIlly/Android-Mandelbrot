@@ -40,34 +40,27 @@ import jetsetilly.tools.SimpleAsyncTask;
 public class MainActivity extends AppCompatActivity {
     private final String DBG_TAG = "main activity";
 
-    // IDs for other activities. used in calls to startActivityForResult()
-    // and onActivityResult() implementation
+    // used to identify activities in onActivityResult(). set when calling startActivityForResult()
     private static final int PALETTE_ACTIVITY_ID = 1;
     private static final int SETTINGS_ACTIVITY_ID = 2;
 
-    private static final int PERMISSIONS_SAVE_IMAGE = 1;
+    // used to segregate calls to onRequestPermissionsResult(). set by requestPermissions() when
+    // doing something that requires user approval
+    private static final int REQUEST_PERMISSIONS_SAVE_IMAGE = 1;
 
-    // allow other classes to access resources (principally PaletteDefinition)
-    // not sure if there is a more elegant way to do this - this seems heavy handed
-    static public Resources resources;
-    
-    // reference to render canvas
-    static private RenderCanvas render_canvas;
+    private RenderCanvas render_canvas;
+    private DialogReceiver dialog_receiver;
 
-    // declaring these as static so that it is globally accessible
+    /*** static declarations ***/
+    // declaring these as static so that they are globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     //
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
+    static public Resources resources;
     static public ProgressView progress;
     static public MandelbrotActionBar action_bar;
-
     static public RenderScript render_script;
-
-    // handler for dialogs
-    private DialogReceiver dialog_receiver;
-
-    // reference to this object so that we can reference it inside the dialog receiver
-    private AppCompatActivity this_activity;
+    /*** END OF static declarations ***/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,12 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        // maintain un-shadow-able reference to this
-        this_activity = this;
-
         // resources
         resources = getResources();
 
+        // basic layout
         setContentView(R.layout.activity_main);
 
         // set up actionbar
@@ -111,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         progress = (ProgressView) findViewById(R.id.progressView);
 
         // create new DialogReceiver
-        dialog_receiver = new DialogReceiver();
+        dialog_receiver = new DialogReceiver(this);
 
         // set render running as soon as possible
         render_canvas = (RenderCanvas) findViewById(R.id.fractalView);
@@ -263,6 +254,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class DialogReceiver extends BroadcastReceiver {
+        private MainActivity main_activity;
+
+        public DialogReceiver(MainActivity main_activity) {
+            this.main_activity = main_activity;
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent == null || intent.getAction() == null) {
@@ -276,15 +273,15 @@ public class MainActivity extends AppCompatActivity {
                         int max_iterations = intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations);
                         if (max_iterations != mandelbrot_settings.max_iterations) {
                             mandelbrot_settings.max_iterations = max_iterations;
-                            MainActivity.render_canvas.startRender();
+                            render_canvas.startRender();
                         }
                         break;
 
                     case IterationsDialog.ACTION_MORE:
-                        Intent settings_intent = new Intent(this_activity, SettingsActivity.class);
+                        Intent settings_intent = new Intent(main_activity, SettingsActivity.class);
                         settings_intent.putExtra(SettingsActivity.INITIAL_ITERATIONS_VALUE, intent.getIntExtra(IterationsDialog.SET_VALUE, mandelbrot_settings.max_iterations));
                         startActivityForResult(settings_intent, SETTINGS_ACTIVITY_ID);
-                        this_activity.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_from_left_wifth_fade);
+                        main_activity.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_from_left_wifth_fade);
                         break;
                 }
             }
@@ -294,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PERMISSIONS_SAVE_IMAGE:
+            case REQUEST_PERMISSIONS_SAVE_IMAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     saveImage();
                 } else {
@@ -308,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
     private void trySaveImage() {
         int permission_check = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permission_check != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_SAVE_IMAGE);
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_SAVE_IMAGE);
         } else {
             saveImage();
         }

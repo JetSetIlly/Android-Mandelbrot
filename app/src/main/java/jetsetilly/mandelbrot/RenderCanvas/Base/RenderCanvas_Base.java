@@ -15,7 +15,7 @@ import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 
 abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler {
-    private MainActivity main_activity;
+    protected MainActivity context;
     protected Mandelbrot mandelbrot;
     protected GestureOverlay gestures;
 
@@ -48,12 +48,12 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gestureOverlay);
         assert this.gestures != null;
         this.gestures.setup(main_activity, this);
-        this.main_activity = main_activity;
+        this.context = main_activity;
     }
 
     @CallSuper
     public void resetCanvas() {
         // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(main_activity, this, (TextView) main_activity.findViewById(R.id.infoPane));
+        mandelbrot = new Mandelbrot(context, this, (TextView) context.findViewById(R.id.infoPane));
     }
 }

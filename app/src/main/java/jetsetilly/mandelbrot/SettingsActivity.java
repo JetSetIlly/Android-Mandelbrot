@@ -22,10 +22,13 @@ import jetsetilly.mandelbrot.View.ReportingSeekBar;
 public class SettingsActivity extends AppCompatActivity {
     private final String DBG_TAG = "settings activity";
 
-    public final static String INITIAL_ITERATIONS_VALUE = "INITIAL_ITERATIONS_VALUE";
-    public static final Integer ACTIVITY_RESULT_NO_RENDER = 1;
-    public static final Integer ACTIVITY_RESULT_RENDER = 2;
-    public static final Integer ACTIVITY_RESULTS_REINITIALISE = 3;
+    // start up parameters - sent by startActivityForResult() in MainActivity
+    public final static String SETUP_INITIAL_ITERATIONS_VAL = "INITIAL_ITERATIONS_VAL";
+
+    // result of activity - received by MainActivity.onActivityResult()
+    public static final Integer RESULT_NO_RENDER = 1;
+    public static final Integer RESULT_RENDER = 2;
+    public static final Integer RESULTS_REINITIALISE = 3;
 
     private IterationsSeekBar iterations;
     private IterationsRateSeekBar iterations_rate;
@@ -65,7 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // get the max_iterations as passed by intent
         Intent settings_intent = getIntent();
-        initial_iterations_value = settings_intent.getIntExtra(INITIAL_ITERATIONS_VALUE, mandelbrot_settings.max_iterations);
+        initial_iterations_value = settings_intent.getIntExtra(SETUP_INITIAL_ITERATIONS_VAL, mandelbrot_settings.max_iterations);
 
         // if orientation option changes, call apply settings to immediately
         // reflect the change for this activity
@@ -145,9 +148,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                // return ACTIVITY_RESULT_NO_RENDER by default, return ACTIVITY_RESULT_RENDER under
+                // return RESULT_NO_RENDER by default, return RESULT_RENDER under
                 // specific circumstances (see below)
-                setResult(ACTIVITY_RESULT_NO_RENDER);
+                setResult(RESULT_NO_RENDER);
 
                 // changes to these settings have no effect on final render image
                 switch (render_mode.getCheckedRadioButtonId()) {
@@ -180,13 +183,13 @@ public class SettingsActivity extends AppCompatActivity {
                 if (iterations.hasChanged() || bailout.hasChanged()) {
                     mandelbrot_settings.max_iterations = iterations.getInteger();
                     mandelbrot_settings.bailout_value = bailout.getDouble();
-                    setResult(ACTIVITY_RESULT_RENDER);
+                    setResult(RESULT_RENDER);
                 }
 
                 // changes to deep_colour setting require reinitialisation
                 if (system_settings.deep_colour != deep_colour.isChecked()) {
                     system_settings.deep_colour = deep_colour.isChecked();
-                    setResult(ACTIVITY_RESULTS_REINITIALISE);
+                    setResult(RESULTS_REINITIALISE);
                 }
 
                 finish();

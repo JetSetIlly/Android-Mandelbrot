@@ -20,9 +20,14 @@ import jetsetilly.mandelbrot.Settings.SystemSettings;
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
 
-    public static final Integer ACTIVITY_RESULT_CHANGE = 1;
-    public static final String ACTIVITY_RESULT_PALETTE_ID = "PALETTE_ID";
-    public static final String ACTIVITY_RESULT_PALETTE_SMOOTHNESS = "PALETTE_SMOOTHNESS";
+    // result of activity - received by MainActivity.onActivityResult()
+    public static final Integer RESULT_NO_CHANGE = 1;
+    public static final Integer RESULT_CHANGE = 2;
+
+    // payload for activity result == RESULT_CHANGE
+    // - received by MainActivity.onActivityResult()
+    public static final String RESULT_PAYLOAD_PALETTE_ID = "PALETTE_ID";
+    public static final String RESULT_PAYLOAD_SMOOTHNESS = "SMOOTHNESS";
 
     private GridView palette_entries;
     private int smoothness;
@@ -69,7 +74,7 @@ public class PaletteActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(dialog_receiver, new IntentFilter(SmoothnessDialog.SMOOTHNESS_DIALOG_INTENT));
+        LocalBroadcastManager.getInstance(this).registerReceiver(dialog_receiver, new IntentFilter(SmoothnessDialog.RESULT_ID));
     }
 
     @Override
@@ -82,17 +87,17 @@ public class PaletteActivity extends AppCompatActivity {
             case R.id.palette_action_smoothness:
                 SmoothnessDialog smoothness_dialog = new SmoothnessDialog();
                 Bundle args = new Bundle();
-                args.putInt(SmoothnessDialog.SET_VALUE, smoothness);
+                args.putInt(SmoothnessDialog.RESULT_PAYLOAD, smoothness);
                 smoothness_dialog.setArguments(args);
                 smoothness_dialog.show(getFragmentManager(), null);
                 break;
 
             case android.R.id.home:
                 Intent activity_result_intent = new Intent(this, MainActivity.class);
-                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_SMOOTHNESS, smoothness);
-                activity_result_intent.putExtra(ACTIVITY_RESULT_PALETTE_ID,
+                activity_result_intent.putExtra(RESULT_PAYLOAD_SMOOTHNESS, smoothness);
+                activity_result_intent.putExtra(RESULT_PAYLOAD_PALETTE_ID,
                     ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID());
-                setResult(ACTIVITY_RESULT_CHANGE, activity_result_intent);
+                setResult(RESULT_CHANGE, activity_result_intent);
 
                 finish();
                 setTransitionAnim();
@@ -127,10 +132,10 @@ public class PaletteActivity extends AppCompatActivity {
                 return;
             }
 
-            if (intent.getAction().equals(SmoothnessDialog.SMOOTHNESS_DIALOG_INTENT)) {
-                switch(intent.getStringExtra(SmoothnessDialog.INTENT_ACTION)) {
+            if (intent.getAction().equals(SmoothnessDialog.RESULT_ID)) {
+                switch(intent.getStringExtra(SmoothnessDialog.RESULT_ACTION)) {
                     case SmoothnessDialog.ACTION_SET:
-                        smoothness = intent.getIntExtra(SmoothnessDialog.SET_VALUE, smoothness);
+                        smoothness = intent.getIntExtra(SmoothnessDialog.RESULT_PAYLOAD, smoothness);
                         break;
                 }
             }

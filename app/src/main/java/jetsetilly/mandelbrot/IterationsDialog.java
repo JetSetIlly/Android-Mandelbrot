@@ -1,7 +1,6 @@
 package jetsetilly.mandelbrot;
 
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,15 +11,10 @@ import android.view.View;
 import android.view.WindowManager;
 
 import jetsetilly.mandelbrot.View.IterationsSeekBar;
+import jetsetilly.tools.SimpleDialog;
 
-public class IterationsDialog extends DialogFragment {
+public class IterationsDialog extends SimpleDialog {
     private IterationsSeekBar iterations;
-
-    public static final String ITERATIONS_DIALOG_INTENT = "ITERATIONS_DIALOG";
-    public static final String INTENT_ACTION = "ITERATIONS_DIALOG_SET";
-    public static final String ACTION_SET = "ITERATIONS_DIALOG_SET";
-    public static final String ACTION_MORE = "ITERATIONS_DIALOG_MORE";
-    public static final String SET_VALUE = "SET_ITERATIONS_VALUE";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -32,17 +26,17 @@ public class IterationsDialog extends DialogFragment {
         builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if (iterations.hasChanged()) {
-                    Intent intent = new Intent(ITERATIONS_DIALOG_INTENT);
-                    intent.putExtra(INTENT_ACTION, ACTION_SET);
-                    intent.putExtra(SET_VALUE, iterations.getInteger());
+                    Intent intent = new Intent(RESULT_ID);
+                    intent.putExtra(RESULT_ACTION, ACTION_SET);
+                    intent.putExtra(RESULT_PAYLOAD, iterations.getInteger());
                     LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                 }
             }
         }).setNeutralButton(R.string.dialog_more, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Intent intent = new Intent(ITERATIONS_DIALOG_INTENT);
-                intent.putExtra(INTENT_ACTION, ACTION_MORE);
-                intent.putExtra(SET_VALUE, iterations.getInteger());
+                Intent intent = new Intent(RESULT_ID);
+                intent.putExtra(RESULT_ACTION, ACTION_MORE);
+                intent.putExtra(RESULT_PAYLOAD, iterations.getInteger());
                 LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
             }
         }).setNegativeButton(R.string.dialog_cancel, null);

@@ -15,10 +15,10 @@ public class MandelbrotSettings {
     public double imaginary_lower;
     public double bailout_value;
     public int max_iterations;
-    public int iterations_rate;     // @Mandelbrot.IterationsRate
-    public int render_mode;         // @Mandelbrot.RenderMode
+    @Mandelbrot.IterationsRate public int iterations_rate;
+    @Mandelbrot.RenderMode public int render_mode;
     public int num_passes;
-    public int calculation_method;  // @Mandelbrot.CalculationMethod
+    @Mandelbrot.CalculationMethod public int calculation_method;
 
     public void reset() {
         real_left = Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].real_left;
@@ -51,6 +51,9 @@ public class MandelbrotSettings {
         prefs_editor.apply();
     }
 
+    @SuppressWarnings("WrongConstant")
+    // suppress WrongConstant warnings for this method -  SharedPrefs.getInt() returns an int
+    // not an @IntDef and there's no way of annotating or casting the result
     public void restore(Context context) {
         // set interface to reflect stored values
         SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
@@ -61,6 +64,7 @@ public class MandelbrotSettings {
         imaginary_lower = getDouble(prefs, "imaginary_lower", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].imaginary_lower);
         bailout_value = getDouble(prefs, "bailout_value", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].bailout_value);
         max_iterations = prefs.getInt("max_iterations", Bookmarks.presets[Bookmarks.DEFAULT_SETTINGS].max_iterations);
+
         iterations_rate = prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL);
         render_mode = prefs.getInt("render_mode", Mandelbrot.RenderMode.SOFTWARE_CENTRE);
         num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);

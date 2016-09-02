@@ -258,12 +258,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setBackgroundColor(background_colour);
         complete_render = !cancelled;
         this_canvas_id = NO_CANVAS_ID;
-        buffer_latch.release();
 
         if (complete_render) {
             cumulative_image_scale = 1.0f;
             gestures.unpauseZoom();
         }
+
+        buffer_latch.release();
     }
 
     // any thread

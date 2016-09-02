@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     // declaring these as static so that they are globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
-    static public Resources resources;
     static public ProgressView progress;
     static public MandelbrotActionBar action_bar;
     static public RenderScript render_script;
@@ -70,9 +69,6 @@ public class MainActivity extends AppCompatActivity {
                 .build());
 
         super.onCreate(savedInstanceState);
-
-        // resources
-        resources = getResources();
 
         // basic layout
         setContentView(R.layout.activity_main);
@@ -165,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_toggle_info_pane:
                 final View info_pane = findViewById(R.id.infoPane);
                 if (info_pane.getVisibility() == View.INVISIBLE) {
-                    info_pane.animate().setDuration(resources.getInteger(R.integer.info_pane_fade)).alpha(1f)
+                    info_pane.animate().setDuration(getResources().getInteger(R.integer.info_pane_fade)).alpha(1f)
                             .withStartAction(new Runnable() {
                                 @Override
                                 public void run() {
@@ -174,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                     ).start();
                 } else {
-                    info_pane.animate().setDuration(resources.getInteger(R.integer.info_pane_fade)).alpha(0f)
+                    info_pane.animate().setDuration(getResources().getInteger(R.integer.info_pane_fade)).alpha(0f)
                             .withEndAction(new Runnable() {
                                 @Override
                                 public void run() {

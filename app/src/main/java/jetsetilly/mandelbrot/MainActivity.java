@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
             if (intent.getAction().equals(IterationsDialog.RESULT_ID)) {
                 MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
                 switch(intent.getStringExtra(IterationsDialog.RESULT_ACTION)) {
-                    case IterationsDialog.ACTION_SET:
+                    case IterationsDialog.ACTION_POSITIVE:
                         int max_iterations = intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot_settings.max_iterations);
                         if (max_iterations != mandelbrot_settings.max_iterations) {
                             mandelbrot_settings.max_iterations = max_iterations;
@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         break;
 
-                    case IterationsDialog.ACTION_MORE:
+                    case IterationsDialog.ACTION_NEUTRAL:
                         Intent settings_intent = new Intent(main_activity, SettingsActivity.class);
                         settings_intent.putExtra(SettingsActivity.SETUP_INITIAL_ITERATIONS_VAL, intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot_settings.max_iterations));
                         startActivityForResult(settings_intent, ACTIVITY_ID_SETTINGS);

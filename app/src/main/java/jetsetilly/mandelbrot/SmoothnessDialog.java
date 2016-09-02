@@ -61,7 +61,7 @@ public class SmoothnessDialog extends SimpleDialog {
     @Override
     public void onDismiss(DialogInterface dialog) {
         Intent intent = new Intent(RESULT_ID);
-        intent.putExtra(RESULT_ACTION, ACTION_SET);
+        intent.putExtra(RESULT_ACTION, ACTION_POSITIVE);
         intent.putExtra(RESULT_PAYLOAD, smoothness.getInteger());
         LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
     }

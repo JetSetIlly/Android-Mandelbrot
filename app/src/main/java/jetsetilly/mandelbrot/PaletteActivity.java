@@ -134,7 +134,7 @@ public class PaletteActivity extends AppCompatActivity {
 
             if (intent.getAction().equals(SmoothnessDialog.RESULT_ID)) {
                 switch(intent.getStringExtra(SmoothnessDialog.RESULT_ACTION)) {
-                    case SmoothnessDialog.ACTION_SET:
+                    case SmoothnessDialog.ACTION_POSITIVE:
                         smoothness = intent.getIntExtra(SmoothnessDialog.RESULT_PAYLOAD, smoothness);
                         break;
                 }

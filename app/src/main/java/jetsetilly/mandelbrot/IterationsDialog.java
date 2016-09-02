@@ -27,7 +27,7 @@ public class IterationsDialog extends SimpleDialog {
             public void onClick(DialogInterface dialog, int id) {
                 if (iterations.hasChanged()) {
                     Intent intent = new Intent(RESULT_ID);
-                    intent.putExtra(RESULT_ACTION, ACTION_SET);
+                    intent.putExtra(RESULT_ACTION, ACTION_POSITIVE);
                     intent.putExtra(RESULT_PAYLOAD, iterations.getInteger());
                     LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                 }
@@ -35,7 +35,7 @@ public class IterationsDialog extends SimpleDialog {
         }).setNeutralButton(R.string.dialog_more, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Intent intent = new Intent(RESULT_ID);
-                intent.putExtra(RESULT_ACTION, ACTION_MORE);
+                intent.putExtra(RESULT_ACTION, ACTION_NEUTRAL);
                 intent.putExtra(RESULT_PAYLOAD, iterations.getInteger());
                 LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
             }

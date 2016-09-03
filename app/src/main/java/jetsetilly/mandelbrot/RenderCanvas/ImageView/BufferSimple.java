@@ -5,24 +5,22 @@ import android.os.Process;
 import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Palette.Palette;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class BufferSimple extends Buffer {
     final static public String DBG_TAG = "buffer simple";
 
-    private final PaletteSettings palette_settings = PaletteSettings.getInstance();
-
+    private int[] palette = Palette.getPalette();
     private int[] pixels;
-
     private int[] palette_frequencies;
-    private int num_colours;
 
     public BufferSimple(RenderCanvas_ImageView canvas) {
         super(canvas);
+
+        palette = Palette.getPalette();
         pixels = new int[height * width];
-        num_colours = palette_settings.numColors();
-        palette_frequencies = new int[num_colours + 1];
+        palette_frequencies = new int[palette.length + 1];
     }
 
     @Override
@@ -56,7 +54,7 @@ public class BufferSimple extends Buffer {
                     most_frequent = i;
                 }
             }
-            render_canvas.background_colour = palette_settings.colours[most_frequent];
+            render_canvas.background_colour = palette[most_frequent];
         }
     }
 
@@ -67,15 +65,15 @@ public class BufferSimple extends Buffer {
             if (iteration != Mandelbrot.NULL_ITERATIONS) {
                 // figure out which colour to use
                 int palette_entry = iteration;
-                if (iteration >= num_colours) {
-                    palette_entry = (iteration % (num_colours - 1)) + 1;
+                if (iteration >= palette.length) {
+                    palette_entry = (iteration % (palette.length - 1)) + 1;
                 }
 
                 // put coloured pixel into pixel buffer - ready for flushing
-                pixels[i] = palette_settings.colours[palette_entry];
+                pixels[i] = palette[palette_entry];
 
                 // update palette frequency
-                // we don't want to consider colours[0] for the colour_cnt_highest
+                // we don't want to consider palette[0] for the colour_cnt_highest
                 // it's the zero space color it's not really a color
                 if (palette_entry > 0) {
                     palette_frequencies[palette_entry]++;

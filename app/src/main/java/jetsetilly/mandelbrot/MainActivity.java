@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,12 +28,9 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
-import jetsetilly.mandelbrot.Settings.GestureSettings;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Settings.SystemSettings;
-import jetsetilly.tools.SimpleAsyncTask;
+import jetsetilly.mandelbrot.Settings.Settings;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -79,19 +75,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(action_bar);
 
         // restore settings
-        final Context context = this;
-        new SimpleAsyncTask(new Runnable() {
-            @Override
-            public void run() {
-                MandelbrotSettings.getInstance().restore(context);
-                PaletteSettings.getInstance().restore(context);
-                GestureSettings.getInstance().restore(context);
-                SystemSettings.getInstance().restore(context);
-            }
-        });
+        MandelbrotCoordinates.getInstance().restore(this);
+        Settings.getInstance().restore(this);
 
         // render script instance -- alive for the entire lifespan of the app
-        render_script = RenderScript.create(context, RenderScript.ContextType.NORMAL);
+        render_script = RenderScript.create(this, RenderScript.ContextType.NORMAL);
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);
@@ -111,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(dialog_receiver);
+        MandelbrotCoordinates.getInstance().save(this);
+        Settings.getInstance().save(this);
     }
 
     protected void onResume() {
@@ -150,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_reset:
                 render_canvas.stopRender();
-                MandelbrotSettings.getInstance().reset();
+                MandelbrotCoordinates.getInstance().restoreDefaults(this);
                 render_canvas.resetCanvas();
                 return true;
 
@@ -189,50 +179,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int request_code, int result_code, Intent intent) {
         switch(request_code) {
             case ACTIVITY_ID_PALETTE:
-                if (result_code == PaletteActivity.RESULT_NO_CHANGE) {
-                    // do nothing
-                    return;
-                }
-
                 if (result_code == PaletteActivity.RESULT_CHANGE) {
-                    if (intent == null)
-                        return;
+                    Settings.getInstance().save(this);
+                    render_canvas.stopRender();
 
-                    PaletteSettings palette_settings = PaletteSettings.getInstance();
-
-                    int num_steps = intent.getIntExtra(PaletteActivity.RESULT_PAYLOAD_SMOOTHNESS, palette_settings.smoothness);
-                    int palette_id = intent.getIntExtra(PaletteActivity.RESULT_PAYLOAD_PALETTE_ID, palette_settings.selected_id);
-
-                    // stop/start render if any palette setting has changed
-                    if (palette_id != palette_settings.selected_id || num_steps != palette_settings.smoothness ) {
-                        render_canvas.stopRender();
-
-                        palette_settings.smoothness = num_steps;
-                        palette_settings.setColours(palette_id);
-                        palette_settings.save(this);
-
-                        // wait for transition from palette activity to this activity to complete
-                        // we do this simply by waiting an equivalent amount of time as the transition
-                        Handler h = new Handler();
-                        h.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                render_canvas.startRender();
-                            }
-                        }, getResources().getInteger(R.integer.activity_transition_duration));
+                    // wait for transition from palette activity to this activity to complete
+                    // we do this simply by waiting an equivalent amount of time as the transition
+                    Handler h = new Handler();
+                    h.postDelayed(new Runnable() {
+                              @Override
+                              public void run() {
+                            render_canvas.startRender();
                     }
+                    }, getResources().getInteger(R.integer.activity_transition_duration));
                 }
                 break;
 
             case ACTIVITY_ID_SETTINGS:
-                // note that settings have been changed in the settings activity
-                // save settings and restart render
-                MandelbrotSettings.getInstance().save(this);
-                GestureSettings.getInstance().save(this);
-                SystemSettings.getInstance().save(this);
+                // changes to Settings occurred in SettingsActivity
+                // -- now we save and apply those settings
+
+                Settings.getInstance().save(this);
                 applyOrientation();
 
-                if (result_code == SettingsActivity.RESULTS_REINITIALISE) {
+                if (result_code == SettingsActivity.RESULT_REINITIALISE) {
                     render_canvas.initialise(this);
                     render_canvas.startRender();
                 } else if (result_code == SettingsActivity.RESULT_RENDER) {
@@ -244,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applyOrientation() {
-        if (SystemSettings.getInstance().allow_screen_rotation) {
+        if (Settings.getInstance().allow_screen_rotation) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -265,19 +235,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (intent.getAction().equals(IterationsDialog.RESULT_ID)) {
-                MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+                MandelbrotCoordinates mandelbrot = MandelbrotCoordinates.getInstance().getInstance();
                 switch(intent.getStringExtra(IterationsDialog.RESULT_ACTION)) {
                     case IterationsDialog.ACTION_POSITIVE:
-                        int max_iterations = intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot_settings.max_iterations);
-                        if (max_iterations != mandelbrot_settings.max_iterations) {
-                            mandelbrot_settings.max_iterations = max_iterations;
+                        int max_iterations = intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot.max_iterations);
+                        if (max_iterations != mandelbrot.max_iterations) {
+                            mandelbrot.max_iterations = max_iterations;
                             render_canvas.startRender();
                         }
                         break;
 
                     case IterationsDialog.ACTION_NEUTRAL:
                         Intent settings_intent = new Intent(main_activity, SettingsActivity.class);
-                        settings_intent.putExtra(SettingsActivity.SETUP_INITIAL_ITERATIONS_VAL, intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot_settings.max_iterations));
+                        settings_intent.putExtra(SettingsActivity.SETUP_INITIAL_ITERATIONS_VAL, intent.getIntExtra(IterationsDialog.RESULT_PAYLOAD, mandelbrot.max_iterations));
                         startActivityForResult(settings_intent, ACTIVITY_ID_SETTINGS);
                         main_activity.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_from_left_wifth_fade);
                         break;

@@ -21,9 +21,7 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
-import jetsetilly.mandelbrot.Settings.GestureSettings;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Settings.SystemSettings;
+import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleRunOnUI;
@@ -53,11 +51,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // that ImageView that sits in front of RenderCanvas_ImageView in the layout. used to disguise changes
     // to main RenderCanvas_ImageView and allows us to animate changes
     private ImageView foreground;
-
-    // special widget used to listen for gestures -- better than listening for gestures
-    // on the RenderCanvas_ImageView because we want to scale the RenderCanvas_ImageView and scaling screws up
-    // distance measurements
-    private final GestureSettings gesture_settings = GestureSettings.getInstance();
 
     // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
@@ -97,9 +90,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // if render was interrupted prematurely (call to cancelDraw())
     private boolean complete_render;
 
-    // reference to MandelbrotSettings singleton
-    private MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
-
+    // settings
+    private final Settings settings = Settings.getInstance();
 
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
@@ -135,7 +127,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         removeAllViews();
 
-        if (SystemSettings.getInstance().deep_colour == true) {
+        if (settings.deep_colour == true) {
             bitmap_config = Bitmap.Config.ARGB_8888;
         } else {
             bitmap_config = Bitmap.Config.RGB_565;
@@ -219,7 +211,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this_canvas_id = canvas_id;
         complete_render = false;
 
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
         } else {
             buffer = new BufferTimer(this);
@@ -310,7 +302,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                         // unpause zoom gesture if we're below that maximum image scale or
                         // if we're using software rendering
-                        if (mandelbrot_settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
+                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
                             gestures.unpauseZoom();
                         }
                         gestures.unpauseScroll();
@@ -366,7 +358,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         // check for pause condition
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_image_scale >= MAX_IMAGE_SCALE) {
+        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_image_scale >= MAX_IMAGE_SCALE) {
             gestures.pauseZoom(true);
             // this pause condition will persist until a render has been completed - see endDraw()
             return;
@@ -383,16 +375,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // restrict offset_x and offset_y so that the zoomed image doesn't show
         // the background image
-        if (offset_x > half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
-            offset_x = half_canvas_width - (int) (half_canvas_width / gesture_settings.double_tap_scale);
-        } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale)) {
-            offset_x = - half_canvas_width + (int) (half_canvas_width / gesture_settings.double_tap_scale);
+        if (offset_x > half_canvas_width - (int) (half_canvas_width / settings.double_tap_scale)) {
+            offset_x = half_canvas_width - (int) (half_canvas_width / settings.double_tap_scale);
+        } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / settings.double_tap_scale)) {
+            offset_x = - half_canvas_width + (int) (half_canvas_width / settings.double_tap_scale);
         }
 
-        if (offset_y > half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
-            offset_y = half_canvas_height - (int) (half_canvas_height / gesture_settings.double_tap_scale);
-        } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale)) {
-            offset_y = - half_canvas_height + (int) (half_canvas_height / gesture_settings.double_tap_scale);
+        if (offset_y > half_canvas_height - (int) (half_canvas_height / settings.double_tap_scale)) {
+            offset_y = half_canvas_height - (int) (half_canvas_height / settings.double_tap_scale);
+        } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / settings.double_tap_scale)) {
+            offset_y = - half_canvas_height + (int) (half_canvas_height / settings.double_tap_scale);
         }
 
         // get new image_scale value - old_image_scale will be 1 if this is the first scale in the sequence
@@ -402,7 +394,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             // no user setting to control how much to zoom out
             image_scale = old_image_scale * 0.5f;
         } else {
-            image_scale = old_image_scale * gesture_settings.double_tap_scale;
+            image_scale = old_image_scale * settings.double_tap_scale;
         }
 
         // update cumulative image scale
@@ -452,8 +444,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         fractal_scale += amount / Math.hypot(canvas_width, canvas_height);
 
         // limit fractal_scale between max in/out ranges
-        fractal_scale = Math.max(gesture_settings.max_pinch_zoom_out,
-                Math.min(gesture_settings.max_pinch_zoom_in, fractal_scale));
+        fractal_scale = Math.max(settings.max_pinch_zoom_out,
+                Math.min(settings.max_pinch_zoom_in, fractal_scale));
 
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
 

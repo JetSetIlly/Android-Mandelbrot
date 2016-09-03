@@ -10,7 +10,8 @@ import android.widget.TextView;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
+import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleRunOnUI;
 
@@ -45,7 +46,8 @@ public class Mandelbrot {
     protected final MandelbrotCanvas canvas;
     private final TextView fractal_info;
 
-    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final MandelbrotCoordinates mandelbrot_coordinates = MandelbrotCoordinates.getInstance();
+    private final Settings settings = Settings.getInstance();
 
     private MandelbrotThread render_thr;
 
@@ -81,49 +83,20 @@ public class Mandelbrot {
     @Override
     public String toString() {
         return String.format(context.getResources().getString(R.string.mandelbrot_info_string),
-                mandelbrot_settings.imaginary_lower,
-                mandelbrot_settings.real_left,
-                mandelbrot_settings.real_right,
-                mandelbrot_settings.imaginary_lower,
+                mandelbrot_coordinates.imaginary_lower,
+                mandelbrot_coordinates.real_left,
+                mandelbrot_coordinates.real_right,
+                mandelbrot_coordinates.imaginary_lower,
                 pixel_scale,
-                mandelbrot_settings.max_iterations,
+                mandelbrot_coordinates.max_iterations,
                 BASE_PIXEL_SCALE / pixel_scale
         );
     }
 
-    /* transform -> correct -> save */
-    private void save() {
-        // save settings
-        mandelbrot_settings.save(context);
-
-        // restore settings straight away to force out any errors
-        // - now removed due to no issues being found
-        //mandelbrot_settings.restore(context);
-    }
-
-    private void correct()
-    {
-        // makes sure the pixel_scale is square when spanning the real and imaginary coordinates
-        // particularly useful if screen dimensions change, which it does if screen is rotated.
-
-        double canvas_ratio = (double) canvas.getCanvasWidth() / (double) canvas.getCanvasHeight();
-
-        // add padding to real axis
-        // note padding will be negative when correcting from landscape to portrait
-        double padding = (canvas_ratio * (mandelbrot_settings.imaginary_upper -  mandelbrot_settings.imaginary_lower)) - (mandelbrot_settings.real_right - mandelbrot_settings.real_left);
-        mandelbrot_settings.real_right += padding / 2;
-        mandelbrot_settings.real_left -= padding / 2;
-
-        // correct pixel scale
-        pixel_scale = (mandelbrot_settings.real_right - mandelbrot_settings.real_left) / canvas.getCanvasWidth();
-
-        save();
-    }
-
     private void transform(double offset_x, double offset_y, double fractal_scale)
     {
-        double fractal_width = mandelbrot_settings.real_right - mandelbrot_settings.real_left;
-        double fractal_height = mandelbrot_settings.imaginary_upper - mandelbrot_settings.imaginary_lower;
+        double fractal_width = mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left;
+        double fractal_height = mandelbrot_coordinates.imaginary_upper - mandelbrot_coordinates.imaginary_lower;
 
         if (fractal_scale != 0) {
             // use image scale value instead of fractal_scale value for calculating max_iterations
@@ -134,29 +107,45 @@ public class Mandelbrot {
                 LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
             }
 
-            mandelbrot_settings.real_left += fractal_scale * fractal_width;
-            mandelbrot_settings.real_right -= fractal_scale * fractal_width;
-            mandelbrot_settings.imaginary_upper -= fractal_scale * fractal_height;
-            mandelbrot_settings.imaginary_lower += fractal_scale * fractal_height;
+            mandelbrot_coordinates.real_left += fractal_scale * fractal_width;
+            mandelbrot_coordinates.real_right -= fractal_scale * fractal_width;
+            mandelbrot_coordinates.imaginary_upper -= fractal_scale * fractal_height;
+            mandelbrot_coordinates.imaginary_lower += fractal_scale * fractal_height;
 
-            double iterations_rate = IterationsRateValues[mandelbrot_settings.iterations_rate];
+            double iterations_rate = IterationsRateValues[settings.iterations_rate];
             if (image_scale > 1)
                 // scale up
-                mandelbrot_settings.max_iterations = mandelbrot_settings.max_iterations + (int) (mandelbrot_settings.max_iterations * image_scale / iterations_rate);
+                mandelbrot_coordinates.max_iterations = mandelbrot_coordinates.max_iterations + (int) (mandelbrot_coordinates.max_iterations * image_scale / iterations_rate);
             else {
                 // scale down
-                mandelbrot_settings.max_iterations = (int) ((mandelbrot_settings.max_iterations * iterations_rate) / (iterations_rate + (1.0/image_scale)));
+                mandelbrot_coordinates.max_iterations = (int) ((mandelbrot_coordinates.max_iterations * iterations_rate) / (iterations_rate + (1.0/image_scale)));
             }
         }
 
-        mandelbrot_settings.real_left += offset_x * pixel_scale;
-        mandelbrot_settings.real_right += offset_x * pixel_scale;
-        mandelbrot_settings.imaginary_upper += offset_y * pixel_scale;
-        mandelbrot_settings.imaginary_lower += offset_y * pixel_scale;
+        mandelbrot_coordinates.real_left += offset_x * pixel_scale;
+        mandelbrot_coordinates.real_right += offset_x * pixel_scale;
+        mandelbrot_coordinates.imaginary_upper += offset_y * pixel_scale;
+        mandelbrot_coordinates.imaginary_lower += offset_y * pixel_scale;
 
-        correct();
+        /* CORRECT */
+
+        // makes sure the pixel_scale is square when spanning the real and imaginary coordinates
+        // particularly useful if screen dimensions change, which it does if screen is rotated.
+
+        double canvas_ratio = (double) canvas.getCanvasWidth() / (double) canvas.getCanvasHeight();
+
+        // add padding to real axis
+        // note padding will be negative when correcting from landscape to portrait
+        double padding = (canvas_ratio * (mandelbrot_coordinates.imaginary_upper -  mandelbrot_coordinates.imaginary_lower)) - (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left);
+        mandelbrot_coordinates.real_right += padding / 2;
+        mandelbrot_coordinates.real_left -= padding / 2;
+
+        // correct pixel scale
+        pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas.getCanvasWidth();
+
+        /* SAVE */
+        mandelbrot_coordinates.save(context);
     }
-    /* END OF transform -> correct -> save */
 
     /* threading */
     public boolean stopRender() {
@@ -213,7 +202,7 @@ public class Mandelbrot {
             // start render
             MainActivity.progress.startSession();
 
-            if (mandelbrot_settings.render_mode == RenderMode.HARDWARE) {
+            if (settings.render_mode == RenderMode.HARDWARE) {
                 render_thr = new MandelbrotThread_renderscript(this);
             } else {
                 render_thr = new MandelbrotThread_dalvik(this);

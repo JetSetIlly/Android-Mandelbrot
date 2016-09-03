@@ -13,9 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.GridView;
 
-import jetsetilly.mandelbrot.Palette.PaletteActivityListAdapter;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
-import jetsetilly.mandelbrot.Settings.SystemSettings;
+import jetsetilly.mandelbrot.Palette.PaletteAdapter;
+import jetsetilly.mandelbrot.Settings.Settings;
 
 public class PaletteActivity extends AppCompatActivity {
     private final String DBG_TAG = "palette activity";
@@ -24,15 +23,13 @@ public class PaletteActivity extends AppCompatActivity {
     public static final Integer RESULT_NO_CHANGE = 1;
     public static final Integer RESULT_CHANGE = 2;
 
-    // payload for activity result == RESULT_CHANGE
-    // - received by MainActivity.onActivityResult()
-    public static final String RESULT_PAYLOAD_PALETTE_ID = "PALETTE_ID";
-    public static final String RESULT_PAYLOAD_SMOOTHNESS = "SMOOTHNESS";
-
     private GridView palette_entries;
-    private int smoothness;
+    private PaletteAdapter palette_adapter;
+    private int palette_smoothness;
 
     private DialogReceiver dialog_receiver;
+
+    private final Settings settings = Settings.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +44,9 @@ public class PaletteActivity extends AppCompatActivity {
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_24dp);
 
         palette_entries = (GridView) findViewById(R.id.palette_entries);
-        palette_entries.setAdapter(new PaletteActivityListAdapter(this));
-
-        smoothness = PaletteSettings.getInstance().smoothness;
+        palette_adapter = new PaletteAdapter(this);
+        palette_entries.setAdapter(palette_adapter);
+        palette_smoothness = settings.palette_smoothness;
 
         // create new DialogReceiver
         dialog_receiver = new DialogReceiver();
@@ -59,7 +56,7 @@ public class PaletteActivity extends AppCompatActivity {
     }
 
     private void applyOrientation() {
-        if (SystemSettings.getInstance().allow_screen_rotation) {
+        if (settings.allow_screen_rotation) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -87,17 +84,20 @@ public class PaletteActivity extends AppCompatActivity {
             case R.id.palette_action_smoothness:
                 SmoothnessDialog smoothness_dialog = new SmoothnessDialog();
                 Bundle args = new Bundle();
-                args.putInt(SmoothnessDialog.RESULT_PAYLOAD, smoothness);
+                args.putInt(SmoothnessDialog.INIT_PARAMS, palette_smoothness);
                 smoothness_dialog.setArguments(args);
                 smoothness_dialog.show(getFragmentManager(), null);
                 break;
 
             case android.R.id.home:
-                Intent activity_result_intent = new Intent(this, MainActivity.class);
-                activity_result_intent.putExtra(RESULT_PAYLOAD_SMOOTHNESS, smoothness);
-                activity_result_intent.putExtra(RESULT_PAYLOAD_PALETTE_ID,
-                    ((PaletteActivityListAdapter) palette_entries.getAdapter()).getSelectedPaletteID());
-                setResult(RESULT_CHANGE, activity_result_intent);
+                int selected_palette_id = palette_adapter.getSelectedPaletteID();
+                if (selected_palette_id != settings.selected_palette_id || palette_smoothness != settings.palette_smoothness) {
+                    settings.selected_palette_id = selected_palette_id;
+                    settings.palette_smoothness = palette_smoothness;
+                    setResult(RESULT_CHANGE);
+                } else {
+                    setResult(RESULT_NO_CHANGE);
+                }
 
                 finish();
                 setTransitionAnim();
@@ -135,7 +135,7 @@ public class PaletteActivity extends AppCompatActivity {
             if (intent.getAction().equals(SmoothnessDialog.RESULT_ID)) {
                 switch(intent.getStringExtra(SmoothnessDialog.RESULT_ACTION)) {
                     case SmoothnessDialog.ACTION_POSITIVE:
-                        smoothness = intent.getIntExtra(SmoothnessDialog.RESULT_PAYLOAD, smoothness);
+                        palette_smoothness = intent.getIntExtra(SmoothnessDialog.RESULT_PAYLOAD, palette_smoothness);
                         break;
                 }
             }
@@ -143,7 +143,7 @@ public class PaletteActivity extends AppCompatActivity {
     }
 
     /* called whenever an entry has been added - used to fix flaw in Android where animations
-    * are no always run (see call in PaletteActivityListAdapter()) */
+    * are no always run (see call in PaletteAdapter()) */
     public void adapter_getView_callback() {
         palette_entries.invalidateViews();
     }

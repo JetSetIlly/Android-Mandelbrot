@@ -10,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.mandelbrot.View.ReportingSeekBar;
 import jetsetilly.tools.SimpleDialog;
 
@@ -25,18 +25,18 @@ public class SmoothnessDialog extends SimpleDialog {
         builder.setView(createView());
 
         final Bundle args = getArguments();
-        smoothness.set(args.getInt(RESULT_PAYLOAD));
+        smoothness.set(args.getInt(INIT_PARAMS));
 
         builder.setPositiveButton(R.string.dialog_ok, null);
         builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                smoothness.set(args.getInt(RESULT_PAYLOAD));
+                smoothness.set(args.getInt(INIT_PARAMS));
             }
         });
         builder.setNeutralButton(R.string.dialog_default, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                smoothness.set(PaletteSettings.getInstance().DEF_SMOOTHNESS);
+                smoothness.set(Settings.getInstance().DEF_PALETTE_SMOOTHNESS);
             }
         });
 
@@ -69,9 +69,7 @@ public class SmoothnessDialog extends SimpleDialog {
     private View createView() {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.dialog_smoothness, null);
-
         smoothness = (ReportingSeekBar) view.findViewById(R.id.smoothness);
-
         return view;
     }
 }

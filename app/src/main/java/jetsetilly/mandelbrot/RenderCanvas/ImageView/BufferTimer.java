@@ -5,14 +5,13 @@ import android.graphics.Bitmap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Palette.Palette;
 
 public class BufferTimer extends Buffer {
     final static public String DBG_TAG = "buffer pixels";
 
-    private final PaletteSettings palette_settings = PaletteSettings.getInstance();
-
     private Bitmap bitmap;
+    private int[] palette;
     private int[] pixels;
     private long pixel_ct;
 
@@ -34,8 +33,10 @@ public class BufferTimer extends Buffer {
 
     public BufferTimer(RenderCanvas_ImageView canvas) {
         super(canvas);
+
+        palette = Palette.getPalette();
         pixels = new int[height * width];
-        palette_frequencies = new int[palette_settings.numColors() + 1];
+        palette_frequencies = new int[palette.length + 1];
     }
 
     @Override
@@ -63,7 +64,7 @@ public class BufferTimer extends Buffer {
                 most_frequent = i;
             }
         }
-        render_canvas.background_colour = palette_settings.colours[most_frequent];
+        render_canvas.background_colour = palette[most_frequent];
 
         update();
     }
@@ -77,15 +78,15 @@ public class BufferTimer extends Buffer {
 
         // figure out which colour to use
         int palette_entry = iteration;
-        if (iteration >= palette_settings.numColors()) {
-            palette_entry = (iteration % (palette_settings.numColors() - 1)) + 1;
+        if (iteration >= palette.length) {
+            palette_entry = (iteration % (palette.length - 1)) + 1;
         }
 
         // put coloured pixel into pixel buffer - ready for flushing
-        pixels[(cy * width) + cx] = palette_settings.colours[palette_entry];
+        pixels[(cy * width) + cx] = palette[palette_entry];
 
         // update palette frequency
-        // we don't want to consider colours[0] for the colour_cnt_highest
+        // we don't want to consider palette[0] for the colour_cnt_highest
         // it's the zero space color it's not really a color
         if (palette_entry > 0) {
             palette_frequencies[palette_entry]++;

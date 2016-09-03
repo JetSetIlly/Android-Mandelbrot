@@ -17,13 +17,13 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
         int i;
 
-        for (i = 1; i <= mandelbrot_settings.max_iterations; ++ i) {
+        for (i = 1; i <= mandelbrot_coordinates.max_iterations; ++ i) {
             B = 2.0 * A * B + y;
             A = U - V + x;
             U = A * A;
             V = B * B;
 
-            if (U + V > mandelbrot_settings.bailout_value) {
+            if (U + V > mandelbrot_coordinates.bailout_value) {
                 return i;
             }
         }
@@ -47,16 +47,16 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
         super.doInBackground();
 
-        switch (mandelbrot_settings.render_mode) {
+        switch (settings.render_mode) {
             case Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN:
-                for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
-                    my = mandelbrot_settings.imaginary_lower + (m.pixel_scale * pass);
+                for (int pass = 0; pass < settings.num_passes; ++pass) {
+                    my = mandelbrot_coordinates.imaginary_lower + (m.pixel_scale * pass);
 
-                    for (cy = pass; cy < canvas_height; cy += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes)) {
+                    for (cy = pass; cy < canvas_height; cy += settings.num_passes, my += (m.pixel_scale * settings.num_passes)) {
                         y_line = cy;
 
                         // PROTECTED AREA ACCOUNTING
-                        mx = mandelbrot_settings.real_left;
+                        mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
                             this_line_end = canvas_width;
@@ -83,16 +83,16 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                 int num_iterations;
                 int half_height = canvas_height / 2;
 
-                for (int pass = 0; pass < mandelbrot_settings.num_passes; ++pass) {
-                    my = mandelbrot_settings.imaginary_lower + ((half_height + pass) * m.pixel_scale);
-                    myb = mandelbrot_settings.imaginary_lower + ((half_height - mandelbrot_settings.num_passes + pass) * m.pixel_scale);
-                    for (cy = pass, cyb = mandelbrot_settings.num_passes - pass; cy < half_height; cy += mandelbrot_settings.num_passes, cyb += mandelbrot_settings.num_passes, my += (m.pixel_scale * mandelbrot_settings.num_passes), myb -= (m.pixel_scale * mandelbrot_settings.num_passes)) {
+                for (int pass = 0; pass < settings.num_passes; ++pass) {
+                    my = mandelbrot_coordinates.imaginary_lower + ((half_height + pass) * m.pixel_scale);
+                    myb = mandelbrot_coordinates.imaginary_lower + ((half_height - settings.num_passes + pass) * m.pixel_scale);
+                    for (cy = pass, cyb = settings.num_passes - pass; cy < half_height; cy += settings.num_passes, cyb += settings.num_passes, my += (m.pixel_scale * settings.num_passes), myb -= (m.pixel_scale * settings.num_passes)) {
 
                         // bottom half of image
                         y_line = half_height + cy;
 
                         // PROTECTED AREA ACCOUNTING
-                        mx = mandelbrot_settings.real_left;
+                        mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
                             this_line_end = canvas_width;
@@ -112,7 +112,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                         y_line = half_height - cyb;
 
                         // PROTECTED AREA ACCOUNTING
-                        mx = mandelbrot_settings.real_left;
+                        mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
                             this_line_end = canvas_width;

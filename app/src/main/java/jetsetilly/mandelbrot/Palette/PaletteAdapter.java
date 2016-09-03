@@ -13,13 +13,11 @@ import android.widget.ImageView;
 
 import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
-import jetsetilly.mandelbrot.Settings.PaletteSettings;
+import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
 
-public class PaletteActivityListAdapter implements ListAdapter {
+public class PaletteAdapter implements ListAdapter {
     private final String DBG_TAG = "palette list adapter";
-
-    private final PaletteSettings palette_settings = PaletteSettings.getInstance();
 
     private final PaletteActivity context;
     private final LayoutInflater inflater;
@@ -27,16 +25,15 @@ public class PaletteActivityListAdapter implements ListAdapter {
     private View selected_palette;
     private int selected_palette_id;
 
-    public PaletteActivityListAdapter(Context context) {
+    public PaletteAdapter(Context context) {
         super();
         this.context = (PaletteActivity) context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        selected_palette_id = palette_settings.selected_id;
+        selected_palette_id = Settings.getInstance().selected_palette_id;
     }
 
     public int getSelectedPaletteID() {
         return selected_palette_id;
-
     }
 
     @Override
@@ -49,7 +46,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
             view = convert_view;
         }
 
-        PaletteDefinition item = (PaletteDefinition) getItem(position);
+        Palette.PresetDefinition item = (Palette.PresetDefinition) getItem(position);
 
         ((TextView) view.findViewById(R.id.palette_label)).setText(item.name);
         ((TextView) view.findViewById(R.id.palette_id)).setText(String.format("%d", position));
@@ -151,7 +148,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
 
     @Override
     public int getCount() {
-        return palette_settings.palettes.length;
+        return Palette.presets.length;
     }
 
     @Override
@@ -176,7 +173,7 @@ public class PaletteActivityListAdapter implements ListAdapter {
     @Override
     public Object getItem(int position)
     {
-        return palette_settings.palettes[position];
+        return Palette.presets[position];
     }
 
     @Override

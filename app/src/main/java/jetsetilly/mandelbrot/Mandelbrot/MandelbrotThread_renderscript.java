@@ -32,13 +32,13 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         // set variables/arguments for this render
         script.set_canvas_height(canvas_height);
         script.set_canvas_width(canvas_width);
-        script.set_max_iterations(mandelbrot_settings.max_iterations);
+        script.set_max_iterations(mandelbrot_coordinates.max_iterations);
         script.set_null_iteration(Mandelbrot.NULL_ITERATIONS);
-        script.set_bailout_value(mandelbrot_settings.bailout_value);
-        script.set_imaginary_lower(mandelbrot_settings.imaginary_lower);
-        script.set_imaginary_upper(mandelbrot_settings.imaginary_upper);
-        script.set_real_left(mandelbrot_settings.real_left);
-        script.set_real_right(mandelbrot_settings.real_right);
+        script.set_bailout_value(mandelbrot_coordinates.bailout_value);
+        script.set_imaginary_lower(mandelbrot_coordinates.imaginary_lower);
+        script.set_imaginary_upper(mandelbrot_coordinates.imaginary_upper);
+        script.set_real_left(mandelbrot_coordinates.real_left);
+        script.set_real_right(mandelbrot_coordinates.real_right);
         script.set_pixel_scale(m.pixel_scale);
         script.set_render_left(m.render_area.left);
         script.set_render_right(m.render_area.right);

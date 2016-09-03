@@ -1,11 +1,16 @@
 package jetsetilly.mandelbrot.Palette;
 
-public class Presets {
+import android.content.Context;
+import android.graphics.Color;
+
+import jetsetilly.mandelbrot.Settings.Settings;
+
+public class Palette {
     // first colour is the color used for zero space. it is not used for any other
     //iteration. see MandelbrotQueue() for details.
 
-    static public final PaletteDefinition[] presets = {
-            new PaletteDefinition("Candied Stripes",
+    static public final PresetDefinition[] presets = {
+            new PresetDefinition("Candied Stripes",
                     new int[]{      0xFF000000,
                             0xFF213877, 0xFF0a5bff, 0xFF2d98c2,
                             0xFF99ccff, 0xFF55dddd, 0xFF33eeff,
@@ -16,7 +21,7 @@ public class Presets {
                             0xFFff51c5, 0xFFff0fcf
                     }),
 
-            new PaletteDefinition("Sunnydale",
+            new PresetDefinition("Sunnydale",
                     new int[]{       0xFF000000,
                             0xFF660000,    0xFFffaa00,    0xFFfff070,
                             0xFF2d322c,    0xFF221100,    0xFF441100,
@@ -26,7 +31,7 @@ public class Presets {
                             0xFF140f37,    0xFF110022,    0xFF000011
                     }),
 
-            new PaletteDefinition("Juniper",
+            new PresetDefinition("Juniper",
                     new int[] {       0xFF000000,
                             0xFF3F4642, 0xFF869BA5, 0xFF09A0FF, 0xFFCDCFDE, 0xFF87CEE8,
                             0xFF2D5643, 0xFF56AE51, 0xFF54A1AD, 0xFFF6D2C6, 0xFF8FCAAE,
@@ -37,7 +42,7 @@ public class Presets {
                             0xFF724045, 0xFFA95A6F, 0xFFBE6C88, 0xFFB98894, 0xFFD69FAE
                     }),
 
-            new PaletteDefinition("Original",
+            new PresetDefinition("Original",
                     new int[] {       0xFF000000,
                             0xFF4E474F, 0xFF8E869D,
                             0xFFFF941D, 0xFFFFEE45, 0xFF66B0E2,
@@ -50,7 +55,7 @@ public class Presets {
                             0xFFFFFF00, 0xFF2F53F3
                     }),
 
-            new PaletteDefinition("Green",
+            new PresetDefinition("Green",
                     new int[] {       0xFF000000,
                             0xFF254C23, 0xFFA08A7B,
                             0xFF9380FF, 0xFFC2BAFF, 0xFFB299FF,
@@ -63,7 +68,7 @@ public class Presets {
                             0xFF00A5FF, 0xFF01F2FF
                     }),
 
-            new PaletteDefinition("Orange",
+            new PresetDefinition("Orange",
                     new int[] {       0xFF000000,
                             0xFF7A6D66, 0xFFFFA50C,
                             0xFF00FFFF, 0xFFFBF5E0, 0xFFB0CEA0,
@@ -76,7 +81,7 @@ public class Presets {
                             0xFFDEE6ED, 0xFF9EB7D4
                     }),
 
-            new PaletteDefinition("Blue",
+            new PresetDefinition("Blue",
                     new int[] {       0xFF000000,
                             0xFF007CAC, 0xFFFFEEFF,
                             0xFFFFFFFF, 0xFFD3DCE1, 0xFF00C0FF,
@@ -89,7 +94,75 @@ public class Presets {
                             0xFFC1C1C1, 0xFFFFFF
                     }),
 
-            new PaletteDefinition("Monochrome",
+            new PresetDefinition("Monochrome",
                     new int[] {0xFF000000, 0xFFDDDDDD, 0xFFAAAAAA})
     };
+
+    static public int[] getPalette() {
+        Settings settings = Settings.getInstance();
+        return getPalette(settings.selected_palette_id, settings.palette_smoothness);
+    }
+
+    static public int[] getPalette(int preset_id, int smoothness) {
+        return presets[preset_id].getColours(smoothness);
+    }
+
+    public static class PresetDefinition {
+        private static final String DBG_TAG = "preset definition";
+
+        public String name;
+        public int[] colours;
+
+        private PaletteSwatch swatch;
+
+        public PresetDefinition(String name, int[] colours) {
+            this.name = name;
+            this.colours = colours;
+
+            // swatch will be generated later once we have a Context
+            swatch = null;
+        }
+
+        public PaletteSwatch getSwatch(Context context) {
+            if (swatch == null) {
+                swatch = new PaletteSwatch(context, colours);
+            }
+            return swatch;
+        }
+
+        public int[] getColours(int smoothness) {
+            int[] interpolated = new int[2 + (smoothness * (colours.length-2))];
+
+            // first colour (null colour)
+            interpolated[0] = colours[0];
+
+            // colours in between
+            for (int c = 1; c < colours.length-1; ++ c) {
+                int start_red = Color.red(colours[c]);
+                int start_green = Color.green(colours[c]);
+                int start_blue = Color.blue((colours[c]));
+                int end_red = Color.red(colours[c+1]);
+                int end_green = Color.green(colours[c+1]);
+                int end_blue = Color.blue((colours[c+1]));
+                int red_step = (end_red - start_red) / smoothness;
+                int green_step = (end_green - start_green) / smoothness;
+                int blue_step = (end_blue - start_blue) / smoothness;
+
+                interpolated[1 + (c * smoothness) - smoothness] = colours[c];
+
+                for (int s = 0; s < smoothness; ++ s) {
+                    interpolated[1 + (c * smoothness - smoothness) + s] = Color.rgb(
+                            start_red + (red_step * s),
+                            start_green + (green_step * s),
+                            start_blue + (blue_step * s)
+                    );
+                }
+            }
+
+            // last colour
+            interpolated[interpolated.length-1] = colours[colours.length-1];
+
+            return interpolated;
+        }
+    }
 }

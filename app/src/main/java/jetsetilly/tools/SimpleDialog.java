@@ -15,6 +15,8 @@ import android.app.DialogFragment;
 */
 
 public class SimpleDialog extends DialogFragment {
+    public static final String INIT_PARAMS = "PARAMS";
+
     public static final String RESULT_ID = "ITERATIONS_DIALOG";
     public static final String RESULT_ACTION = "ACTION";
     public static final String ACTION_POSITIVE = "POSITIVE";

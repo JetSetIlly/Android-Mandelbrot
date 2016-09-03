@@ -5,10 +5,10 @@ import android.util.AttributeSet;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.Settings;
 
 public class IterationsRateSeekBar extends ReportingSeekBar {
-    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    private final Settings settings = Settings.getInstance();
 
     public IterationsRateSeekBar(Context context) {
         this(context, null);
@@ -21,7 +21,7 @@ public class IterationsRateSeekBar extends ReportingSeekBar {
     }
 
     public void reset() {
-        set(mandelbrot_settings.iterations_rate, 0, Mandelbrot.IterationsRate.COUNT-1);
+        set(settings.iterations_rate, 0, Mandelbrot.IterationsRate.COUNT-1);
     }
 
     @Override

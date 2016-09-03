@@ -1,13 +1,13 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
-import android.os.Process;
 import android.support.annotation.CallSuper;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 
 import jetsetilly.mandelbrot.MainActivity;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
+import jetsetilly.mandelbrot.Settings.Settings;
 
 abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     /* from the android documentation:
@@ -20,7 +20,8 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
 
     protected long canvas_id;
 
-    protected final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
+    protected final MandelbrotCoordinates mandelbrot_coordinates = MandelbrotCoordinates.getInstance();
+    protected final Settings settings = Settings.getInstance();
     protected final Mandelbrot m;
 
     public MandelbrotThread(Mandelbrot context) {

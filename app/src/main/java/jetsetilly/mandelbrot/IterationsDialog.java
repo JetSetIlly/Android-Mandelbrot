@@ -62,9 +62,7 @@ public class IterationsDialog extends SimpleDialog {
     private View createView() {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.dialog_iterations, null);
-
         iterations = (IterationsSeekBar) view.findViewById(R.id.iterations);
-
         return view;
     }
 }

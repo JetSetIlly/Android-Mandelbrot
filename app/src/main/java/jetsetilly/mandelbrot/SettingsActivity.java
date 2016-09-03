@@ -12,9 +12,8 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Settings.MandelbrotSettings;
-import jetsetilly.mandelbrot.Settings.GestureSettings;
-import jetsetilly.mandelbrot.Settings.SystemSettings;
+import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
+import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.mandelbrot.View.IterationsRateSeekBar;
 import jetsetilly.mandelbrot.View.IterationsSeekBar;
 import jetsetilly.mandelbrot.View.ReportingSeekBar;
@@ -28,20 +27,19 @@ public class SettingsActivity extends AppCompatActivity {
     // result of activity - received by MainActivity.onActivityResult()
     public static final Integer RESULT_NO_RENDER = 1;
     public static final Integer RESULT_RENDER = 2;
-    public static final Integer RESULTS_REINITIALISE = 3;
+    public static final Integer RESULT_REINITIALISE = 3;
 
     private IterationsSeekBar iterations;
-    private IterationsRateSeekBar iterations_rate;
     private ReportingSeekBar bailout;
+    private IterationsRateSeekBar iterations_rate;
     private ReportingSeekBar double_tap;
     private ReportingSeekBar num_passes;
     private RadioGroup render_mode;
     private Switch deep_colour;
     private RadioGroup orientation;
 
-    private final MandelbrotSettings mandelbrot_settings = MandelbrotSettings.getInstance();
-    private final GestureSettings gesture_settings = GestureSettings.getInstance();
-    private final SystemSettings system_settings = SystemSettings.getInstance();
+    private final Settings settings = Settings.getInstance();
+    private final MandelbrotCoordinates mandelbrot_coordinates = MandelbrotCoordinates.getInstance();
 
     private int initial_iterations_value;
 
@@ -58,8 +56,8 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_24dp);
 
         iterations = (IterationsSeekBar) findViewById(R.id.iterations);
-        iterations_rate = (IterationsRateSeekBar) findViewById(R.id.iterations_rate);
         bailout = (ReportingSeekBar) findViewById(R.id.bailout);
+        iterations_rate = (IterationsRateSeekBar) findViewById(R.id.iterations_rate);
         double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
@@ -68,7 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // get the max_iterations as passed by intent
         Intent settings_intent = getIntent();
-        initial_iterations_value = settings_intent.getIntExtra(SETUP_INITIAL_ITERATIONS_VAL, mandelbrot_settings.max_iterations);
+        initial_iterations_value = settings_intent.getIntExtra(SETUP_INITIAL_ITERATIONS_VAL, mandelbrot_coordinates.max_iterations);
 
         // if orientation option changes, call apply settings to immediately
         // reflect the change for this activity
@@ -115,25 +113,26 @@ public class SettingsActivity extends AppCompatActivity {
     private void setValues() {
         // set values
         iterations.set(initial_iterations_value);
+        bailout.set(mandelbrot_coordinates.bailout_value);
+
         iterations_rate.reset();
-        bailout.set(mandelbrot_settings.bailout_value);
-        double_tap.set(gesture_settings.double_tap_scale);
-        num_passes.set(mandelbrot_settings.num_passes);
+        double_tap.set(settings.double_tap_scale);
+        num_passes.set(settings.num_passes);
 
         // set render mode radio button
-        if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
+        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
             render_mode.check(R.id.rendermode_hardware);
-        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN) {
+        } else if (settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN) {
             render_mode.check(R.id.rendermode_topdown);
-        } else if (mandelbrot_settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_CENTRE) {
+        } else if (settings.render_mode == Mandelbrot.RenderMode.SOFTWARE_CENTRE) {
             render_mode.check(R.id.rendermode_centre);
         }
 
         // deep colour switch
-        deep_colour.setChecked(system_settings.deep_colour);
+        deep_colour.setChecked(settings.deep_colour);
 
         // set screen orientation radio button
-        if (system_settings.allow_screen_rotation) {
+        if (settings.allow_screen_rotation) {
             orientation.check(R.id.orientation_sensor);
         } else {
             orientation.check(R.id.orientation_portrait);
@@ -148,48 +147,49 @@ public class SettingsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                // return RESULT_NO_RENDER by default, return RESULT_RENDER under
-                // specific circumstances (see below)
+                // return RESULT_NO_RENDER by default
                 setResult(RESULT_NO_RENDER);
 
                 // changes to these settings have no effect on final render image
                 switch (render_mode.getCheckedRadioButtonId()) {
                     case R.id.rendermode_hardware:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.HARDWARE;
+                        settings.render_mode = Mandelbrot.RenderMode.HARDWARE;
                         break;
                     case R.id.rendermode_topdown:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN;
+                        settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_TOP_DOWN;
                         break;
                     case R.id.rendermode_centre:
-                        mandelbrot_settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_CENTRE;
+                        settings.render_mode = Mandelbrot.RenderMode.SOFTWARE_CENTRE;
                         break;
                 }
 
                 switch(orientation.getCheckedRadioButtonId()) {
                     case R.id.orientation_portrait:
-                        system_settings.allow_screen_rotation = false;
+                        settings.allow_screen_rotation = false;
                         break;
 
                     case R.id.orientation_sensor:
-                        system_settings.allow_screen_rotation = true;
+                        settings.allow_screen_rotation = true;
                         break;
                 }
 
-                gesture_settings.double_tap_scale = double_tap.getFloat();
-                mandelbrot_settings.num_passes = num_passes.getInteger();
-                mandelbrot_settings.iterations_rate = iterations_rate.getProgress();
+                settings.double_tap_scale = double_tap.getFloat();
+                settings.num_passes = num_passes.getInteger();
+
+                //noinspection WrongConstant
+                settings.iterations_rate = iterations_rate.getProgress();
 
                 // changes to these settings DO have an effect on final render image
                 if (iterations.hasChanged() || bailout.hasChanged()) {
-                    mandelbrot_settings.max_iterations = iterations.getInteger();
-                    mandelbrot_settings.bailout_value = bailout.getDouble();
+                    mandelbrot_coordinates.max_iterations = iterations.getInteger();
+                    mandelbrot_coordinates.bailout_value = bailout.getDouble();
                     setResult(RESULT_RENDER);
                 }
 
                 // changes to deep_colour setting require reinitialisation
-                if (system_settings.deep_colour != deep_colour.isChecked()) {
-                    system_settings.deep_colour = deep_colour.isChecked();
-                    setResult(RESULTS_REINITIALISE);
+                if (settings.deep_colour != deep_colour.isChecked()) {
+                    settings.deep_colour = deep_colour.isChecked();
+                    setResult(RESULT_REINITIALISE);
                 }
 
                 finish();

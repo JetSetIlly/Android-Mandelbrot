@@ -9,7 +9,8 @@ public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "mandelbrot actionbar";
 
     private View status_bar;
-    private float alpha;
+    private float visible_alpha;
+    private float visible_y;
 
     public MandelbrotActionBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -35,9 +36,10 @@ public class MandelbrotActionBar extends Toolbar {
     public void completeSetup(MainActivity context, String title) {
         setLayerType(LAYER_TYPE_HARDWARE, null);
         status_bar = context.getWindow().getDecorView();
-        alpha = getAlpha();
         setTitle(title);
         setY(getStatusBarHeight(context));
+        visible_alpha = getAlpha();
+        visible_y = getY();
         setVisibility(false);
     }
 
@@ -55,10 +57,8 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.VISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_hide))
-                        .x(getWidth()/4)
                         .alpha(0.0f)
-                        .scaleX(0.95f)
-                        .scaleY(0.95f)
+                        .y(getY() + getHeight()/4)
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
@@ -71,11 +71,8 @@ public class MandelbrotActionBar extends Toolbar {
 
             if (getVisibility() == View.INVISIBLE) {
                 animate().setDuration(getResources().getInteger(R.integer.action_bar_show))
-                        .withLayer()
-                        .x(0)
-                        .alpha(alpha)
-                        .scaleX(1.0f)
-                        .scaleY(1.0f)
+                        .alpha(visible_alpha)
+                        .y(visible_y)
                         .withStartAction(new Runnable() {
                             @Override
                             public void run() {

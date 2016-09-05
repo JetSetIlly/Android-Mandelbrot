@@ -21,8 +21,9 @@ public class Settings {
     public float max_pinch_zoom_out;
 
     /* Palette Settings */
-    public int selected_palette_id;
+    public String selected_palette_id;
     public int palette_smoothness;
+    public boolean palette_reflect;
 
     /* System Settings */
     public boolean allow_screen_rotation;
@@ -33,8 +34,9 @@ public class Settings {
     private static final float DEF_DOUBLE_TAP_SCALE = 3.0f;
     private static final float DEF_MAX_PINCH_ZOOM_IN = 0.35f;
     private static final float DEF_MAX_PINCH_ZOOM_OUT = -0.5f;
-    private static final int DEF_PALETTE_ID = 0;
+    private static final String DEF_SELECTED_PALETTE_ID = "";
     public static final int DEF_PALETTE_SMOOTHNESS = 4;
+    public static final boolean DEF_PALETTE_REFLECT = false;
     private static final boolean DEF_ALLOW_SCREEN_ROTATION = false;
     private static final boolean DEF_DEEP_COLOUR = false;
 
@@ -69,7 +71,7 @@ public class Settings {
                 prefs_editor.putFloat("max_pinch_zoom_out", max_pinch_zoom_out);
 
                 // Palette Settings
-                prefs_editor.putInt("selected_palette_id", selected_palette_id);
+                prefs_editor.putString("selected_palette_id", selected_palette_id);
                 prefs_editor.putInt("palette_smoothness", palette_smoothness);
 
                 // System Settings
@@ -101,7 +103,7 @@ public class Settings {
                 max_pinch_zoom_out = prefs.getFloat("max_pinch_zoom_out", DEF_MAX_PINCH_ZOOM_OUT);
 
                 // Palette Settings
-                selected_palette_id = prefs.getInt("selected_palette_id", DEF_PALETTE_ID);
+                selected_palette_id = prefs.getString("selected_palette_id", DEF_SELECTED_PALETTE_ID);
                 palette_smoothness = prefs.getInt("palette_smoothness", DEF_PALETTE_SMOOTHNESS);
 
                 // System Settings

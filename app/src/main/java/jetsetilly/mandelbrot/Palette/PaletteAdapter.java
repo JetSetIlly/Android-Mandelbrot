@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.Palette;
 
 import android.content.Context;
 import android.database.DataSetObserver;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.ImageView;
+
+import java.util.HashMap;
 
 import jetsetilly.mandelbrot.PaletteActivity;
 import jetsetilly.mandelbrot.R;
@@ -23,16 +26,18 @@ public class PaletteAdapter implements ListAdapter {
     private final LayoutInflater inflater;
 
     private View selected_palette;
-    private int selected_palette_id;
+    private String selected_palette_id;
+    private HashMap<String, Bitmap> swatches;
 
     public PaletteAdapter(Context context) {
         super();
         this.context = (PaletteActivity) context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         selected_palette_id = Settings.getInstance().selected_palette_id;
+        swatches = new HashMap();
     }
 
-    public int getSelectedPaletteID() {
+    public String getSelectedPaletteID() {
         return selected_palette_id;
     }
 
@@ -46,19 +51,23 @@ public class PaletteAdapter implements ListAdapter {
             view = convert_view;
         }
 
-        Palette.PresetDefinition item = (Palette.PresetDefinition) getItem(position);
+        final Palette.PaletteEntry item = (Palette.PaletteEntry) getItem(position);
 
+        // set label
         ((TextView) view.findViewById(R.id.palette_label)).setText(item.name);
-        ((TextView) view.findViewById(R.id.palette_id)).setText(String.format("%d", position));
 
+        // get swatch from cache or generate (and put into cache) if necessary
         ImageView swatch = (ImageView) view.findViewById(R.id.palette_swatch);
-        swatch.setImageBitmap(item.getSwatch(context).bitmap);
+        if (!swatches.containsKey(item.name)) {
+            swatches.put(item.name, Palette.getInstance().generateSwatch(context, item.name));
+        }
 
-        // rotate the swatch by a small, random amount
-        //swatch.setRotation(getRandomDeviation());
+        // set swatch image
+        Bitmap swatch_bm = swatches.get(item.name);
+        swatch.setImageBitmap(swatch_bm);
 
         // tick this view if this is the currently selected palette
-        if (position == selected_palette_id) {
+        if (item.name.equals(selected_palette_id)) {
             selected_palette = view;
             view.findViewById(R.id.palette_selected_icon).setVisibility(View.VISIBLE);
         } else {
@@ -117,7 +126,7 @@ public class PaletteAdapter implements ListAdapter {
 
                 // note which palette entry this is
                 selected_palette = palette_entry;
-                selected_palette_id = Integer.parseInt((String) ((TextView) selected_palette.findViewById(R.id.palette_id)).getText());
+                selected_palette_id = item.name;
             }
         });
 
@@ -148,7 +157,7 @@ public class PaletteAdapter implements ListAdapter {
 
     @Override
     public int getCount() {
-        return Palette.presets.length;
+        return Palette.getInstance().numPalettes();
     }
 
     @Override
@@ -173,7 +182,7 @@ public class PaletteAdapter implements ListAdapter {
     @Override
     public Object getItem(int position)
     {
-        return Palette.presets[position];
+        return Palette.getInstance().getEntry(position);
     }
 
     @Override

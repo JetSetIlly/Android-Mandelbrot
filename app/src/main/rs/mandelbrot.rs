@@ -23,8 +23,10 @@ bool cancel_flag;
 static int doIterations(double x, double y) {
     double U, V, A, B;
 
-    U = (A = x) * A;
-    V = (B = y) * B;
+    A = x;
+    U = A * A;
+    B = y;
+    V = B * B;
 
     int i;
 

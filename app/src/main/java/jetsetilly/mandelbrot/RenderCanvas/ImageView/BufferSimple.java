@@ -11,14 +11,14 @@ import jetsetilly.tools.SimpleAsyncTask;
 public class BufferSimple extends Buffer {
     final static public String DBG_TAG = "buffer simple";
 
-    private int[] palette = Palette.getPalette();
+    private int[] palette;
     private int[] pixels;
     private int[] palette_frequencies;
 
     public BufferSimple(RenderCanvas_ImageView canvas) {
         super(canvas);
 
-        palette = Palette.getPalette();
+        palette = Palette.getInstance().getColours();
         pixels = new int[height * width];
         palette_frequencies = new int[palette.length + 1];
     }

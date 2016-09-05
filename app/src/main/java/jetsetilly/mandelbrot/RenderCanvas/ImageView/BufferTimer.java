@@ -34,7 +34,7 @@ public class BufferTimer extends Buffer {
     public BufferTimer(RenderCanvas_ImageView canvas) {
         super(canvas);
 
-        palette = Palette.getPalette();
+        palette = Palette.getInstance().getColours();
         pixels = new int[height * width];
         palette_frequencies = new int[palette.length + 1];
     }

@@ -90,7 +90,7 @@ public class PaletteActivity extends AppCompatActivity {
                 break;
 
             case android.R.id.home:
-                int selected_palette_id = palette_adapter.getSelectedPaletteID();
+                String selected_palette_id = palette_adapter.getSelectedPaletteID();
                 if (selected_palette_id != settings.selected_palette_id || palette_smoothness != settings.palette_smoothness) {
                     settings.selected_palette_id = selected_palette_id;
                     settings.palette_smoothness = palette_smoothness;

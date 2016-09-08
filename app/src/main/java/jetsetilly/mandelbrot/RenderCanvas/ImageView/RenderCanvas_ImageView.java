@@ -348,6 +348,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
+        LogTools.printDebug(DBG_TAG, "old image scale " + old_image_scale + "(" + fractal_scale + ")");
         if (!(canvas.getX() == 0 && canvas.getY() == 0 && old_image_scale == 1.0f)) {
             // some combinations of scroll and zooming don't work
             LogTools.printWTF(DBG_TAG, "not auto zooming because we've moved and scaled since last render");
@@ -357,16 +358,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         stopRender();
 
-        // check for pause condition
-        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_image_scale >= MAX_IMAGE_SCALE) {
-            gestures.pauseZoom(true);
-            // this pause condition will persist until a render has been completed - see endDraw()
-            return;
-        } else {
-            // pause without the icon. we'll check for this condition (< MAX_IMAGE_SCALE) in
-            // startRender() and unpause there
-            gestures.pauseZoom(false);
-        }
+        // pause gestures - startRender() will unpause as appropriate
+        gestures.pauseZoom(false);
         gestures.pauseScroll();
 
         // correct offset values

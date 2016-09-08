@@ -2,6 +2,7 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.graphics.Rect;
 import android.os.AsyncTask;
+import android.os.Debug;
 import android.os.Trace;
 import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
+import jetsetilly.tools.MyDebug;
 import jetsetilly.tools.SimpleRunOnUI;
 
 public class Mandelbrot {
@@ -149,14 +151,18 @@ public class Mandelbrot {
 
     /* threading */
     public boolean stopRender() {
-        if (render_thr == null) {
-            return false;
+            if (render_thr == null) {
+                return false;
+            }
+
+        try {
+            MyDebug.start("cancel render thread");
+            boolean ret_val = render_thr.cancel(false);
+            render_thr = null;
+            return ret_val;
+        } finally {
+            MyDebug.end();
         }
-
-        render_thr.cancel(false);
-        render_thr = null;
-
-        return true;
     }
 
     public void transformMandelbrot(double offset_x, double offset_y, double fractal_scale) {

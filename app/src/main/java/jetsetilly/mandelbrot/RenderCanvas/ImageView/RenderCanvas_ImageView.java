@@ -22,7 +22,6 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
-import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleRunOnUI;
@@ -30,13 +29,13 @@ import jetsetilly.tools.SimpleRunOnUI;
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
-    // bitmap config to use depending on SystemSettings.deep_colour
-    Bitmap.Config bitmap_config;
-
     // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
     // which are only callable from the UIThread
     private int canvas_width, half_canvas_width;
     private int canvas_height, half_canvas_height;
+
+    // bitmap config to use depending on SystemSettings.deep_colour
+    Bitmap.Config bitmap_config;
 
     // dominant colour to use as background colour - visible on scroll and zoom out events
     protected int background_colour;
@@ -55,26 +54,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
+
     // foreground_bm is whatever bitmap is currently displayed in foreground
     private Bitmap foreground_bm;
 
     // buffer implementation
     private Buffer buffer;
     private Semaphore buffer_latch = new Semaphore(1);
-
-    // canvas_id of most recent thread that has called MandelbrotCanvas.startDraw()
     private final long NO_CANVAS_ID = -1;
     private long this_canvas_id = NO_CANVAS_ID;
-
-    // the amount of deviation (offset) from the current display_bm
-    // used when chaining scroll and zoom events
-    // reset when render is restarted
-    // use getX() and getY() to retrieve current scroll values
-    private int rendered_offset_x;
-    private int rendered_offset_y;
-
-    // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
-    private double fractal_scale;
 
     // the amount of scaling since the last rendered image
     private double cumulative_image_scale = 1.0f;
@@ -86,13 +74,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // problem has something to do with pivot points but i couldn't figure it out properly.
     // it's such a fringe case however that this hack seems reasonable.
     private boolean scrolled_since_last_normalise;
-
-    // completed render is true if last render was finished to completion. set to true
-    // if render was interrupted prematurely (call to cancelDraw())
-    private boolean complete_render;
-
-    // settings
-    private final Settings settings = Settings.getInstance();
 
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
@@ -184,7 +165,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // not calling super method
     }
 
-
     public void resetCanvas() {
         // new render cache
         stopRender();
@@ -193,7 +173,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         setBackgroundColor(background_colour);
         startRender();
     }
-
 
     /*** MandelbrotCanvas implementation ***/
     @WorkerThread
@@ -210,7 +189,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         this_canvas_id = canvas_id;
-        complete_render = false;
+        incomplete_render = true;
 
         if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
             buffer = new BufferSimple(this);
@@ -249,10 +228,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         buffer.endDraw(cancelled);
         buffer = null;
         setBackgroundColor(background_colour);
-        complete_render = !cancelled;
+        incomplete_render = cancelled;
         this_canvas_id = NO_CANVAS_ID;
 
-        if (complete_render) {
+        if (!incomplete_render) {
             cumulative_image_scale = 1.0f;
             gestures.unpauseZoom();
         }
@@ -284,8 +263,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 new Runnable() {
                     @Override
                     public void run() {
-                        // start render thread
-                        mandelbrot.startRender(canvas);
+                        startRenderThread();
 
                         // unpause zoom gesture if we're below that maximum image scale or
                         // if we're using software rendering
@@ -299,16 +277,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender() {
-        if (mandelbrot != null) {
-            mandelbrot.stopRender();
-        }
-    }
-
-    private void transformMandelbrot() {
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale, complete_render);
-        fractal_scale = 0;
-        rendered_offset_x = 0;
-        rendered_offset_y = 0;
+        stopRenderThread();
     }
 
     /*** GestureHandler implementation ***/
@@ -378,7 +347,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         // update cumulative image scale
-        complete_render = false;
+        incomplete_render = true;
         cumulative_image_scale *= image_scale;
 
         // set zoom_factor and offsets ready for the new render
@@ -430,7 +399,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         float image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
 
         // update cumulative image scale
-        complete_render = false;
+        incomplete_render = true;
         cumulative_image_scale *= image_scale;
 
         canvas.setScaleX(image_scale);
@@ -453,7 +422,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         transformMandelbrot();
     }
 
-    public void fast_getVisibleImage(int pixels[]) {
+    private void fast_getVisibleImage(int pixels[]) {
         int offset, x, y, width, height;
 
         Arrays.fill(pixels, background_colour);

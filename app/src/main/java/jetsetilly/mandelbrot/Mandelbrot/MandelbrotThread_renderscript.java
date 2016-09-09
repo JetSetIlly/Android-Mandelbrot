@@ -10,8 +10,8 @@ import jetsetilly.mandelbrot.ScriptC_mandelbrot;
 public class MandelbrotThread_renderscript extends MandelbrotThread {
     final static public String DBG_TAG = "mandelbrot thread (renderscript)";
 
-    public MandelbrotThread_renderscript(Mandelbrot context) {
-        super(context);
+    public MandelbrotThread_renderscript(Mandelbrot mandelbrot, MandelbrotCanvas canvas) {
+        super(mandelbrot, canvas);
     }
     private ScriptC_mandelbrot script;
 
@@ -61,7 +61,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         // ... and draw
         boolean complete_plot;
         complete_plot = m.render_area.left == 0 && m.render_area.right == m.canvas_width && m.render_area.top == 0 && m.render_area.bottom == m.canvas_height;
-        m.canvas.plotIterations(canvas_id, iterations, complete_plot);
+        c.plotIterations(canvas_id, iterations, complete_plot);
 
         return null;
     }

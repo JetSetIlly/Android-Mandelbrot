@@ -2,11 +2,11 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.support.annotation.WorkerThread;
 
-class MandelbrotThread_dalvik extends MandelbrotThread {
+public class MandelbrotThread_dalvik extends MandelbrotThread {
     final static public String DBG_TAG = "mandelbrot thread (dalvik)";
 
-    public MandelbrotThread_dalvik(Mandelbrot context) {
-        super(context);
+    public MandelbrotThread_dalvik(Mandelbrot mandelbrot, MandelbrotCanvas canvas) {
+        super(mandelbrot, canvas);
     }
 
     private int doIterations(double x, double y) {
@@ -65,7 +65,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         // END OF PROTECTED AREA ACCOUNTING
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
-                            m.canvas.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
+                            c.plotIteration(canvas_id, cx, cy, doIterations(mx, my));
                         }
 
                         publishProgress();
@@ -102,7 +102,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, my);
-                            m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
+                            c.plotIteration(canvas_id, cx, y_line, num_iterations);
                         }
 
                         // top half of image
@@ -122,7 +122,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
                         for (cx = this_line_start; cx < this_line_end; ++cx, mx += m.pixel_scale) {
                             num_iterations = doIterations(mx, myb);
-                            m.canvas.plotIteration(canvas_id, cx, y_line, num_iterations);
+                            c.plotIteration(canvas_id, cx, y_line, num_iterations);
                         }
 
                         publishProgress();

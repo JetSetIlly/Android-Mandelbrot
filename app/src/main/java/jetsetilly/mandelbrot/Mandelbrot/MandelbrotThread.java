@@ -23,16 +23,18 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     protected final MandelbrotCoordinates mandelbrot_coordinates = MandelbrotCoordinates.getInstance();
     protected final Settings settings = Settings.getInstance();
     protected final Mandelbrot m;
+    protected final MandelbrotCanvas c;
 
-    public MandelbrotThread(Mandelbrot context) {
-        this.m = context;
+    public MandelbrotThread(Mandelbrot mandelbrot, MandelbrotCanvas canvas) {
+        this.m = mandelbrot;
+        this.c = canvas;
     }
 
     @Override
     @WorkerThread
     @CallSuper
     protected Void doInBackground(Void... v) {
-        m.canvas.startDraw(canvas_id);
+        c.startDraw(canvas_id);
         return null;
     }
 
@@ -41,7 +43,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onProgressUpdate(Void... v) {
         MainActivity.progress.kick(m.rescaling_render);
-        m.canvas.update(canvas_id);
+        c.update(canvas_id);
     }
 
     @Override
@@ -56,7 +58,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onPostExecute(Void v) {
-        m.canvas.endDraw(canvas_id, false);
+        c.endDraw(canvas_id, false);
         MainActivity.progress.unregister();
     }
 
@@ -64,7 +66,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onCancelled() {
-        m.canvas.endDraw(canvas_id, true);
+        c.endDraw(canvas_id, true);
         MainActivity.progress.unregister();
     }
 }

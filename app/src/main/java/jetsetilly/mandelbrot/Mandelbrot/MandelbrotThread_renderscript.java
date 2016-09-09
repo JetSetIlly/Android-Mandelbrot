@@ -20,18 +20,15 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
     protected Void doInBackground(Void... params) {
         super.doInBackground(params);
 
-        int canvas_width = m.canvas.getCanvasWidth();
-        int canvas_height = m.canvas.getCanvasHeight();
-
         Allocation allocation_iterations = Allocation.createSized(MainActivity.render_script,
-                Element.I32(MainActivity.render_script), canvas_height * canvas_width,
+                Element.I32(MainActivity.render_script), m.canvas_height * m.canvas_width,
                 Allocation.USAGE_SCRIPT);
 
         script = new ScriptC_mandelbrot(MainActivity.render_script);
 
         // set variables/arguments for this render
-        script.set_canvas_height(canvas_height);
-        script.set_canvas_width(canvas_width);
+        script.set_canvas_height(m.canvas_height);
+        script.set_canvas_width(m.canvas_width);
         script.set_max_iterations(mandelbrot_coordinates.max_iterations);
         script.set_null_iteration(Mandelbrot.NULL_ITERATIONS);
         script.set_bailout_value(mandelbrot_coordinates.bailout_value);
@@ -55,7 +52,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         publishProgress();
 
         // get result ...
-        int iterations[] = new int[canvas_height * canvas_width];
+        int iterations[] = new int[m.canvas_height * m.canvas_width];
         allocation_iterations.copyTo(iterations);
 
         // exit early if necessary
@@ -63,7 +60,7 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
 
         // ... and draw
         boolean complete_plot;
-        complete_plot = m.render_area.left == 0 && m.render_area.right == canvas_width && m.render_area.top == 0 && m.render_area.bottom == canvas_height;
+        complete_plot = m.render_area.left == 0 && m.render_area.right == m.canvas_width && m.render_area.top == 0 && m.render_area.bottom == m.canvas_height;
         m.canvas.plotIterations(canvas_id, iterations, complete_plot);
 
         return null;

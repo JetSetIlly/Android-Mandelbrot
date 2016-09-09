@@ -6,7 +6,4 @@ public interface MandelbrotCanvas {
     void plotIteration(long canvas_id, int dx, int dy, int iteration);
     void update(long canvas_id);
     void endDraw(long canvas_id, boolean cancelled);
-    int getCanvasWidth();
-    int getCanvasHeight();
-    boolean isCompleteRender();
 }

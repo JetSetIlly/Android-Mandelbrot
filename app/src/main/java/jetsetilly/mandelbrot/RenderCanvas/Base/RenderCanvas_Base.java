@@ -54,6 +54,6 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     @CallSuper
     public void resetCanvas() {
         // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(context, this, (TextView) context.findViewById(R.id.infoPane));
+        mandelbrot = new Mandelbrot(context, (TextView) context.findViewById(R.id.infoPane), getWidth(), getHeight());
     }
 }

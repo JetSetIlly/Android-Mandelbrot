@@ -45,8 +45,10 @@ public class Mandelbrot {
     public int[] IterationsRateValues = {50, 40, 30};
 
     private final AppCompatActivity context;
-    protected final MandelbrotCanvas canvas;
     private final TextView fractal_info;
+
+    protected final int canvas_width, canvas_height;
+    protected final double canvas_ratio;
 
     private final MandelbrotCoordinates mandelbrot_coordinates = MandelbrotCoordinates.getInstance();
     private final Settings settings = Settings.getInstance();
@@ -75,11 +77,13 @@ public class Mandelbrot {
     // is this render a rescaling render - we use this so that progress view is shown immediately
     boolean rescaling_render;
 
-    public Mandelbrot(AppCompatActivity context, MandelbrotCanvas canvas, TextView fractal_info) {
+    public Mandelbrot(AppCompatActivity context, TextView fractal_info, int canvas_width, int canvas_height) {
         this.context = context;
-        this.canvas = canvas;
         this.fractal_info = fractal_info;
         this.render_thr = null;
+        this.canvas_width = canvas_width;
+        this.canvas_height = canvas_height;
+        this.canvas_ratio = (double) canvas_width / (double) canvas_height;
     }
 
     @Override
@@ -134,8 +138,6 @@ public class Mandelbrot {
         // makes sure the pixel_scale is square when spanning the real and imaginary coordinates
         // particularly useful if screen dimensions change, which it does if screen is rotated.
 
-        double canvas_ratio = (double) canvas.getCanvasWidth() / (double) canvas.getCanvasHeight();
-
         // add padding to real axis
         // note padding will be negative when correcting from landscape to portrait
         double padding = (canvas_ratio * (mandelbrot_coordinates.imaginary_upper -  mandelbrot_coordinates.imaginary_lower)) - (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left);
@@ -143,7 +145,7 @@ public class Mandelbrot {
         mandelbrot_coordinates.real_left -= padding / 2;
 
         // correct pixel scale
-        pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas.getCanvasWidth();
+        pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas_width;
 
         /* SAVE */
         mandelbrot_coordinates.save(context);
@@ -165,29 +167,29 @@ public class Mandelbrot {
         }
     }
 
-    public void transformMandelbrot(double offset_x, double offset_y, double fractal_scale) {
+    public void transformMandelbrot(double offset_x, double offset_y, double fractal_scale, boolean complete_render) {
         // this function updates the mandelbrot co-ordinates. stopping any current threads.
         stopRender();
         transform(offset_x, offset_y, fractal_scale);
 
         // initialise render_area
-        render_area = new Rect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
+        render_area = new Rect(0, 0, canvas_width, canvas_height);
 
         // make sure render mode etc. is set correctly
         rescaling_render = fractal_scale != 0;
 
         // define render_area
-        if (fractal_scale == 0 && canvas.isCompleteRender()) {
+        if (fractal_scale == 0 && complete_render) {
             if (offset_x < 0) {
                 render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
-                render_area.left = canvas.getCanvasWidth() - (int) offset_x;
+                render_area.left = canvas_width - (int) offset_x;
             }
 
             if (offset_y < 0) { // moving down
                 render_area.bottom = (int) -offset_y;
             } else if (offset_y > 0) { // moving up
-                render_area.top = canvas.getCanvasHeight() - (int) offset_y;
+                render_area.top = canvas_height - (int) offset_y;
             }
         }
 
@@ -202,9 +204,13 @@ public class Mandelbrot {
         );
     }
 
-    public void startRender() {
+    protected MandelbrotCanvas canvas;
+
+    public void startRender(MandelbrotCanvas canvas) {
         Trace.beginSection("starting mandelbrot");
         try {
+            this.canvas = canvas;
+
             // start render
             MainActivity.progress.startSession();
 

@@ -37,9 +37,6 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
         int cx, cy, cyb;
         double mx, my, myb;
 
-        int canvas_width = m.canvas.getCanvasWidth();
-        int canvas_height = m.canvas.getCanvasHeight();
-
         // protected area accounting
         int this_line_start;
         int this_line_end;
@@ -52,14 +49,14 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                 for (int pass = 0; pass < settings.num_passes; ++pass) {
                     my = mandelbrot_coordinates.imaginary_lower + (m.pixel_scale * pass);
 
-                    for (cy = pass; cy < canvas_height; cy += settings.num_passes, my += (m.pixel_scale * settings.num_passes)) {
+                    for (cy = pass; cy < m.canvas_height; cy += settings.num_passes, my += (m.pixel_scale * settings.num_passes)) {
                         y_line = cy;
 
                         // PROTECTED AREA ACCOUNTING
                         mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
-                            this_line_end = canvas_width;
+                            this_line_end = m.canvas_width;
                         } else {
                             mx += (m.pixel_scale * m.render_area.left);
                             this_line_start = m.render_area.left;
@@ -81,7 +78,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
 
             case Mandelbrot.RenderMode.SOFTWARE_CENTRE:
                 int num_iterations;
-                int half_height = canvas_height / 2;
+                int half_height = m.canvas_height / 2;
 
                 for (int pass = 0; pass < settings.num_passes; ++pass) {
                     my = mandelbrot_coordinates.imaginary_lower + ((half_height + pass) * m.pixel_scale);
@@ -95,7 +92,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                         mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
-                            this_line_end = canvas_width;
+                            this_line_end = m.canvas_width;
                         } else {
                             mx += (m.pixel_scale * m.render_area.left);
                             this_line_start = m.render_area.left;
@@ -115,7 +112,7 @@ class MandelbrotThread_dalvik extends MandelbrotThread {
                         mx = mandelbrot_coordinates.real_left;
                         if (y_line >= m.render_area.top && y_line <= m.render_area.bottom) {
                             this_line_start = 0;
-                            this_line_end = canvas_width;
+                            this_line_end = m.canvas_width;
                         } else {
                             mx += (m.pixel_scale * m.render_area.left);
                             this_line_start = m.render_area.left;

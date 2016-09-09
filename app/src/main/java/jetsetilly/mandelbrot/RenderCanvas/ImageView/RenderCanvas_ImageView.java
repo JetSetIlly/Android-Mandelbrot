@@ -18,6 +18,7 @@ import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
@@ -258,21 +259,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         buffer_latch.release();
     }
-
-    // any thread
-    public int getCanvasWidth() {
-        return canvas_width;
-    }
-
-    // any thread
-    public int getCanvasHeight() {
-        return canvas_height;
-    }
-
-    // any thread
-    public boolean isCompleteRender() {
-        return complete_render;
-    }
     /*** END OF MandelbrotCanvas implementation ***/
 
     private void normaliseCanvas(){
@@ -286,6 +272,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void startRender() {
         stopRender();
 
+        final MandelbrotCanvas canvas = this;
         new SimpleAsyncTask(
                 new Runnable() {
                     @Override
@@ -298,7 +285,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         // start render thread
-                        mandelbrot.startRender();
+                        mandelbrot.startRender(canvas);
 
                         // unpause zoom gesture if we're below that maximum image scale or
                         // if we're using software rendering
@@ -318,7 +305,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     private void transformMandelbrot() {
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale);
+        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale, complete_render);
         fractal_scale = 0;
         rendered_offset_x = 0;
         rendered_offset_y = 0;

@@ -11,8 +11,8 @@ abstract class Buffer {
 
     public Buffer(RenderCanvas_ImageView canvas) {
         render_canvas = canvas;
-        width = canvas.getCanvasWidth();
-        height = canvas.getCanvasHeight();
+        width = canvas.getWidth();
+        height = canvas.getHeight();
     }
 
     abstract void startDraw(Bitmap bitmap);

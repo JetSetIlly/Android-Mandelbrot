@@ -1,7 +1,5 @@
 package jetsetilly.tools;
 
-import android.os.DropBoxManager;
-import android.os.Process;
 import android.os.AsyncTask;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -34,7 +32,7 @@ public class SimpleAsyncTask {
         this.cancelled_runnable = cancelled_runnable;
 
         Task task = new Task();
-        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        task.execute();
     }
 
     private class Task extends AsyncTask<Void, Void, Void> {

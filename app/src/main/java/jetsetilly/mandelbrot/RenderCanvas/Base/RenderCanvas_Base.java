@@ -18,7 +18,7 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_renderscript;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
-import jetsetilly.tools.SimpleRunOnUI;
+import jetsetilly.tools.MyDebug;
 
 abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler {
     protected MainActivity context;
@@ -43,7 +43,6 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     // whether or not the previous render completed its work
     protected boolean incomplete_render;
     /*** end ***/
-
 
     public RenderCanvas_Base(Context context) {
         super(context);
@@ -93,9 +92,8 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
             render_thr = new MandelbrotThread_dalvik(mandelbrot, this);
         }
 
-        render_thr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        render_thr.execute();
     }
-
 
     protected void stopRenderThread() {
         if (render_thr == null) {
@@ -114,12 +112,12 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         rendered_offset_y = 0;
 
         // display mandelbrot info
-        SimpleRunOnUI.run(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        fractal_info.setText(mandelbrot.toString());
-                    }
+        post(new Runnable() {
+                @Override
+                public void run() {
+                    fractal_info.setText(mandelbrot.toString());
                 }
+            }
         );
     }
 

@@ -2,21 +2,13 @@ package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.AsyncTask;
-import android.os.Debug;
-import android.os.Trace;
 import android.support.annotation.IntDef;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
 
-import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
-import jetsetilly.tools.MyDebug;
-import jetsetilly.tools.SimpleRunOnUI;
 
 public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";

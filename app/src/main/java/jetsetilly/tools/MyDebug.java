@@ -14,7 +14,7 @@ public class MyDebug {
 
     static public void end() {
         long runtime = System.nanoTime() - start_time;
-        String output = String.format("runtime [%s]: %dns (%.2f%% frames)", tag, runtime, 100*runtime/(double)NANO_PER_FRAME);
+        String output = String.format("runtime [%s]: %dns (%.2f frames)", tag, runtime, runtime/(double)NANO_PER_FRAME);
         LogTools.printDebug(DBG_TAG, output);
     }
 }

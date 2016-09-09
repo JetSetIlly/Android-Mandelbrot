@@ -18,13 +18,11 @@ import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
-import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
 import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
-import jetsetilly.tools.SimpleRunOnUI;
 
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
@@ -155,7 +153,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void invalidate() {
-        SimpleRunOnUI.run(context, new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display.invalidate();
@@ -248,10 +246,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = false;
     }
 
+    private void cancelAnimations() {
+        foreground.clearAnimation();
+        canvas.clearAnimation();
+    }
+
     public void startRender() {
         stopRender();
 
-        final MandelbrotCanvas canvas = this;
         new SimpleAsyncTask(
                 new Runnable() {
                     @Override
@@ -264,13 +266,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         startRenderThread();
-
-                        // unpause zoom gesture if we're below that maximum image scale or
-                        // if we're using software rendering
-                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
-                            gestures.unpauseZoom();
-                        }
-                        gestures.unpauseScroll();
                     }
                 }
         );
@@ -292,6 +287,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y += y;
 
         // offset entire image view rather than using the scrolling ability
+        cancelAnimations();
         canvas.setX(canvas.getX() - (x * image_scale));
         canvas.setY(canvas.getY() - (y * image_scale));
 
@@ -304,10 +300,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(fractal_scale);
-        LogTools.printDebug(DBG_TAG, "old image scale " + old_image_scale + "(" + fractal_scale + ")");
+
+        // some combinations of scroll and zooming don't work
         if (!(canvas.getX() == 0 && canvas.getY() == 0 && old_image_scale == 1.0f)) {
-            // some combinations of scroll and zooming don't work
-            LogTools.printWTF(DBG_TAG, "not auto zooming because we've moved and scaled since last render");
             gestures.pauseZoom(true);
             return;
         }
@@ -356,6 +351,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y = offset_y;
 
         // do animation
+        cancelAnimations();
         ViewPropertyAnimator anim = canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * image_scale);
@@ -373,6 +369,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
+                // unpause zoom gesture if we're below that maximum image scale or
+                // if we're using software rendering
+                if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
+                    gestures.unpauseZoom();
+                }
+                gestures.unpauseScroll();
+
                 startRender();
             }
         });
@@ -490,8 +493,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     protected int setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
-        if (SimpleRunOnUI.isUIThread()) LogTools.printDebug(DBG_TAG, "setDisplay() running on UI thread");
-
         if (transition_type == TransitionType.CROSS_FADE) {
             // get speed of animation (we'll actually set the speed later)
             final int speed;
@@ -512,7 +513,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             int foreground_pixels[] = new int[canvas_width * canvas_height];
             display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(context, new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     foreground.setVisibility(VISIBLE);
@@ -523,17 +524,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
             // prepare final image. the image we transition to
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(context, new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();
                     display.invalidate();
                 }
             });
-
-            // do animation
-
-            final ViewPropertyAnimator transition_anim = foreground.animate();
 
             final Runnable transition_end_runnable = new Runnable() {
                 @Override
@@ -542,9 +539,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 }
             };
 
-            SimpleRunOnUI.run(context, new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
+                    // do animation
+                    ViewPropertyAnimator transition_anim = foreground.animate();
+
                     transition_anim.withEndAction(transition_end_runnable);
                     transition_anim.setDuration(speed);
                     transition_anim.alpha(0.0f);
@@ -555,7 +555,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return speed;
         } else {
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            SimpleRunOnUI.run(context, new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     normaliseCanvas();

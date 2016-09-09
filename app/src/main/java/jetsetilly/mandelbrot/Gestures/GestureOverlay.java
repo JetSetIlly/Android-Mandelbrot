@@ -97,22 +97,24 @@ public class GestureOverlay extends ImageView implements
 
     public void unpauseZoom() {
         pause_zoom = false;
-        long delay_time = System.currentTimeMillis() - pause_icon_time;
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ViewPropertyAnimator anim = pause_icon.animate();
-                anim.alpha(0.0f);
-                anim.withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        pause_icon.setVisibility(INVISIBLE);
-                        pause_icon.setAlpha(1.0f);
-                    }
-                });
-                anim.start();
-            }
-        }, MIN_PAUSE_ICON_DURATION - delay_time);
+        if (pause_icon.getVisibility() == VISIBLE) {
+            long delay_time = System.currentTimeMillis() - pause_icon_time;
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    ViewPropertyAnimator anim = pause_icon.animate();
+                    anim.alpha(0.0f);
+                    anim.withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            pause_icon.setVisibility(INVISIBLE);
+                            pause_icon.setAlpha(1.0f);
+                        }
+                    });
+                    anim.start();
+                }
+            }, MIN_PAUSE_ICON_DURATION - delay_time);
+        }
     }
 
     public void pauseScroll() {

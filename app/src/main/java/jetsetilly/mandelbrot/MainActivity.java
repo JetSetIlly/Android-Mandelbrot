@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+        // restore settings
+        MandelbrotCoordinates.getInstance().restore(this);
+        Settings.getInstance().restore(this);
+
         // basic layout
         setContentView(R.layout.activity_main);
 
@@ -74,10 +78,6 @@ public class MainActivity extends AppCompatActivity {
         action_bar = (MandelbrotActionBar) findViewById(R.id.toolbar);
         action_bar.completeSetup(this, getResources().getString(R.string.app_name));
         setSupportActionBar(action_bar);
-
-        // restore settings
-        MandelbrotCoordinates.getInstance().restore(this);
-        Settings.getInstance().restore(this);
 
         // render script instance -- alive for the entire lifespan of the app
         {

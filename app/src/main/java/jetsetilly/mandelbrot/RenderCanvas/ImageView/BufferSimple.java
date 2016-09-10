@@ -6,6 +6,7 @@ import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Palette.Palette;
+import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class BufferSimple extends Buffer {
@@ -39,7 +40,7 @@ public class BufferSimple extends Buffer {
     @Override
     public void endDraw(boolean cancelled) {
         if (!cancelled) {
-            new SimpleAsyncTask(new Runnable() {
+            new SimpleAsyncTask("BufferSimple.endDraw()", new Runnable() {
                 @Override
                 public void run() {
                     render_canvas.setDisplay(pixels);

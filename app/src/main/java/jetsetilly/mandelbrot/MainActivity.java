@@ -31,6 +31,7 @@ import java.util.Locale;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
+import jetsetilly.tools.SimpleAsyncTask;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -79,7 +80,15 @@ public class MainActivity extends AppCompatActivity {
         Settings.getInstance().restore(this);
 
         // render script instance -- alive for the entire lifespan of the app
-        render_script = RenderScript.create(this, RenderScript.ContextType.NORMAL);
+        {
+            final Context context = this;
+            new SimpleAsyncTask("load renderscript", new Runnable() {
+                @Override
+                public void run() {
+                    render_script = RenderScript.create(context, RenderScript.ContextType.NORMAL);
+                }
+            });
+        }
 
         // progress view
         progress = (ProgressView) findViewById(R.id.progressView);

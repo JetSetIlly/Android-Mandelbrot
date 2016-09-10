@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -254,7 +255,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void startRender() {
         stopRender();
 
-        new SimpleAsyncTask(
+        new SimpleAsyncTask("RenderCanvas_ImageView.startRender",
                 new Runnable() {
                     @Override
                     public void run() {

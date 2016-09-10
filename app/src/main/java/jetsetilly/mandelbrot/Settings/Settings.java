@@ -53,7 +53,7 @@ public class Settings {
     }
 
     public void save(final Context context) {
-        new SimpleAsyncTask(new Runnable() {
+        new SimpleAsyncTask("save settings", new Runnable() {
             @Override
             public void run() {
                 SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
@@ -85,7 +85,7 @@ public class Settings {
 
     @SuppressWarnings("WrongConstant")
     public void restore(final Context context) {
-        new SimpleAsyncTask(new Runnable() {
+        new SimpleAsyncTask("load settings", new Runnable() {
             @Override
             public void run() {
                 // set interface to reflect stored values

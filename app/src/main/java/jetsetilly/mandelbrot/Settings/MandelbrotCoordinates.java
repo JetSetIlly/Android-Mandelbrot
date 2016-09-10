@@ -3,6 +3,7 @@ package jetsetilly.mandelbrot.Settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class MandelbrotCoordinates {
@@ -26,7 +27,7 @@ public class MandelbrotCoordinates {
     }
 
     public void save(final Context context) {
-        new SimpleAsyncTask(new Runnable() {
+        new SimpleAsyncTask("save coords", new Runnable() {
             @Override
             public void run() {
                 SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
@@ -45,7 +46,7 @@ public class MandelbrotCoordinates {
     }
 
     public void restore(final Context context) {
-        new SimpleAsyncTask(new Runnable() {
+        new SimpleAsyncTask("load coords", new Runnable() {
             @Override
             public void run() {
                 // set interface to reflect stored values

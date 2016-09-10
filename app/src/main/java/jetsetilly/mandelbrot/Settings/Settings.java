@@ -23,7 +23,6 @@ public class Settings {
     /* Palette Settings */
     public String selected_palette_id;
     public int palette_smoothness;
-    public boolean palette_reflect;
 
     /* System Settings */
     public boolean allow_screen_rotation;
@@ -36,7 +35,6 @@ public class Settings {
     private static final float DEF_MAX_PINCH_ZOOM_OUT = -0.5f;
     private static final String DEF_SELECTED_PALETTE_ID = "";
     public static final int DEF_PALETTE_SMOOTHNESS = 4;
-    public static final boolean DEF_PALETTE_REFLECT = false;
     private static final boolean DEF_ALLOW_SCREEN_ROTATION = false;
     private static final boolean DEF_DEEP_COLOUR = false;
 

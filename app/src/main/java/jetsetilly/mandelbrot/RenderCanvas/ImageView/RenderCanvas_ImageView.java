@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import jetsetilly.mandelbrot.MainActivity;
@@ -57,6 +56,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // foreground_bm is whatever bitmap is currently displayed in foreground
     private Bitmap foreground_bm;
 
+    // reference to the task that prepares the main render thread
+    private SimpleAsyncTask startup_render_task;
+
     // buffer implementation
     private Buffer buffer;
     private Semaphore buffer_latch = new Semaphore(1);
@@ -73,6 +75,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // problem has something to do with pivot points but i couldn't figure it out properly.
     // it's such a fringe case however that this hack seems reasonable.
     private boolean scrolled_since_last_normalise;
+
+    // runnable used to end the setDisplay() animation
+    private Runnable cancel_set_display_anim;
 
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
@@ -108,9 +113,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         removeAllViews();
 
-        if (settings.deep_colour == true) {
+        if (settings.deep_colour) {
+            LogTools.printDebug(DBG_TAG, "ARGB_8888");
             bitmap_config = Bitmap.Config.ARGB_8888;
         } else {
+            LogTools.printDebug(DBG_TAG, "RGB_565");
             bitmap_config = Bitmap.Config.RGB_565;
         }
 
@@ -202,7 +209,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     @WorkerThread
     public void plotIterations(long canvas_id, int iterations[], boolean complete_plot) {
         if (this_canvas_id != canvas_id || buffer == null) return;
-
         buffer.plotIterations(iterations);
     }
 
@@ -219,13 +225,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     @UiThread
-    public void endDraw(long canvas_id, final boolean cancelled) {
+    public void endDraw(long canvas_id, boolean cancelled) {
         if (this_canvas_id != canvas_id || buffer == null) {
             return;
         }
 
         buffer.endDraw(cancelled);
-        buffer = null;
         setBackgroundColor(background_colour);
         incomplete_render = cancelled;
         this_canvas_id = NO_CANVAS_ID;
@@ -235,6 +240,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             gestures.unpauseZoom();
         }
 
+        buffer = null;
         buffer_latch.release();
     }
     /*** END OF MandelbrotCanvas implementation ***/
@@ -247,32 +253,47 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         scrolled_since_last_normalise = false;
     }
 
-    private void cancelAnimations() {
-        foreground.clearAnimation();
-        canvas.clearAnimation();
-    }
-
     public void startRender() {
         stopRender();
 
-        new SimpleAsyncTask("RenderCanvas_ImageView.startRender",
+        startup_render_task = new SimpleAsyncTask("RenderCanvas_ImageView.startRender",
                 new Runnable() {
                     @Override
                     public void run() {
-                        // use whatever image is currently visible as the basis for the new render
-                        fixateVisibleImage();
+                        long end_time = fixateVisibleImage(false);
+                        long delay = end_time - System.currentTimeMillis();
+                        if (delay > 0) {
+                            try {
+                                Thread.sleep(delay);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // make sure gestures are active
+
+                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
+                            // unpause zoom gesture if we're below that maximum image scale or
+                            // if we're using software rendering
+                            gestures.unpauseZoom();
+                        }
+
+                        gestures.unpauseScroll();
                     }
                 },
                 new Runnable() {
                     @Override
                     public void run() {
                         startRenderThread();
+                        startup_render_task = null;
                     }
                 }
         );
     }
 
     public void stopRender() {
+        if (cancel_set_display_anim != null) post(cancel_set_display_anim);
+        if (startup_render_task != null) startup_render_task.cancel();
         stopRenderThread();
     }
 
@@ -288,7 +309,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y += y;
 
         // offset entire image view rather than using the scrolling ability
-        cancelAnimations();
         canvas.setX(canvas.getX() - (x * image_scale));
         canvas.setY(canvas.getY() - (y * image_scale));
 
@@ -352,7 +372,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         rendered_offset_y = offset_y;
 
         // do animation
-        cancelAnimations();
         ViewPropertyAnimator anim = canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
         anim.x(-offset_x * image_scale);
@@ -370,13 +389,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
-                // unpause zoom gesture if we're below that maximum image scale or
-                // if we're using software rendering
-                if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
-                    gestures.unpauseZoom();
-                }
-                gestures.unpauseScroll();
-
                 startRender();
             }
         });
@@ -390,7 +402,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         if (scrolled_since_last_normalise) {
-            fixateVisibleImage();
+            fixateVisibleImage(true);
         }
 
         // calculate fractal_scale
@@ -415,23 +427,32 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
     /*** END OF GestureHandler implementation ***/
 
-    private void fixateVisibleImage() {
+    private long fixateVisibleImage(boolean instant) {
+        long set_display_end_time;
+
         int pixels[] = new int[canvas_width * canvas_height];
         if (fractal_scale == 0) {
             fast_getVisibleImage(pixels);
-            setDisplay(pixels, TransitionType.NONE);
+            set_display_end_time = setDisplay(pixels, TransitionType.NONE);
         } else {
             // in the case of a scaled image we cross fade between a bilinear filtered image
             // and a non-bilinear filtered image. this is because the zoomed image as a result
             // of a animation or manual setScale*() seems to be filtered. If we don't cross fade then
             // the transition between the animated image and non-filtered image is jarring.
-            int pixels_smooth[] = new int[canvas_width * canvas_height];
-            getVisibleImage(true).getPixels(pixels_smooth, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            setDisplay(pixels_smooth, TransitionType.NONE);
-            setDisplay(pixels, TransitionType.CROSS_FADE);
+            if (instant) {
+                getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                set_display_end_time = setDisplay(pixels, TransitionType.NONE);
+            } else {
+                int pixels_smooth[] = new int[canvas_width * canvas_height];
+                getVisibleImage(true).getPixels(pixels_smooth, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+                setDisplay(pixels_smooth, TransitionType.NONE);
+                set_display_end_time = setDisplay(pixels, TransitionType.CROSS_FADE, TransitionSpeed.FAST);
+            }
         }
         transformMandelbrot();
+
+        return set_display_end_time;
     }
 
     private void fast_getVisibleImage(int pixels[]) {
@@ -493,15 +514,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         return bm;
     }
 
-    protected int setDisplay(int pixels[]) {
+    protected long setDisplay(int pixels[]) {
         return setDisplay(pixels, TransitionType.CROSS_FADE, TransitionSpeed.NORMAL);
     }
 
-    protected int setDisplay(int pixels[], @TransitionType int transition_type) {
+    protected long setDisplay(int pixels[], @TransitionType int transition_type) {
         return setDisplay(pixels, transition_type, TransitionSpeed.NORMAL);
     }
 
-    protected int setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
+    protected long setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
         if (transition_type == TransitionType.CROSS_FADE) {
             // get speed of animation (we'll actually set the speed later)
             final int speed;
@@ -514,7 +535,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     break;
                 default:
                 case TransitionSpeed.NORMAL:
-                    speed = getResources().getInteger(R.integer.transition_duration_slow);
+                    speed = getResources().getInteger(R.integer.transition_duration_normal);
                     break;
             }
 
@@ -522,29 +543,26 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             int foreground_pixels[] = new int[canvas_width * canvas_height];
             display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+
             post(new Runnable() {
                 @Override
                 public void run() {
+                    foreground.invalidate();
                     foreground.setVisibility(VISIBLE);
                     foreground.setAlpha(1.0f);
-                    foreground.invalidate();
+                    normaliseCanvas();
                 }
             });
 
             // prepare final image. the image we transition to
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    normaliseCanvas();
-                    display.invalidate();
-                }
-            });
+            display.postInvalidate();
 
-            final Runnable transition_end_runnable = new Runnable() {
+            cancel_set_display_anim = new Runnable() {
                 @Override
                 public void run() {
                     foreground.setVisibility(INVISIBLE);
+                    cancel_set_display_anim = null;
                 }
             };
 
@@ -553,15 +571,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 public void run() {
                     // do animation
                     ViewPropertyAnimator transition_anim = foreground.animate();
-
-                    transition_anim.withEndAction(transition_end_runnable);
+                    transition_anim.withEndAction(cancel_set_display_anim);
                     transition_anim.setDuration(speed);
                     transition_anim.alpha(0.0f);
                     transition_anim.start();
                 }
             });
 
-            return speed;
+            return System.currentTimeMillis() + speed;
         } else {
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             post(new Runnable() {

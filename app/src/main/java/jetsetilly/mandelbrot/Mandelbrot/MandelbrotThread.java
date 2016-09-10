@@ -4,10 +4,12 @@ import android.os.AsyncTask;
 import android.support.annotation.CallSuper;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
+import jetsetilly.tools.LogTools;
 
 abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     /* from the android documentation:

@@ -1,12 +1,10 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
 import android.graphics.Bitmap;
-import android.os.Process;
 import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Palette.Palette;
-import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class BufferSimple extends Buffer {

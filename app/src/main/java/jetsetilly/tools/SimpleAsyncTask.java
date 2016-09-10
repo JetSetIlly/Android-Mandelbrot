@@ -15,6 +15,7 @@ public class SimpleAsyncTask {
     private Runnable background_runnable;
     private Runnable completion_runnable;
     private Runnable cancelled_runnable;
+    private Task task;
 
     public SimpleAsyncTask(String tag, Runnable background_runnable) {
         init(tag, background_runnable, null, null);
@@ -39,7 +40,12 @@ public class SimpleAsyncTask {
         this.completion_runnable = completion_runnable;
         this.cancelled_runnable = cancelled_runnable;
 
-        new Task().execute();
+        task = new Task();
+        task.execute();
+    }
+
+    public void cancel() {
+        task.cancel(false);
     }
 
     private class Task extends AsyncTask<Void, Void, Void> {

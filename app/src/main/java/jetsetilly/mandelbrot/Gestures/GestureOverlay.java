@@ -31,7 +31,11 @@ public class GestureOverlay extends ImageView implements
     // scroll gestures will be ignored when pause_scroll == true
     private boolean pause_scroll;
 
-    private boolean manual_scaling;
+    // true while pinch gesture is active - scroll gestures will be ignored while this is true
+    private boolean pinch_gesture;
+
+    // true if pinch gesture began while pause_zoom == false
+    private boolean manual_scaling_started;
 
     private ImageView pause_icon;
     private long pause_icon_time;
@@ -55,7 +59,8 @@ public class GestureOverlay extends ImageView implements
         this.gesture_handler = gesture_handler;
         this.pause_zoom = false;
         this.pause_scroll = false;
-        this.manual_scaling = false;
+        this.pinch_gesture = false;
+        this.manual_scaling_started = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
@@ -138,7 +143,7 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (pause_scroll || manual_scaling) return true;
+        if (pause_scroll || pinch_gesture) return true;
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll((int) distanceX, (int) distanceY);
@@ -157,8 +162,6 @@ public class GestureOverlay extends ImageView implements
     /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
-        return true;
-        /*
         if (pause_zoom) {
             // call pauseZoom() but force display of icon in case it's not already visible
             pauseZoom(true);
@@ -168,7 +171,6 @@ public class GestureOverlay extends ImageView implements
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
         return true;
-        */
     }
 
     @Override
@@ -183,15 +185,21 @@ public class GestureOverlay extends ImageView implements
     /* implementation of OnScaleGestureListener interface */
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        if (pause_zoom) return true;
+        pinch_gesture = true;
+
+        if (pause_zoom) {
+            return true;
+        }
 
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
-        manual_scaling = true;
+        manual_scaling_started = true;
         return true;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
+        if (!manual_scaling_started) return true;
+
         LogTools.printDebug(DBG_TAG, "onScale: " + detector.toString());
         gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
         return true;
@@ -199,9 +207,13 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
+        pinch_gesture = false;
+
+        if (!manual_scaling_started) return;
+
         LogTools.printDebug(DBG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.endManualZoom();
-        manual_scaling = false;
+        manual_scaling_started = false;
         altered_canvas = true;
     }
     /* END OF implementation of OnScaleGesture interface */

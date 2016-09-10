@@ -8,8 +8,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import java.util.concurrent.Semaphore;
-
 public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
@@ -27,8 +25,6 @@ public class ProgressView extends ImageView {
 
     private AnimatorSet off_anim;
     final private AnimatorSet no_anim = null;
-
-    private boolean use_progress_view = true;
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -105,13 +101,10 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
-        if (!use_progress_view) return;
         start_time = System.currentTimeMillis();
     }
 
     public void kick(boolean show_immediately) {
-        if (!use_progress_view) return;
-
         // if show_immediately is not set to true
         // make sure a suitable amount of time has passed before showing progress view
         if (!show_immediately) {
@@ -151,8 +144,6 @@ public class ProgressView extends ImageView {
         // run off-animation if necessary after a short delay
         // the delay should give enough time for a new render event
         // to start without the progress view bobbing out of view
-
-        if (!use_progress_view) return;
 
         final long unregister_time = System.currentTimeMillis();
 

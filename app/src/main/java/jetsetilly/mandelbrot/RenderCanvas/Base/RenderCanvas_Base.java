@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.CallSuper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_renderscript;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
+import jetsetilly.tools.LogTools;
 import jetsetilly.tools.MyDebug;
 
 abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler {
@@ -101,11 +103,9 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         }
 
         render_thr.cancel(false);
-        render_thr = null;
     }
 
     protected void transformMandelbrot() {
-        stopRender();
         mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale, incomplete_render);
         fractal_scale = 0;
         rendered_offset_x = 0;

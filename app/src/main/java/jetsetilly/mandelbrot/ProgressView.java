@@ -28,7 +28,7 @@ public class ProgressView extends ImageView {
     private AnimatorSet off_anim;
     final private AnimatorSet no_anim = null;
 
-    private boolean use_progress_view = false;
+    private boolean use_progress_view = true;
 
     public ProgressView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);

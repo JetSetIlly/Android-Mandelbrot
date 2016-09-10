@@ -27,7 +27,7 @@ public class MandelbrotCoordinates {
     }
 
     public void save(final Context context) {
-        new SimpleAsyncTask("save coords", new Runnable() {
+        new SimpleAsyncTask("Save Coordinates", new Runnable() {
             @Override
             public void run() {
                 SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
@@ -46,7 +46,7 @@ public class MandelbrotCoordinates {
     }
 
     public void restore(final Context context) {
-        new SimpleAsyncTask("load coords", new Runnable() {
+        new SimpleAsyncTask("Load Coordinates", new Runnable() {
             @Override
             public void run() {
                 // set interface to reflect stored values

@@ -15,7 +15,6 @@ public class SimpleAsyncTask {
     private Runnable background_runnable;
     private Runnable completion_runnable;
     private Runnable cancelled_runnable;
-    private boolean done_flag;
 
     public SimpleAsyncTask(String tag, Runnable background_runnable) {
         init(tag, background_runnable, null, null);
@@ -39,7 +38,6 @@ public class SimpleAsyncTask {
         this.background_runnable = background_runnable;
         this.completion_runnable = completion_runnable;
         this.cancelled_runnable = cancelled_runnable;
-        this.done_flag = false;
 
         new Task().execute();
     }

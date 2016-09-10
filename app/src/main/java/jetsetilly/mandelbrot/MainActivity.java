@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         // render script instance -- alive for the entire lifespan of the app
         {
             final Context context = this;
-            new SimpleAsyncTask("load renderscript", new Runnable() {
+            new SimpleAsyncTask("Load Renderscript", new Runnable() {
                 @Override
                 public void run() {
                     render_script = RenderScript.create(context, RenderScript.ContextType.NORMAL);

@@ -419,10 +419,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         int pixels[] = new int[canvas_width * canvas_height];
         if (fractal_scale == 0) {
             fast_getVisibleImage(pixels);
+            setDisplay(pixels, TransitionType.NONE);
         } else {
+            // in the case of a scaled image we cross fade between a bilinear filtered image
+            // and a non-bilinear filtered image. this is because the zoomed image as a result
+            // of a animation or manual setScale*() seems to be filtered. If we don't cross fade then
+            // the transition between the animated image and non-filtered image is jarring.
+            int pixels_smooth[] = new int[canvas_width * canvas_height];
+            getVisibleImage(true).getPixels(pixels_smooth, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             getVisibleImage(false).getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+            setDisplay(pixels_smooth, TransitionType.NONE);
+            setDisplay(pixels, TransitionType.CROSS_FADE);
         }
-        setDisplay(pixels, TransitionType.NONE);
         transformMandelbrot();
     }
 

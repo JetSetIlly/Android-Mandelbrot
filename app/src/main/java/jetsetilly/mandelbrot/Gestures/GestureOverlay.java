@@ -31,6 +31,8 @@ public class GestureOverlay extends ImageView implements
     // scroll gestures will be ignored when pause_scroll == true
     private boolean pause_scroll;
 
+    private boolean manual_scaling;
+
     private ImageView pause_icon;
     private long pause_icon_time;
     private final long MIN_PAUSE_ICON_DURATION = 1000;
@@ -53,6 +55,7 @@ public class GestureOverlay extends ImageView implements
         this.gesture_handler = gesture_handler;
         this.pause_zoom = false;
         this.pause_scroll = false;
+        this.manual_scaling = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
@@ -135,7 +138,7 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (pause_scroll) return true;
+        if (pause_scroll || manual_scaling) return true;
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll((int) distanceX, (int) distanceY);
@@ -154,6 +157,8 @@ public class GestureOverlay extends ImageView implements
     /* implementation of onDoubleTapListener interface */
     @Override
     public boolean onDoubleTap(MotionEvent event) {
+        return true;
+        /*
         if (pause_zoom) {
             // call pauseZoom() but force display of icon in case it's not already visible
             pauseZoom(true);
@@ -163,6 +168,7 @@ public class GestureOverlay extends ImageView implements
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
         gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
         return true;
+        */
     }
 
     @Override
@@ -180,7 +186,7 @@ public class GestureOverlay extends ImageView implements
         if (pause_zoom) return true;
 
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
-        pause_scroll = true;
+        manual_scaling = true;
         return true;
     }
 
@@ -195,7 +201,7 @@ public class GestureOverlay extends ImageView implements
     public void onScaleEnd(ScaleGestureDetector detector) {
         LogTools.printDebug(DBG_TAG, "onScaleEnd: " + detector.toString());
         gesture_handler.endManualZoom();
-        pause_scroll = false;
+        manual_scaling = false;
         altered_canvas = true;
     }
     /* END OF implementation of OnScaleGesture interface */

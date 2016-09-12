@@ -23,7 +23,7 @@ public class MandelbrotCoordinates {
         SharedPreferences.Editor prefs_editor = prefs.edit();
         prefs_editor.clear();
         prefs_editor.apply();
-        restore(context);
+        restore(context, false);
     }
 
     public void save(final Context context) {
@@ -45,20 +45,28 @@ public class MandelbrotCoordinates {
         });
     }
 
-    public void restore(final Context context) {
-        new SimpleAsyncTask("Load Coordinates", new Runnable() {
-            @Override
-            public void run() {
-                // set interface to reflect stored values
-                SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
-                real_left = getDouble(prefs, "real_left", -2.11);
-                real_right = getDouble(prefs, "real_right", 1.16);
-                imaginary_upper = getDouble(prefs, "imaginary_upper", 2.94);
-                imaginary_lower = getDouble(prefs, "imaginary_lower", -2.88);
-                bailout_value = getDouble(prefs, "bailout_value", 4.0);
-                max_iterations = prefs.getInt("max_iterations", 60);
-            }
-        });
+    public void restore(final Context context, boolean background) {
+        if (background) {
+            new SimpleAsyncTask("Load Coordinates", new Runnable() {
+                @Override
+                public void run() {
+                    restore_immediate(context);
+                }
+            });
+        } else {
+            restore_immediate(context);
+        }
+    }
+
+    private void restore_immediate(final Context context) {
+        // set interface to reflect stored values
+        SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
+        real_left = getDouble(prefs, "real_left", -2.11);
+        real_right = getDouble(prefs, "real_right", 1.16);
+        imaginary_upper = getDouble(prefs, "imaginary_upper", 2.94);
+        imaginary_lower = getDouble(prefs, "imaginary_lower", -2.88);
+        bailout_value = getDouble(prefs, "bailout_value", 4.0);
+        max_iterations = prefs.getInt("max_iterations", 60);
     }
 
     /* double width float support for SharedPreferences */

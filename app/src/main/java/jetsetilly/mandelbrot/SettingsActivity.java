@@ -61,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
         double_tap = (ReportingSeekBar) findViewById(R.id.doubletap);
         num_passes = (ReportingSeekBar) findViewById(R.id.num_passes);
         render_mode = (RadioGroup) findViewById(R.id.rendermode);
-        deep_colour = (Switch) findViewById(R.id.deep_colour) ;
+        deep_colour = (Switch) findViewById(R.id.deep_colour);
         orientation = (RadioGroup) findViewById(R.id.orientation);
 
         // get the max_iterations as passed by intent

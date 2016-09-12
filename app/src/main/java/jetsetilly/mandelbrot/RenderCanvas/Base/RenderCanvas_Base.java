@@ -1,10 +1,8 @@
 package jetsetilly.mandelbrot.RenderCanvas.Base;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.support.annotation.CallSuper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,8 +17,6 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_renderscript;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
-import jetsetilly.tools.LogTools;
-import jetsetilly.tools.MyDebug;
 
 abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler {
     protected MainActivity context;
@@ -29,18 +25,24 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     protected TextView fractal_info;
 
     protected final Settings settings = Settings.getInstance();
-    protected MandelbrotThread render_thr;
+    private MandelbrotThread render_thr;
 
-    /*** fields to record the state of the image mandelbrot ***/
-    // the amount of deviation (offset) from the current display_bm
-    // used when chaining scroll and zoom events
-    // reset when render is restarted
-    // use getX() and getY() to retrieve current scroll values
-    protected int rendered_offset_x;
-    protected int rendered_offset_y;
+    /*** how the mandelbrot should be transformed before the next render ***/
+    protected class MandelbrotTransform {
+        // the amount of deviation (offset) from the current display_bm
+        public int x;
+        public int y;
 
-    // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
-    protected double fractal_scale;
+        // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
+        public double scale;
+
+        public void reset() {
+            x = 0;
+            y = 0;
+            scale = 0;
+        }
+    }
+    protected MandelbrotTransform mandelbrot_transform = new MandelbrotTransform();
 
     // whether or not the previous render completed its work
     protected boolean incomplete_render;
@@ -98,18 +100,18 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     }
 
     protected void stopRenderThread() {
-        if (render_thr == null) {
-            return;
+        if (render_thr != null) {
+            render_thr.cancel(false);
         }
+    }
 
-        render_thr.cancel(false);
+    protected void renderThreadEnded() {
+        render_thr = null;
     }
 
     protected void transformMandelbrot() {
-        mandelbrot.transformMandelbrot(rendered_offset_x, rendered_offset_y, fractal_scale, incomplete_render);
-        fractal_scale = 0;
-        rendered_offset_x = 0;
-        rendered_offset_y = 0;
+        mandelbrot.transformMandelbrot(mandelbrot_transform.x, mandelbrot_transform.y, mandelbrot_transform.scale, incomplete_render);
+        mandelbrot_transform.reset();
 
         // display mandelbrot info
         post(new Runnable() {

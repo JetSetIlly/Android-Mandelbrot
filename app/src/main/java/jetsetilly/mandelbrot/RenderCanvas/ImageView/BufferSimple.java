@@ -5,6 +5,7 @@ import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Palette.Palette;
+import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class BufferSimple extends Buffer {
@@ -41,13 +42,22 @@ public class BufferSimple extends Buffer {
             new SimpleAsyncTask("BufferSimple.endDraw()", new Runnable() {
                 @Override
                 public void run() {
-                    render_canvas.setDisplay(pixels);
+                    boolean ret = render_canvas.setDisplay(
+                            pixels,
+                            RenderCanvas_ImageView.TransitionType.CROSS_FADE,
+                            RenderCanvas_ImageView.TransitionSpeed.NORMAL,
+                            false
+                    );
+
+                    if (!ret) {
+                        LogTools.printDebug(DBG_TAG, "setDisplay() did not complete work");
+                    }
                 }
             });
 
             // update the most frequent color so we can use it as the background colour
             int most_frequent = 0;
-            for (int i = 0; i < palette_frequencies.length; ++ i) {
+            for (int i = 0; i < palette_frequencies.length; ++i) {
                 if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
                     most_frequent = i;
                 }

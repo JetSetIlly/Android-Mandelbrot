@@ -47,7 +47,7 @@ public class Settings {
         SharedPreferences.Editor prefs_editor = prefs.edit();
         prefs_editor.clear();
         prefs_editor.apply();
-        restore(context);
+        restore(context, false);
     }
 
     public void save(final Context context) {
@@ -81,34 +81,42 @@ public class Settings {
         });
     }
 
+    public void restore(final Context context, boolean background) {
+        if (background) {
+            new SimpleAsyncTask("Load Settings", new Runnable() {
+                @Override
+                public void run() {
+                    restore_immediate(context);
+                }
+            });
+        } else {
+            restore_immediate(context);
+        }
+    }
+
     @SuppressWarnings("WrongConstant")
-    public void restore(final Context context) {
-        new SimpleAsyncTask("Load Settings", new Runnable() {
-            @Override
-            public void run() {
-                // set interface to reflect stored values
-                SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
+    private void restore_immediate(Context context) {
+        // set interface to reflect stored values
+        SharedPreferences prefs = context.getSharedPreferences(prefsName(context), Context.MODE_PRIVATE);
 
-                // Mandelbrot Settings
-                iterations_rate = prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL);
-                render_mode = prefs.getInt("render_mode", Mandelbrot.RenderMode.SOFTWARE_CENTRE);
-                num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
-                calculation_method = prefs.getInt("calculation_method", Mandelbrot.CalculationMethod.NATIVE);
+        // Mandelbrot Settings
+        iterations_rate = prefs.getInt("iterations_rate", Mandelbrot.IterationsRate.NORMAL);
+        render_mode = prefs.getInt("render_mode", Mandelbrot.RenderMode.SOFTWARE_CENTRE);
+        num_passes = prefs.getInt("num_passes", DEF_NUM_PASSES);
+        calculation_method = prefs.getInt("calculation_method", Mandelbrot.CalculationMethod.NATIVE);
 
-                // Gesture Settings
-                double_tap_scale = prefs.getFloat("double_tap_scale", DEF_DOUBLE_TAP_SCALE);
-                max_pinch_zoom_in = prefs.getFloat("max_pinch_zoom_in", DEF_MAX_PINCH_ZOOM_IN);
-                max_pinch_zoom_out = prefs.getFloat("max_pinch_zoom_out", DEF_MAX_PINCH_ZOOM_OUT);
+        // Gesture Settings
+        double_tap_scale = prefs.getFloat("double_tap_scale", DEF_DOUBLE_TAP_SCALE);
+        max_pinch_zoom_in = prefs.getFloat("max_pinch_zoom_in", DEF_MAX_PINCH_ZOOM_IN);
+        max_pinch_zoom_out = prefs.getFloat("max_pinch_zoom_out", DEF_MAX_PINCH_ZOOM_OUT);
 
-                // Palette Settings
-                selected_palette_id = prefs.getString("selected_palette_id", DEF_SELECTED_PALETTE_ID);
-                palette_smoothness = prefs.getInt("palette_smoothness", DEF_PALETTE_SMOOTHNESS);
+        // Palette Settings
+        selected_palette_id = prefs.getString("selected_palette_id", DEF_SELECTED_PALETTE_ID);
+        palette_smoothness = prefs.getInt("palette_smoothness", DEF_PALETTE_SMOOTHNESS);
 
-                // System Settings
-                allow_screen_rotation = prefs.getBoolean("allow_screen_rotation", DEF_ALLOW_SCREEN_ROTATION);
-                deep_colour = prefs.getBoolean("deep_colour", DEF_DEEP_COLOUR);
-            }
-        });
+        // System Settings
+        allow_screen_rotation = prefs.getBoolean("allow_screen_rotation", DEF_ALLOW_SCREEN_ROTATION);
+        deep_colour = prefs.getBoolean("deep_colour", DEF_DEEP_COLOUR);
     }
 
     /* singleton pattern */

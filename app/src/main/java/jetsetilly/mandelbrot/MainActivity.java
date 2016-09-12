@@ -59,17 +59,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // restore settings
+        MandelbrotCoordinates.getInstance().restore(this, false);
+        Settings.getInstance().restore(this, false);
+
         // enforce thread policy
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectAll()
                 .penaltyLog()
                 .build());
-
-        super.onCreate(savedInstanceState);
-
-        // restore settings
-        MandelbrotCoordinates.getInstance().restore(this);
-        Settings.getInstance().restore(this);
 
         // basic layout
         setContentView(R.layout.activity_main);

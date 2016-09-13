@@ -29,9 +29,9 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
 
     /*** how the mandelbrot should be transformed before the next render ***/
     protected class MandelbrotTransform {
-        // the amount of deviation (offset) from the current display_bm
-        public int x;
-        public int y;
+        // the amount of deviation (offset) from the current coordinates
+        public double x;
+        public double y;
 
         // the amount by which the mandelbrot needs to scale in order to match the display
         public double scale;
@@ -60,7 +60,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         super(context, attrs, defStyleAttr);
     }
 
-    public void checkActionBar(int x, int y, boolean allow_show) {
+    public void checkActionBar(float x, float y, boolean allow_show) {
         // returns false if coordinates are in action bar, otherwise true
        if (!MainActivity.action_bar.inActionBar(y)) {
            MainActivity.action_bar.setVisibility(true);

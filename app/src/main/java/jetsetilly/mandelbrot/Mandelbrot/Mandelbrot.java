@@ -85,23 +85,23 @@ public class Mandelbrot {
         );
     }
 
-    public void transformMandelbrot(double offset_x, double offset_y, double fractal_scale, boolean redraw_all) {
+    public void transformMandelbrot(double offset_x, double offset_y, double scale, boolean redraw_all) {
         double fractal_width = mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left;
         double fractal_height = mandelbrot_coordinates.imaginary_upper - mandelbrot_coordinates.imaginary_lower;
 
-        if (fractal_scale != 0) {
-            // use image scale value instead of fractal_scale value for calculating max_iterations
+        if (scale != 0) {
+            // use image scale value instead of scale value for calculating max_iterations
             // easier to work with
-            double image_scale = Transforms.imageScaleFromFractalScale(fractal_scale);
+            double image_scale = Transforms.imageScaleFromFractalScale(scale);
 
             if (pixel_scale < SCALE_LIMIT) {
                 LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
             }
 
-            mandelbrot_coordinates.real_left += fractal_scale * fractal_width;
-            mandelbrot_coordinates.real_right -= fractal_scale * fractal_width;
-            mandelbrot_coordinates.imaginary_upper -= fractal_scale * fractal_height;
-            mandelbrot_coordinates.imaginary_lower += fractal_scale * fractal_height;
+            mandelbrot_coordinates.real_left += scale * fractal_width;
+            mandelbrot_coordinates.real_right -= scale * fractal_width;
+            mandelbrot_coordinates.imaginary_upper -= scale * fractal_height;
+            mandelbrot_coordinates.imaginary_lower += scale * fractal_height;
 
             double iterations_rate = IterationsRateValues[settings.iterations_rate];
             if (image_scale > 1)
@@ -139,7 +139,7 @@ public class Mandelbrot {
 
         // define render_area
         render_area = new Rect(0, 0, canvas_width, canvas_height);
-        if (fractal_scale == 0 && !redraw_all) {
+        if (scale == 0 && !redraw_all) {
             if (offset_x < 0) {
                 render_area.right = (int) -offset_x;
             } else if (offset_x > 0) {
@@ -153,6 +153,6 @@ public class Mandelbrot {
             }
         }
 
-        rescaling_render = fractal_scale != 0;
+        rescaling_render = scale != 0;
     }
 }

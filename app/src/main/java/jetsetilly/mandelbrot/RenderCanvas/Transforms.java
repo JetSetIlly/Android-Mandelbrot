@@ -5,7 +5,7 @@ public class Transforms {
         return 1.0 / (1.0 - (2.0 * fractal_scale));
     }
 
-    static public double fractalScaleFromImageScale(float image_scale) {
+    static public double fractalScaleFromImageScale(double image_scale) {
         return (image_scale - 1.0) / (2.0 * image_scale);
     }
 }

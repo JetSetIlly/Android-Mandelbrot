@@ -137,7 +137,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
-        gesture_handler.checkActionBar((int) event.getX(), (int) event.getY(), false);
+        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
         return true;
     }
 
@@ -146,7 +146,7 @@ public class GestureOverlay extends ImageView implements
         if (pause_scroll || pinch_gesture) return true;
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
-        gesture_handler.scroll((int) distanceX, (int) distanceY);
+        gesture_handler.scroll(distanceX, distanceY);
         altered_canvas = true;
         return true;
     }
@@ -154,7 +154,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public void onLongPress(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
-        gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), true);
+        gesture_handler.autoZoom(event.getX(), event.getY(), true);
     }
     /* END OF implementation of onGestureListener */
 
@@ -169,14 +169,14 @@ public class GestureOverlay extends ImageView implements
         }
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
-        gesture_handler.autoZoom((int) event.getX(), (int) event.getY(), false);
+        gesture_handler.autoZoom(event.getX(), event.getY(), false);
         return true;
     }
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
-        gesture_handler.checkActionBar((int) event.getX(), (int) event.getY(), true);
+        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
         return true;
     }
     /* END OF implementation of onDoubleTapListener interface */

@@ -81,11 +81,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // maximum value of cumulative_image_scale allowed before zoom is paused
     private static float MAX_IMAGE_SCALE = 27.0f;
 
-    // hack solution to the problem of pinch zooming after a image move. i think that the
-    // problem has something to do with pivot points but i couldn't figure it out properly.
-    // it's such a fringe case however that this hack seems reasonable.
-    private boolean scrolled_since_last_normalise;
-
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
     @interface TransitionType {
@@ -254,7 +249,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         canvas.setScaleY(1f);
         canvas.setX(0);
         canvas.setY(0);
-        scrolled_since_last_normalise = false;
+        canvas.setPivotX(canvas_width/2);
+        canvas.setPivotY(canvas_height/2);
     }
 
     public void startRender() {
@@ -314,23 +310,22 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     @Override // View
-    public void scroll(int x, int y) {
+    public void scroll(float x, float y) {
         stopRender();
 
         float image_scale = (float) Transforms.imageScaleFromFractalScale(mandelbrot_transform.scale);
-        x /= image_scale;
-        y /= image_scale;
-        mandelbrot_transform.x += x;
-        mandelbrot_transform.y += y;
 
-        // offset entire image view rather than using the scrolling ability
-        canvas.setX(canvas.getX() - (x * image_scale));
-        canvas.setY(canvas.getY() - (y * image_scale));
+        canvas.setX(canvas.getX() - (x / image_scale));
+        canvas.setY(canvas.getY() - (y / image_scale));
 
-        scrolled_since_last_normalise = true;
+        canvas.setPivotX(canvas.getPivotX() + (x / image_scale));
+        canvas.setPivotY(canvas.getPivotY() + (y / image_scale));
+
+        mandelbrot_transform.x += x / image_scale;
+        mandelbrot_transform.y += y / image_scale;
     }
 
-    public void autoZoom(int offset_x, int offset_y, boolean zoom_out) {
+    public void autoZoom(float offset_x, float offset_y, boolean zoom_out) {
         float old_image_scale = (float) Transforms.imageScaleFromFractalScale(mandelbrot_transform.scale);
 
         // some combinations of scroll and zooming don't work
@@ -412,10 +407,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         stopRender();
 
-        if (scrolled_since_last_normalise) {
-            fixateVisibleImage(true);
-        }
-
         // calculate scale
         mandelbrot_transform.scale += amount / Math.hypot(canvas_width, canvas_height);
 
@@ -480,20 +471,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         if (mandelbrot_transform.x >= 0) {
             offset = 0;
-            x = mandelbrot_transform.x;
-            width = canvas_width - mandelbrot_transform.x;
+            x = (int) mandelbrot_transform.x;
+            width = canvas_width - (int) mandelbrot_transform.x;
         } else {
-            int abs_x = Math.abs(mandelbrot_transform.x);
+            int abs_x = Math.abs((int) mandelbrot_transform.x);
             x = 0;
             offset = abs_x;
             width = canvas_width - abs_x;
         }
 
         if (mandelbrot_transform.y >= 0) {
-            y = mandelbrot_transform.y;
-            height = canvas_height - mandelbrot_transform.y;
+            y = (int) mandelbrot_transform.y;
+            height = canvas_height - (int) mandelbrot_transform.y;
         } else {
-            int abs_y = Math.abs(mandelbrot_transform.y);
+            int abs_y = Math.abs((int) mandelbrot_transform.y);
             y = 0;
             offset += abs_y * canvas_width;
             height = canvas_height - abs_y;
@@ -507,19 +498,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
         bm.eraseColor(background_colour);
 
-        int new_left = (int) (mandelbrot_transform.scale * canvas_width);
-        int new_right = canvas_width - new_left;
-        int new_top = (int) (mandelbrot_transform.scale * canvas_height);
-        int new_bottom = canvas_height - new_top;
+        double new_left = (mandelbrot_transform.scale * canvas_width);
+        double new_right = canvas_width - new_left;
+        double new_top = (mandelbrot_transform.scale * canvas_height);
+        double new_bottom = canvas_height - new_top;
         new_left += mandelbrot_transform.x;
         new_right += mandelbrot_transform.x;
         new_top += mandelbrot_transform.y;
         new_bottom += mandelbrot_transform.y;
         Rect blit_to = new Rect(0, 0, canvas_width, canvas_height);
-        Rect blit_from = new Rect(new_left, new_top, new_right, new_bottom);
+        Rect blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);
 
         Paint paint = new Paint();
         paint.setDither(false);
+        paint.setAntiAlias(false);
         if (bilinear_filter) {
             paint.setFilterBitmap(true);
         } else {

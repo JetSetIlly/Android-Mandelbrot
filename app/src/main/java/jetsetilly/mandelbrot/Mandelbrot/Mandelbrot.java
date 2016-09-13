@@ -5,7 +5,6 @@ import android.graphics.Rect;
 import android.support.annotation.IntDef;
 
 import jetsetilly.mandelbrot.R;
-import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
@@ -85,38 +84,36 @@ public class Mandelbrot {
         );
     }
 
-    public void transformMandelbrot(double offset_x, double offset_y, double scale, boolean redraw_all) {
+    public void transformMandelbrot(MandelbrotTransform transform, boolean redraw_all) {
         double fractal_width = mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left;
         double fractal_height = mandelbrot_coordinates.imaginary_upper - mandelbrot_coordinates.imaginary_lower;
 
-        if (scale != 0) {
-            // use image scale value instead of scale value for calculating max_iterations
-            // easier to work with
-            double image_scale = Transforms.imageScaleFromFractalScale(scale);
-
+        if (transform.scale != 0) {
             if (pixel_scale < SCALE_LIMIT) {
                 LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
             }
 
-            mandelbrot_coordinates.real_left += scale * fractal_width;
-            mandelbrot_coordinates.real_right -= scale * fractal_width;
-            mandelbrot_coordinates.imaginary_upper -= scale * fractal_height;
-            mandelbrot_coordinates.imaginary_lower += scale * fractal_height;
+            float reduction = MandelbrotTransform.reduction(transform.scale);
+
+            mandelbrot_coordinates.real_left += reduction * fractal_width;
+            mandelbrot_coordinates.real_right -= reduction * fractal_width;
+            mandelbrot_coordinates.imaginary_upper -= reduction * fractal_height;
+            mandelbrot_coordinates.imaginary_lower += reduction * fractal_height;
 
             double iterations_rate = IterationsRateValues[settings.iterations_rate];
-            if (image_scale > 1)
+            if (transform.scale > 1)
                 // scale up
-                mandelbrot_coordinates.max_iterations = mandelbrot_coordinates.max_iterations + (int) (mandelbrot_coordinates.max_iterations * image_scale / iterations_rate);
+                mandelbrot_coordinates.max_iterations = mandelbrot_coordinates.max_iterations + (int) (mandelbrot_coordinates.max_iterations * transform.scale / iterations_rate);
             else {
                 // scale down
-                mandelbrot_coordinates.max_iterations = (int) ((mandelbrot_coordinates.max_iterations * iterations_rate) / (iterations_rate + (1.0/image_scale)));
+                mandelbrot_coordinates.max_iterations = (int) ((mandelbrot_coordinates.max_iterations * iterations_rate) / (iterations_rate + (1.0/transform.scale)));
             }
         }
 
-        mandelbrot_coordinates.real_left += offset_x * pixel_scale;
-        mandelbrot_coordinates.real_right += offset_x * pixel_scale;
-        mandelbrot_coordinates.imaginary_upper += offset_y * pixel_scale;
-        mandelbrot_coordinates.imaginary_lower += offset_y * pixel_scale;
+        mandelbrot_coordinates.real_left += transform.x * pixel_scale;
+        mandelbrot_coordinates.real_right += transform.x * pixel_scale;
+        mandelbrot_coordinates.imaginary_upper += transform.y * pixel_scale;
+        mandelbrot_coordinates.imaginary_lower += transform.y * pixel_scale;
 
         /* CORRECT */
 
@@ -139,20 +136,20 @@ public class Mandelbrot {
 
         // define render_area
         render_area = new Rect(0, 0, canvas_width, canvas_height);
-        if (scale == 0 && !redraw_all) {
-            if (offset_x < 0) {
-                render_area.right = (int) -offset_x;
-            } else if (offset_x > 0) {
-                render_area.left = canvas_width - (int) offset_x;
+        if (transform.scale == 0 && !redraw_all) {
+            if (transform.x < 0) {
+                render_area.right = (int) -transform.x;
+            } else if (transform.x > 0) {
+                render_area.left = canvas_width - (int) transform.x;
             }
 
-            if (offset_y < 0) { // moving down
-                render_area.bottom = (int) -offset_y;
-            } else if (offset_y > 0) { // moving up
-                render_area.top = canvas_height - (int) offset_y;
+            if (transform.y < 0) { // moving down
+                render_area.bottom = (int) -transform.y;
+            } else if (transform.y > 0) { // moving up
+                render_area.top = canvas_height - (int) transform.y;
             }
         }
 
-        rescaling_render = scale != 0;
+        rescaling_render = transform.scale != 0;
     }
 }

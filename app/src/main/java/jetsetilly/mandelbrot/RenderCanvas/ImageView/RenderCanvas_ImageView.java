@@ -17,9 +17,9 @@ import java.util.Arrays;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotTransform;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
-import jetsetilly.mandelbrot.RenderCanvas.Transforms;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleLatch;
@@ -76,10 +76,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private long this_canvas_id = NO_CANVAS_ID;
 
     // the amount of scaling since the last rendered image
-    private double cumulative_image_scale = 1.0f;
+    private double cumulative_scale = 1.0f;
 
-    // maximum value of cumulative_image_scale allowed before zoom is paused
-    private static float MAX_IMAGE_SCALE = 27.0f;
+    // maximum value of cumulative_scale allowed before zoom is paused
+    private static float MAX_SCALE = 27.0f;
 
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
@@ -234,7 +234,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         this_canvas_id = NO_CANVAS_ID;
 
         if (!incomplete_render) {
-            cumulative_image_scale = 1.0f;
+            cumulative_scale = 1.0f;
             gestures.unpauseZoom();
         }
 
@@ -275,7 +275,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         fixateVisibleImage(false);
                         fixate_synchronise.monitor();
 
-                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_image_scale < MAX_IMAGE_SCALE) {
+                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_scale < MAX_SCALE) {
                             // unpause zoom gesture if we're below that maximum image scale or
                             // if we're using software rendering
                             gestures.unpauseZoom();
@@ -313,23 +313,19 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void scroll(float x, float y) {
         stopRender();
 
-        float image_scale = (float) Transforms.imageScaleFromFractalScale(mandelbrot_transform.scale);
+        canvas.setX(canvas.getX() - (x / mandelbrot_transform.scale));
+        canvas.setY(canvas.getY() - (y / mandelbrot_transform.scale));
 
-        canvas.setX(canvas.getX() - (x / image_scale));
-        canvas.setY(canvas.getY() - (y / image_scale));
+        canvas.setPivotX(canvas.getPivotX() + (x / mandelbrot_transform.scale));
+        canvas.setPivotY(canvas.getPivotY() + (y / mandelbrot_transform.scale));
 
-        canvas.setPivotX(canvas.getPivotX() + (x / image_scale));
-        canvas.setPivotY(canvas.getPivotY() + (y / image_scale));
-
-        mandelbrot_transform.x += x / image_scale;
-        mandelbrot_transform.y += y / image_scale;
+        mandelbrot_transform.x += x / mandelbrot_transform.scale;
+        mandelbrot_transform.y += y / mandelbrot_transform.scale;
     }
 
     public void autoZoom(float offset_x, float offset_y, boolean zoom_out) {
-        float old_image_scale = (float) Transforms.imageScaleFromFractalScale(mandelbrot_transform.scale);
-
         // some combinations of scroll and zooming don't work
-        if (!(canvas.getX() == 0 && canvas.getY() == 0 && old_image_scale == 1.0f)) {
+        if (!(canvas.getX() == 0 && canvas.getY() == 0 && mandelbrot_transform.scale == 1.0f)) {
             gestures.pauseZoom(true);
             return;
         }
@@ -340,50 +336,46 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         gestures.pauseZoom(false);
         gestures.pauseScroll();
 
-        // correct offset values
+        // offsets are provided such that they are reckoned from top-left corner of the screen
+        // however, for animation purposes we want to reckon from the centre of the screen
         offset_x -= half_canvas_width;
         offset_y -= half_canvas_height;
 
         // restrict offset_x and offset_y so that the zoomed image doesn't show
         // the background image
-        if (offset_x > half_canvas_width - (int) (half_canvas_width / settings.double_tap_scale)) {
-            offset_x = half_canvas_width - (int) (half_canvas_width / settings.double_tap_scale);
-        } else if (offset_x < - half_canvas_width + (int) (half_canvas_width / settings.double_tap_scale)) {
-            offset_x = - half_canvas_width + (int) (half_canvas_width / settings.double_tap_scale);
+        if (offset_x > half_canvas_width - (half_canvas_width / settings.double_tap_scale)) {
+            offset_x = half_canvas_width -  (half_canvas_width / settings.double_tap_scale);
+        } else if (offset_x < - half_canvas_width + (half_canvas_width / settings.double_tap_scale)) {
+            offset_x = - half_canvas_width + (half_canvas_width / settings.double_tap_scale);
         }
 
-        if (offset_y > half_canvas_height - (int) (half_canvas_height / settings.double_tap_scale)) {
-            offset_y = half_canvas_height - (int) (half_canvas_height / settings.double_tap_scale);
-        } else if (offset_y < - half_canvas_height + (int) (half_canvas_height / settings.double_tap_scale)) {
-            offset_y = - half_canvas_height + (int) (half_canvas_height / settings.double_tap_scale);
+        if (offset_y > half_canvas_height - (half_canvas_height / settings.double_tap_scale)) {
+            offset_y = half_canvas_height - (half_canvas_height / settings.double_tap_scale);
+        } else if (offset_y < - half_canvas_height + (half_canvas_height / settings.double_tap_scale)) {
+            offset_y = - half_canvas_height + (half_canvas_height / settings.double_tap_scale);
         }
 
-        // get new image_scale value - old_image_scale will be 1 if this is the first scale in the sequence
-        float image_scale;
-
+        // set mandelbrot transform ready for the new render
+        mandelbrot_transform.x = offset_x;
+        mandelbrot_transform.y = offset_y;
         if (zoom_out) {
             // no user setting to control how much to zoom out
-            image_scale = old_image_scale * 0.5f;
+            mandelbrot_transform.scale *= 0.5f;
         } else {
-            image_scale = old_image_scale * settings.double_tap_scale;
+            mandelbrot_transform.scale *= settings.double_tap_scale;
         }
 
         // update cumulative image scale
         incomplete_render = true;
-        cumulative_image_scale *= image_scale;
-
-        // set zoom_factor and offsets ready for the new render
-        mandelbrot_transform.scale = Transforms.fractalScaleFromImageScale(image_scale);
-        mandelbrot_transform.x = offset_x;
-        mandelbrot_transform.y = offset_y;
+        cumulative_scale *= mandelbrot_transform.scale;
 
         // do animation
         ViewPropertyAnimator anim = canvas.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
-        anim.x(-offset_x * image_scale);
-        anim.y(-offset_y * image_scale);
-        anim.scaleX(image_scale);
-        anim.scaleY(image_scale);
+        anim.x(-offset_x * mandelbrot_transform.scale);
+        anim.y(-offset_y * mandelbrot_transform.scale);
+        anim.scaleX(mandelbrot_transform.scale);
+        anim.scaleY(mandelbrot_transform.scale);
 
         anim.withStartAction(new Runnable() {
             @Override
@@ -408,20 +400,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         stopRender();
 
         // calculate scale
-        mandelbrot_transform.scale += amount / Math.hypot(canvas_width, canvas_height);
+        mandelbrot_transform.scale += amount/1000;
 
         // limit scale between max in/out ranges
         mandelbrot_transform.scale = Math.max(settings.max_pinch_zoom_out,
                 Math.min(settings.max_pinch_zoom_in, mandelbrot_transform.scale));
 
-        float image_scale = (float) Transforms.imageScaleFromFractalScale(mandelbrot_transform.scale);
-
         // update cumulative image scale
         incomplete_render = true;
-        cumulative_image_scale *= image_scale;
+        cumulative_scale *= mandelbrot_transform.scale;
 
-        canvas.setScaleX(image_scale);
-        canvas.setScaleY(image_scale);
+        canvas.setScaleX(mandelbrot_transform.scale);
+        canvas.setScaleY(mandelbrot_transform.scale);
     }
 
     public void endManualZoom() {
@@ -431,7 +421,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     private void fixateVisibleImage(boolean instant) {
         int pixels[] = new int[canvas_width * canvas_height];
-        if (mandelbrot_transform.scale == 0) {
+        if (mandelbrot_transform.scale == 1.0f) {
             fast_getVisibleImage(pixels);
             setDisplay(pixels, TransitionType.NONE);
         } else {
@@ -469,22 +459,22 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         Arrays.fill(pixels, background_colour);
 
+        x = Math.round(mandelbrot_transform.x);
         if (mandelbrot_transform.x >= 0) {
             offset = 0;
-            x = (int) mandelbrot_transform.x;
-            width = canvas_width - (int) mandelbrot_transform.x;
+            width = canvas_width - x;
         } else {
-            int abs_x = Math.abs((int) mandelbrot_transform.x);
+            int abs_x = Math.abs(x);
             x = 0;
             offset = abs_x;
             width = canvas_width - abs_x;
         }
 
+        y = Math.round(mandelbrot_transform.y);
         if (mandelbrot_transform.y >= 0) {
-            y = (int) mandelbrot_transform.y;
-            height = canvas_height - (int) mandelbrot_transform.y;
+            height = canvas_height - y;
         } else {
-            int abs_y = Math.abs((int) mandelbrot_transform.y);
+            int abs_y = Math.abs(y);
             y = 0;
             offset += abs_y * canvas_width;
             height = canvas_height - abs_y;
@@ -498,16 +488,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
         bm.eraseColor(background_colour);
 
-        double new_left = (mandelbrot_transform.scale * canvas_width);
-        double new_right = canvas_width - new_left;
-        double new_top = (mandelbrot_transform.scale * canvas_height);
-        double new_bottom = canvas_height - new_top;
+        float reduction = MandelbrotTransform.reduction(mandelbrot_transform.scale);
+
+        float new_left = (reduction * canvas_width);
+        float new_right = canvas_width - new_left;
+        float new_top = (reduction * canvas_height);
+        float new_bottom = canvas_height - new_top;
         new_left += mandelbrot_transform.x;
         new_right += mandelbrot_transform.x;
         new_top += mandelbrot_transform.y;
         new_bottom += mandelbrot_transform.y;
         Rect blit_to = new Rect(0, 0, canvas_width, canvas_height);
-        Rect blit_from = new Rect((int) new_left, (int) new_top, (int) new_right, (int) new_bottom);
+        Rect blit_from = new Rect(Math.round(new_left), Math.round(new_top), Math.round(new_right), Math.round(new_bottom));
 
         Paint paint = new Paint();
         paint.setDither(false);

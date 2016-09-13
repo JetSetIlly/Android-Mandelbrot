@@ -31,12 +31,12 @@ public class Settings {
     /* Defaults */
     private static final int DEF_NUM_PASSES = 2;
     private static final float DEF_DOUBLE_TAP_SCALE = 3.0f;
-    private static final float DEF_MAX_PINCH_ZOOM_IN = 0.35f;
-    private static final float DEF_MAX_PINCH_ZOOM_OUT = -0.5f;
+    private static final float DEF_MAX_PINCH_ZOOM_IN = 2.0f;
+    private static final float DEF_MAX_PINCH_ZOOM_OUT = 0.5f;
     private static final String DEF_SELECTED_PALETTE_ID = "";
     public static final int DEF_PALETTE_SMOOTHNESS = 4;
     private static final boolean DEF_ALLOW_SCREEN_ROTATION = false;
-    private static final boolean DEF_DEEP_COLOUR = false;
+    private static final boolean DEF_DEEP_COLOUR = true;
 
     private String prefsName(Context context) {
         return context.getPackageName() + "_settings";

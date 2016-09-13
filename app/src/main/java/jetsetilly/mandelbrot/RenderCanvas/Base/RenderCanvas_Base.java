@@ -14,6 +14,7 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_dalvik;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_renderscript;
+import jetsetilly.mandelbrot.Mandelbrot.MandelbrotTransform;
 import jetsetilly.mandelbrot.R;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
@@ -27,26 +28,10 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     protected final Settings settings = Settings.getInstance();
     private MandelbrotThread render_thr;
 
-    /*** how the mandelbrot should be transformed before the next render ***/
-    protected class MandelbrotTransform {
-        // the amount of deviation (offset) from the current coordinates
-        public double x;
-        public double y;
-
-        // the amount by which the mandelbrot needs to scale in order to match the display
-        public double scale;
-
-        public void reset() {
-            x = 0;
-            y = 0;
-            scale = 0;
-        }
-    }
     protected MandelbrotTransform mandelbrot_transform = new MandelbrotTransform();
 
     // whether or not the previous render completed its work
     protected boolean incomplete_render;
-    /*** end ***/
 
     public RenderCanvas_Base(Context context) {
         super(context);
@@ -110,7 +95,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     }
 
     protected void transformMandelbrot() {
-        mandelbrot.transformMandelbrot(mandelbrot_transform.x, mandelbrot_transform.y, mandelbrot_transform.scale, incomplete_render);
+        mandelbrot.transformMandelbrot(mandelbrot_transform, incomplete_render);
         mandelbrot_transform.reset();
 
         // display mandelbrot info

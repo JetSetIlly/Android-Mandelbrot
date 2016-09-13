@@ -188,6 +188,7 @@ public class GestureOverlay extends ImageView implements
         pinch_gesture = true;
 
         if (pause_zoom) {
+            pauseZoom(true);
             return true;
         }
 

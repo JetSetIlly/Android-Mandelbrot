@@ -33,7 +33,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         public int x;
         public int y;
 
-        // the amount by which the mandelbrot needs to scale in order to match the display (image_scale)
+        // the amount by which the mandelbrot needs to scale in order to match the display
         public double scale;
 
         public void reset() {
@@ -60,7 +60,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         super(context, attrs, defStyleAttr);
     }
 
-    public void checkActionBar(float x, float y, boolean allow_show) {
+    public void checkActionBar(int x, int y, boolean allow_show) {
         // returns false if coordinates are in action bar, otherwise true
        if (!MainActivity.action_bar.inActionBar(y)) {
            MainActivity.action_bar.setVisibility(true);

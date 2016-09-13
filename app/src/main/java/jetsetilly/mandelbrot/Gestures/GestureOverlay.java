@@ -137,7 +137,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
+        gesture_handler.checkActionBar((int) event.getX(), (int) event.getY(), false);
         return true;
     }
 
@@ -176,7 +176,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
+        gesture_handler.checkActionBar((int) event.getX(), (int) event.getY(), true);
         return true;
     }
     /* END OF implementation of onDoubleTapListener interface */

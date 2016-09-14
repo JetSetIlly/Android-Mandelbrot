@@ -62,7 +62,7 @@ public class BufferSimple extends Buffer {
                     most_frequent = i;
                 }
             }
-            render_canvas.background_colour = palette[most_frequent];
+            render_canvas.setBackgroundColor(palette[most_frequent]);
         }
     }
 

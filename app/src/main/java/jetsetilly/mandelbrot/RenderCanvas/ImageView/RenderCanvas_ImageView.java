@@ -34,7 +34,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     Bitmap.Config bitmap_config;
 
     // dominant colour to use_next as background colour - visible on scroll and zoom out events
-    protected int background_colour;
+    private int background_colour;
+
+    // we actually use the background color of this main class but the background ImageView
+    // is used to fade between background colors (very low memory usage)
+    private ImageView background;
 
     // layout to contain the display and foreground ImageViews, defined below
     // all transforms are performed on this layout
@@ -121,6 +125,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             bitmap_config = Bitmap.Config.RGB_565;
         }
 
+        // set initial background colour so that we can fade the first image into
+        // view (we actually just need an opaque - or nearly opaque - alpha channel
+        // for the fade to work correctly)
+        background_colour = 0xFFFFFFFF;
+
+        background = new ImageView(context);
+        background.setAlpha(0.0f);
+
         display_group = new RelativeLayout(context);
 
         display = new ImageView(context);
@@ -131,6 +143,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
         foreground.setAlpha(0.0f);
 
+        addView(background);
         addView(display_group);
         display_group.addView(display);
         display_group.addView(foreground);
@@ -172,12 +185,19 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // not calling super method
     }
 
+    @Override // View
+    public void setBackgroundColor(final int colour) {
+        if (background_colour != colour) {
+            background_colour = colour;
+            super.setBackgroundColor(colour);
+        }
+    }
+
     public void resetCanvas() {
         // new render cache
         stopRender();
 
         super.resetCanvas();
-        setBackgroundColor(background_colour);
         startRender();
     }
 
@@ -229,7 +249,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         buffer.endDraw(cancelled);
 
-        setBackgroundColor(background_colour);
         incomplete_render = cancelled;
         this_render_id = NO_RENDER_ID;
 
@@ -315,7 +334,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void scroll(float x, float y) {
-        stopRender();
+        //stopRender();
 
         display_group.setX(display_group.getX() - (x / mandelbrot_transform.scale));
         display_group.setY(display_group.getY() - (y / mandelbrot_transform.scale));

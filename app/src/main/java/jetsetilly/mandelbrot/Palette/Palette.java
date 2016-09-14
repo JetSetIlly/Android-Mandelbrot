@@ -23,7 +23,7 @@ public class Palette {
     private HashMap<String, PaletteEntry> entries_hash;
 
     public Palette() {
-        // just use the presets for now
+        // just use_next the presets for now
         entries = presets;
         entries_hash = new HashMap<>();
         for (PaletteEntry entry : entries) {

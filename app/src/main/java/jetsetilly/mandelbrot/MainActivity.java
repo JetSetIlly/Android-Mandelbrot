@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
             url = cr.insert(url, values);
             assert url != null;
             OutputStream output_stream = cr.openOutputStream(url);
-            render_canvas.getVisibleImage(false).compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
+            render_canvas.getScreenshot().compress(Bitmap.CompressFormat.JPEG, 100, output_stream);
         } catch (Exception e) {
             Toast.makeText(this, R.string.action_save_fail, Toast.LENGTH_SHORT).show();
             return;

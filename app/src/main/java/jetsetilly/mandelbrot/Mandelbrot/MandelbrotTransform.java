@@ -17,8 +17,4 @@ public class MandelbrotTransform {
         y = 0.0f;
         scale = 1.0f;
     }
-
-    static public float reduction(float image_scale) {
-        return (image_scale - 1.0f) / (2.0f * image_scale);
-    }
 }

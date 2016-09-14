@@ -93,18 +93,17 @@ public class Mandelbrot {
                 LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
             }
 
-            float reduction = MandelbrotTransform.reduction(transform.scale);
-
-            mandelbrot_coordinates.real_left += reduction * fractal_width;
-            mandelbrot_coordinates.real_right -= reduction * fractal_width;
-            mandelbrot_coordinates.imaginary_upper -= reduction * fractal_height;
-            mandelbrot_coordinates.imaginary_lower += reduction * fractal_height;
+            float factor = (transform.scale - 1.0f) / (2.0f * transform.scale);
+            mandelbrot_coordinates.real_left += factor * fractal_width;
+            mandelbrot_coordinates.real_right -= factor * fractal_width;
+            mandelbrot_coordinates.imaginary_upper -= factor * fractal_height;
+            mandelbrot_coordinates.imaginary_lower += factor * fractal_height;
 
             double iterations_rate = IterationsRateValues[settings.iterations_rate];
-            if (transform.scale > 1)
+            if (transform.scale > 1) {
                 // scale up
                 mandelbrot_coordinates.max_iterations = mandelbrot_coordinates.max_iterations + (int) (mandelbrot_coordinates.max_iterations * transform.scale / iterations_rate);
-            else {
+            } else if (transform.scale < 1 ) {
                 // scale down
                 mandelbrot_coordinates.max_iterations = (int) ((mandelbrot_coordinates.max_iterations * iterations_rate) / (iterations_rate + (1.0/transform.scale)));
             }

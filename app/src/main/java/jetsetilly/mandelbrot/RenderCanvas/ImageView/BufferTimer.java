@@ -57,7 +57,7 @@ public class BufferTimer extends Buffer {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
-        // update the most frequent color so we can use it as the background colour
+        // update the most frequent color so we can use_next it as the background colour
         int most_frequent = 0;
         for (int i = 0; i < palette_frequencies.length; ++ i) {
             if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
@@ -76,7 +76,7 @@ public class BufferTimer extends Buffer {
         if (iteration < 0)
             return;
 
-        // figure out which colour to use
+        // figure out which colour to use_next
         int palette_entry = iteration;
         if (iteration >= palette.length) {
             palette_entry = (iteration % (palette.length - 1)) + 1;

@@ -46,7 +46,7 @@ public class BufferSimple extends Buffer {
                             pixels,
                             RenderCanvas_ImageView.TransitionType.CROSS_FADE,
                             RenderCanvas_ImageView.TransitionSpeed.NORMAL,
-                            false
+                            true
                     );
 
                     if (!ret) {
@@ -55,7 +55,7 @@ public class BufferSimple extends Buffer {
                 }
             });
 
-            // update the most frequent color so we can use it as the background colour
+            // update the most frequent color so we can use_next it as the background colour
             int most_frequent = 0;
             for (int i = 0; i < palette_frequencies.length; ++i) {
                 if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
@@ -71,7 +71,7 @@ public class BufferSimple extends Buffer {
         for (int i = 0; i < iterations.length; ++ i) {
             int iteration = iterations[i];
             if (iteration != Mandelbrot.NULL_ITERATIONS) {
-                // figure out which colour to use
+                // figure out which colour to use_next
                 int palette_entry = iteration;
                 if (iteration >= palette.length) {
                     palette_entry = (iteration % (palette.length - 1)) + 1;

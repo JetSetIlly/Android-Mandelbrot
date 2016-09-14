@@ -15,7 +15,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     /* from the android documentation:
 
     AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you
-    need to keep threads running for long periods of time, it is highly recommended you use the
+    need to keep threads running for long periods of time, it is highly recommended you use_next the
     various APIs provided by the java.util.concurrent package such as Executor,
     ThreadPoolExecutor and FutureTask.
      */

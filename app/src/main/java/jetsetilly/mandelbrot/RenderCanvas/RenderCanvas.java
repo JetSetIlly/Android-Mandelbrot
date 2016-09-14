@@ -9,5 +9,5 @@ public interface RenderCanvas {
     void startRender();
     void stopRender();
     void resetCanvas();
-    Bitmap getVisibleImage (boolean bilinear_filter);
+    Bitmap getScreenshot();
 }

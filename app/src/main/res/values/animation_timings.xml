@@ -8,8 +8,8 @@
     <integer name="animated_zoom_duration_slow">1000</integer>
 
     <integer name="transition_duration_fast">250</integer>
-    <integer name="transition_duration_normal">400</integer>
-    <integer name="transition_duration_slow">500</integer>
+    <integer name="transition_duration_normal">500</integer>
+    <integer name="transition_duration_slow">750</integer>
 
     <!-- palette activity -->
     <integer name="palette_selected_tick_duration">500</integer>

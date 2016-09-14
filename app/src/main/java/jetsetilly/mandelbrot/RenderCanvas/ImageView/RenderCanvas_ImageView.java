@@ -79,41 +79,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // maximum value of cumulative_scale allowed before zoom is paused
     private static float MAX_SCALE = 16.0f;
 
-    private class BlockPixels {
-        private RenderCanvas_ImageView render_canvas;
-        private int[] pixels;
-        private boolean use_next;
-        private boolean using_now;
-
-        public BlockPixels(RenderCanvas_ImageView render_canvas, int num_pixels) {
-            this.render_canvas = render_canvas;
-            pixels = new int[num_pixels];
-            notNeeded();
-        }
-
-        public void notNeeded() {
-            use_next = false;
-            using_now = false;
-        }
-
-        public void decideUsage() {
-            if (use_next && !using_now) {
-                // use quick flag because we don't want image to be normalised when
-                // we're transforming the display. for example, scrolling may have scrolled
-                // the display before setDisplay's posted calls have finished
-                render_canvas.setDisplay(pixels, true);
-                using_now = true;
-            }
-        }
-
-        public void gatherPixels() {
-            render_canvas.getVisibleImage(true, pixels);
-            block_pixels.use_next = true;
-            block_pixels.using_now = false;
-        }
-    }
-    private BlockPixels block_pixels;
-
     // controls the transition type between bitmaps for setDisplay()
     @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
     @interface TransitionType {
@@ -125,9 +90,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // TransitionType.NONE implies immediate transition - speed is meaningless
     @IntDef({TransitionSpeed.FAST, TransitionSpeed.NORMAL, TransitionSpeed.SLOW})
     @interface TransitionSpeed {
-        byte FAST = 1;
-        byte NORMAL = 2;
-        byte SLOW = 3;
+        int FAST = 1;
+        int NORMAL = 2;
+        int SLOW = 3;
     }
 
     /*** initialisation ***/
@@ -193,7 +158,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         half_canvas_width = w / 2;
         half_canvas_height = h / 2;
         num_pixels = canvas_width * canvas_height;
-        block_pixels = new BlockPixels(this, num_pixels);
     }
 
     @Override // View
@@ -271,7 +235,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (!incomplete_render) {
             cumulative_scale = 1.0f;
             gestures.unpauseZoom();
-            block_pixels.notNeeded();
         }
 
         renderThreadEnded();
@@ -349,8 +312,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void scroll(float x, float y) {
         stopRender();
 
-        block_pixels.decideUsage();
-
         display_group.setX(display_group.getX() - (x / mandelbrot_transform.scale));
         display_group.setY(display_group.getY() - (y / mandelbrot_transform.scale));
 
@@ -418,7 +379,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withStartAction(new Runnable() {
             @Override
             public void run() {
-                block_pixels.decideUsage();
             }
         });
 
@@ -436,8 +396,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (amount == 0) return;
 
         stopRender();
-
-        block_pixels.decideUsage();
 
         // calculate scale
         mandelbrot_transform.scale += amount/1000;
@@ -460,14 +418,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF GestureHandler implementation ***/
 
     private void fixateVisibleImage() {
-        if (cumulative_scale > 1.0f) {
-            block_pixels.gatherPixels();
-        }
+        int[] block_pixels = new int[num_pixels];
+        getVisibleImage(true, block_pixels);
 
-        // get and show filtered visible image
-        int[] smooth_pixels = new int[num_pixels];
-        getVisibleImage(false, smooth_pixels);
-        setDisplay(smooth_pixels);
+        if (mandelbrot_transform.scale > 1.0f && cumulative_scale < 9.0f) {
+            LogTools.printDebug("FOO", "using smooth pixels");
+            int[] smooth_pixels = new int[num_pixels];
+            getVisibleImage(false, smooth_pixels);
+            setDisplay(smooth_pixels);
+            setDisplay(block_pixels, TransitionType.CROSS_FADE, TransitionSpeed.NORMAL);
+        } else {
+            setDisplay(block_pixels);
+        }
 
         transformMandelbrot();
 
@@ -500,8 +462,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         return setDisplay(pixels, TransitionType.NONE, TransitionSpeed.NORMAL, false);
     }
 
-    protected boolean setDisplay(int pixels[], boolean quick) {
-        return setDisplay(pixels, TransitionType.NONE, TransitionSpeed.NORMAL, quick);
+    protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
+        return setDisplay(pixels, transition_type, transition_speed, false);
     }
 
     protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed, final boolean quick) {

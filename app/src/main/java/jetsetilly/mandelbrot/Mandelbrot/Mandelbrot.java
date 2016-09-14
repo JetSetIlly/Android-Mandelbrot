@@ -69,6 +69,7 @@ public class Mandelbrot {
         this.canvas_width = canvas_width;
         this.canvas_height = canvas_height;
         this.canvas_ratio = (double) canvas_width / (double) canvas_height;
+        this.pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas_width;
     }
 
     @Override

@@ -29,9 +29,9 @@ public class LogTools {
         if (tag.startsWith(NO_LOG_PREFIX)) return;
 
         if (wtf) {
-            android.util.Log.wtf(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
+            Log.wtf(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
         } else {
-            android.util.Log.d(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
+            Log.d(tag, String.format("[%s] %s", Thread.currentThread().getId(), msg));
         }
     }
 }

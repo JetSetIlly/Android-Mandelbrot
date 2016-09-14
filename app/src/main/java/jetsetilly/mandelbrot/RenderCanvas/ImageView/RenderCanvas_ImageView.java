@@ -228,6 +228,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         buffer.endDraw(cancelled);
+
         setBackgroundColor(background_colour);
         incomplete_render = cancelled;
         this_render_id = NO_RENDER_ID;
@@ -280,6 +281,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                             gestures.unpauseZoom();
                         }
                         gestures.unpauseScroll();
+
+                        // now that gestures have been unpaused, we'll wait for setDisplay() anim
+                        // to complete for starting new render
+                        set_display_anim_latch.monitor();
                     }
                 },
                 new Runnable() {
@@ -422,11 +427,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         getVisibleImage(true, block_pixels);
 
         if (mandelbrot_transform.scale > 1.0f && cumulative_scale < 9.0f) {
-            LogTools.printDebug("FOO", "using smooth pixels");
             int[] smooth_pixels = new int[num_pixels];
             getVisibleImage(false, smooth_pixels);
             setDisplay(smooth_pixels);
-            setDisplay(block_pixels, TransitionType.CROSS_FADE, TransitionSpeed.NORMAL);
+            setDisplay(block_pixels, TransitionType.CROSS_FADE, TransitionSpeed.FAST);
         } else {
             setDisplay(block_pixels);
         }
@@ -466,7 +470,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         return setDisplay(pixels, transition_type, transition_speed, false);
     }
 
-    protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed, final boolean quick) {
+    protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed, final boolean new_render) {
         if (transition_type == TransitionType.CROSS_FADE) {
             // get speed of animation (we'll actually set the speed later)
             final int speed;
@@ -495,16 +499,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                     // we want all this to happen in the same frame
                     foreground.invalidate();
-                    if (!quick) {
+                    if (!new_render) {
                         normaliseCanvas();
                     }
                     // END OF same frame
                 }
             });
 
-            // prepare final image (the image we transition to) this will be
-            // obscured by foreground until the end of the animation
-            if (!quick) {
+            // acquire latch to prevent conflicting animations
+            if (!new_render) {
                 set_display_anim_latch.acquire();
             } else {
                 if (!set_display_anim_latch.tryAcquire()) {
@@ -512,6 +515,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 }
             }
 
+            // prepare final image (the image we transition to) this will be
+            // obscured by foreground until the end of the animation
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
             post(new Runnable() {
                 @Override
@@ -540,7 +545,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             });
         } else {
             display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            if (!quick) {
+            if (!new_render) {
                 post(new Runnable() {
                     @Override
                     public void run() {

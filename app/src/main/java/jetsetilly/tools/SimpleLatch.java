@@ -28,11 +28,13 @@ public class SimpleLatch {
     }
 
     public boolean isLatched() {
-        return latch.availablePermits() == 0;
+        return latch.availablePermits() < 1;
     }
 
     synchronized public void release() {
-        if (isLatched()) latch.release();
+        if (isLatched()) {
+            latch.release();
+        }
     }
 
     public void monitor() {

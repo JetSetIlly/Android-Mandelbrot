@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.support.annotation.IntDef;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
@@ -72,7 +71,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private SimpleLatch set_display_anim_latch = new SimpleLatch();
 
     // buffer implementation
-    private Buffer buffer;
+    private Plotter buffer;
     private SimpleLatch buffer_latch = new SimpleLatch();
     private final long NO_RENDER_ID = -1;
     private long this_render_id = NO_RENDER_ID;
@@ -83,21 +82,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // maximum value of cumulative_scale allowed before zoom is paused
     private static float MAX_SCALE = 16.0f;
 
-    // controls the transition type between bitmaps for setDisplay()
-    @IntDef({TransitionType.NONE, TransitionType.CROSS_FADE})
-    @interface TransitionType {
-        int NONE = 0;
-        int CROSS_FADE = 1;
-    }
-
-    // controls the transition speed between bitmaps for setDisplay()
-    // TransitionType.NONE implies immediate transition - speed is meaningless
-    @IntDef({TransitionSpeed.FAST, TransitionSpeed.NORMAL, TransitionSpeed.SLOW})
-    @interface TransitionSpeed {
-        int FAST = 1;
-        int NORMAL = 2;
-        int SLOW = 3;
-    }
+    // maximum value of cumulative_scale for bilinear filtering of the zoomed image
+    private static float BILINEAR_FILTER_LIMIT = 9.0f;
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -215,9 +201,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         incomplete_render = true;
 
         if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
-            buffer = new BufferSimple(this);
+            buffer = new PlotterSimple(this);
         } else {
-            buffer = new BufferTimer(this);
+            buffer = new PlotterTimer(this);
         }
 
         buffer.startDraw(display_bm);
@@ -303,7 +289,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                         // now that gestures have been unpaused, we'll wait for setDisplay() anim
                         // to complete for starting new render
-                        set_display_anim_latch.monitor();
+                        //set_display_anim_latch.monitor();
                     }
                 },
                 new Runnable() {
@@ -442,16 +428,14 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF GestureHandler implementation ***/
 
     private void fixateVisibleImage() {
-        int[] block_pixels = new int[num_pixels];
-        getVisibleImage(true, block_pixels);
+        Bitmap block_pixels_bm = getVisibleImage(true);
 
-        if (mandelbrot_transform.scale > 1.0f && cumulative_scale < 9.0f) {
-            int[] smooth_pixels = new int[num_pixels];
-            getVisibleImage(false, smooth_pixels);
-            setDisplay(smooth_pixels);
-            setDisplay(block_pixels, TransitionType.CROSS_FADE, TransitionSpeed.FAST);
+        if (mandelbrot_transform.scale > 1.0f && cumulative_scale < BILINEAR_FILTER_LIMIT) {
+            Bitmap smooth_pixels_bm = getVisibleImage(false);
+            setImageInstant(smooth_pixels_bm);
+            setImageNormalise(block_pixels_bm);
         } else {
-            setDisplay(block_pixels);
+            setImageInstant(block_pixels_bm);
         }
 
         transformMandelbrot();
@@ -468,7 +452,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
     }
 
-    private void getVisibleImage(boolean block_pixels, int[] pixels) {
+    private Bitmap getVisibleImage(boolean block_pixels) {
         Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
         bm.eraseColor(background_colour);
         Canvas canvas = new Canvas(bm);
@@ -478,106 +462,102 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         matrix.setTranslate(-mandelbrot_transform.x, -mandelbrot_transform.y);
         matrix.postScale(mandelbrot_transform.scale, mandelbrot_transform.scale, half_canvas_width, half_canvas_height);
         canvas.drawBitmap(display_bm, matrix, paint);
-        bm.getPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        return bm;
     }
 
-    protected boolean setDisplay(int pixels[]) {
-        return setDisplay(pixels, TransitionType.NONE, TransitionSpeed.NORMAL, false);
-    }
-
-    protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed) {
-        return setDisplay(pixels, transition_type, transition_speed, false);
-    }
-
-    protected boolean setDisplay(int pixels[], @TransitionType int transition_type, @TransitionSpeed int transition_speed, final boolean new_render) {
-        if (transition_type == TransitionType.CROSS_FADE) {
-            // get speed of animation (we'll actually set the speed later)
-            final int speed;
-            switch (transition_speed) {
-                case TransitionSpeed.FAST:
-                    speed = getResources().getInteger(R.integer.transition_duration_fast);
-                    break;
-                case TransitionSpeed.SLOW:
-                    speed = getResources().getInteger(R.integer.transition_duration_slow);
-                    break;
-                default:
-                case TransitionSpeed.NORMAL:
-                    speed = getResources().getInteger(R.integer.transition_duration_normal);
-                    break;
-            }
-
-            // prepare foreground. this is the image we transition from
-            int foreground_pixels[] = new int[num_pixels];
-            display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    foreground.setAlpha(1.0f);
-
-                    // we want all this to happen in the same frame
-                    foreground.invalidate();
-                    if (!new_render) {
-                        normaliseCanvas();
-                    }
-                    // END OF same frame
-                }
-            });
-
-            // acquire latch to prevent conflicting animations
-            if (!new_render) {
-                set_display_anim_latch.acquire();
-            } else {
-                if (!set_display_anim_latch.tryAcquire()) {
-                    return false;
-                }
-            }
-
-            // prepare final image (the image we transition to) this will be
-            // obscured by foreground until the end of the animation
-            display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    display.invalidate();
-                }
-            });
-
-            final Runnable cancel_set_display_anim = new Runnable() {
-                @Override
-                public void run() {
-                    set_display_anim_latch.release();
-                }
-            };
-
-            // do animation
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    ViewPropertyAnimator transition_anim = foreground.animate();
-                    transition_anim.withEndAction(cancel_set_display_anim);
-                    transition_anim.setDuration(speed);
-                    transition_anim.alpha(0.0f);
-                    transition_anim.start();
-                }
-            });
-        } else {
-            display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-            if (!new_render) {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        display.invalidate();
-                        normaliseCanvas();
-                    }
-                });
-            } else {
-                display.postInvalidate();
-            }
+    protected boolean setImageNew(int pixels[]) {
+        // acquire latch to prevent conflicting animations
+        // don't try too hard though - don't continue if someone
+        // else has the latch
+        if (!set_display_anim_latch.tryAcquire()) {
+            return false;
         }
 
+        // prepare foreground. this is the image we transition from
+        int foreground_pixels[] = new int[num_pixels];
+        display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+
+        postOnAnimation(new Runnable() {
+            @Override
+            public void run() {
+                foreground.setAlpha(1.0f);
+                foreground.invalidate();
+            }
+        });
+
+        // prepare final image (the image we transition to) this will be
+        // obscured by foreground until the end of the animation
+        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        display.postInvalidate();
+
+        // do animation
+        postOnAnimation(new Runnable() {
+            @Override
+            public void run() {
+                ViewPropertyAnimator transition_anim = foreground.animate();
+                transition_anim.withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        set_display_anim_latch.release();
+                    }
+                });
+                transition_anim.setDuration(getResources().getInteger(R.integer.image_fade_new));
+                transition_anim.alpha(0.0f);
+                transition_anim.start();
+            }
+        });
+
         return true;
+    }
+
+    protected void setImageInstant(Bitmap bm) {
+        display_bm = bm;
+        postOnAnimation(new Runnable() {
+            @Override
+            public void run() {
+                display.setImageBitmap(display_bm);
+                normaliseCanvas();
+            }
+        });
+    }
+
+    protected void setImageNormalise(Bitmap bm) {
+        // acquire latch to prevent conflicting animations
+        set_display_anim_latch.acquire();
+
+        // prepare foreground. this is the image we transition from
+        foreground_bm = display_bm;
+
+        postOnAnimation(new Runnable() {
+            @Override
+            public void run() {
+                foreground.setImageBitmap(foreground_bm);
+                foreground.setAlpha(1.0f);
+                normaliseCanvas();
+            }
+        });
+
+        // prepare final image (the image we transition to) this will be
+        // obscured by foreground until the end of the animation
+        display_bm = bm;
+
+        postOnAnimation(new Runnable() {
+            @Override
+            public void run() {
+                display.setImageBitmap(display_bm);
+                ViewPropertyAnimator transition_anim = foreground.animate();
+                transition_anim.withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        set_display_anim_latch.release();
+                    }
+                });
+                transition_anim.setDuration(getResources().getInteger(R.integer.image_fade_normalise));
+                transition_anim.alpha(0.0f);
+                transition_anim.start();
+            }
+        });
     }
 
     public Bitmap getScreenshot() {

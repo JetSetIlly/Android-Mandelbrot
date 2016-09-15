@@ -7,7 +7,7 @@ import java.util.TimerTask;
 
 import jetsetilly.mandelbrot.Palette.Palette;
 
-public class BufferTimer extends Buffer {
+public class PlotterTimer extends Plotter {
     final static public String DBG_TAG = "buffer pixels";
 
     private Bitmap bitmap;
@@ -31,7 +31,7 @@ public class BufferTimer extends Buffer {
         }
     };
 
-    public BufferTimer(RenderCanvas_ImageView canvas) {
+    public PlotterTimer(RenderCanvas_ImageView canvas) {
         super(canvas);
 
         palette = Palette.getInstance().getColours();

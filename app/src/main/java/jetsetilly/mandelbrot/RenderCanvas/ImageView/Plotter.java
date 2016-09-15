@@ -4,11 +4,11 @@ import android.graphics.Bitmap;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 
-abstract class Buffer {
+abstract class Plotter {
     protected RenderCanvas_ImageView render_canvas;
     protected int width, height;
 
-    public Buffer(RenderCanvas_ImageView canvas) {
+    public Plotter(RenderCanvas_ImageView canvas) {
         render_canvas = canvas;
         width = canvas.getWidth();
         height = canvas.getHeight();

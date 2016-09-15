@@ -8,14 +8,14 @@ import jetsetilly.mandelbrot.Palette.Palette;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
-public class BufferSimple extends Buffer {
+public class PlotterSimple extends Plotter {
     final static public String DBG_TAG = "buffer simple";
 
     private int[] palette;
     private int[] pixels;
     private int[] palette_frequencies;
 
-    public BufferSimple(RenderCanvas_ImageView canvas) {
+    public PlotterSimple(RenderCanvas_ImageView canvas) {
         super(canvas);
 
         palette = Palette.getInstance().getColours();
@@ -42,14 +42,7 @@ public class BufferSimple extends Buffer {
             new SimpleAsyncTask("BufferSimple.endDraw()", new Runnable() {
                 @Override
                 public void run() {
-                    boolean ret = render_canvas.setDisplay(
-                            pixels,
-                            RenderCanvas_ImageView.TransitionType.CROSS_FADE,
-                            RenderCanvas_ImageView.TransitionSpeed.NORMAL,
-                            true
-                    );
-
-                    if (!ret) {
+                    if (!render_canvas.setImageNew(pixels)) {
                         LogTools.printDebug(DBG_TAG, "setDisplay() did not complete work");
                     }
                 }

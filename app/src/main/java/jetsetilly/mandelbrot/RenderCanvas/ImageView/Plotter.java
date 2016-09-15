@@ -14,9 +14,9 @@ abstract class Plotter {
         height = canvas.getHeight();
     }
 
-    abstract void startDraw(Bitmap bitmap);
-    abstract void update();
-    abstract void endDraw(boolean cancelled);
+    abstract void startPlot(Bitmap bitmap);
+    abstract void updatePlot();
+    abstract void endPlot(boolean cancelled);
 
     public void plotIteration(int cx, int cy, int iteration) {}
 

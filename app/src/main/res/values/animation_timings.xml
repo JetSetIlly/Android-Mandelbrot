@@ -7,8 +7,7 @@
     <integer name="animated_zoom_duration_fast">500</integer>
     <integer name="animated_zoom_duration_slow">1000</integer>
 
-    <integer name="background_transition">1000</integer>
-
+    <integer name="background_transition">500</integer>
     <integer name="image_fade_new">500</integer>
     <integer name="image_fade_normalise">500</integer>
 

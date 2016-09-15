@@ -52,9 +52,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // allows animated changes
     private ImageView display_curtain;
 
-    // animation used to fade display_curtain when making changes in setImage*()
-    private ViewPropertyAnimator curtain_anim;
-
     // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
 
@@ -72,11 +69,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // and pauses startRender() until an active setDisplay() animation has ended
     // more primitive solution is to run setDisplay().animate.withEndAction() before
     // proceeding with startRender()
-    private SimpleLatch set_display_anim_latch = new SimpleLatch();
+    private SimpleLatch set_image_anim_latch = new SimpleLatch();
 
-    // buffer implementation
-    private Plotter buffer;
-    private SimpleLatch buffer_latch = new SimpleLatch();
+    // plotter implementation
+    private Plotter plotter;
+    private SimpleLatch plotter_latch = new SimpleLatch();
     private final long NO_RENDER_ID = -1;
     private long this_render_id = NO_RENDER_ID;
 
@@ -199,11 +196,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     /*** MandelbrotCanvas implementation ***/
     @WorkerThread
-    public void startDraw(long render_id) {
-        buffer_latch.acquire();
+    public void startPlot(long render_id) {
+        plotter_latch.acquire();
 
         if (this_render_id != render_id && this_render_id != NO_RENDER_ID) {
-            // this shouldn't happen because of the buffer latch
+            // this shouldn't happen because of the plotter latch
             LogTools.printWTF(DBG_TAG, "starting new MandelbrotCanvas draw session before finishing another");
         }
 
@@ -211,39 +208,39 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         incomplete_render = true;
 
         if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
-            buffer = new PlotterSimple(this);
+            plotter = new PlotterSimple(this);
         } else {
-            buffer = new PlotterTimer(this);
+            plotter = new PlotterTimer(this);
         }
 
-        buffer.startDraw(display_bm);
+        plotter.startPlot(display_bm);
     }
 
     @WorkerThread
     public void plotIterations(long render_id, int iterations[], boolean complete_plot) {
-        if (this_render_id != render_id || buffer == null) return;
-        buffer.plotIterations(iterations);
+        if (this_render_id != render_id || plotter == null) return;
+        plotter.plotIterations(iterations);
     }
 
     @WorkerThread
     public void plotIteration(long render_id, int cx, int cy, int iteration) {
-        if (this_render_id != render_id || buffer == null) return;
-        buffer.plotIteration(cx, cy, iteration);
+        if (this_render_id != render_id || plotter == null) return;
+        plotter.plotIteration(cx, cy, iteration);
     }
 
     @UiThread
-    public void update(long render_id) {
-        if (this_render_id != render_id || buffer == null) return;
-        buffer.update();
+    public void updatePlot(long render_id) {
+        if (this_render_id != render_id || plotter == null) return;
+        plotter.updatePlot();
     }
 
     @UiThread
-    public void endDraw(long render_id, boolean cancelled) {
-        if (this_render_id != render_id || buffer == null) {
+    public void endPlot(long render_id, boolean cancelled) {
+        if (this_render_id != render_id || plotter == null) {
             return;
         }
 
-        buffer.endDraw(cancelled);
+        plotter.endPlot(cancelled);
 
         incomplete_render = cancelled;
         this_render_id = NO_RENDER_ID;
@@ -254,8 +251,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         }
 
         renderThreadEnded();
-        buffer = null;
-        buffer_latch.release();
+        plotter = null;
+        plotter_latch.release();
     }
     /*** END OF MandelbrotCanvas implementation ***/
 
@@ -269,7 +266,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void startRender() {
-        gestures.unpauseScroll();
+        gestures.pauseZoom(false);
         gestures.pauseScroll();
 
         stopRender();
@@ -281,12 +278,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 new Runnable() {
                     @Override
                     public void run() {
-                        // wait for previous render to finish
-                        buffer_latch.monitor();
-
                         // wait for any setDisplay() animation to finish before proceeding
-                        // and prevent animation from running because we're waiting
-                        set_display_anim_latch.monitor();
+                        set_image_anim_latch.monitor();
 
                         // fixate visible image to conclude and wait for everything to complete
                         fixate_synchronise.acquire();
@@ -299,10 +292,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                             gestures.unpauseZoom();
                         }
                         gestures.unpauseScroll();
-
-                        // now that gestures have been unpaused, we'll wait for setDisplay() anim
-                        // to complete for starting new render
-                        //set_display_anim_latch.monitor();
                     }
                 },
                 new Runnable() {
@@ -328,7 +317,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     /*** GestureHandler implementation ***/
     public void finishManualGesture() {
-        startRender();
+        if (!mandelbrot_transform.isIdentity()) {
+            startRender();
+        }
     }
 
     @Override // View
@@ -455,7 +446,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // release fixate_synchronise on UI thread to make sure it happens after
         // all the other UI thread events posted in setDisplay
-        // note that we don't wait for set_display_anim_latch to be released because
+        // note that we don't wait for set_image_anim_latch to be released because
         // we want gesturing to be unpaused as soon as possible
         post(new Runnable() {
             @Override
@@ -480,12 +471,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     protected void setImageNew(int pixels[]) {
         // acquire latch to prevent conflicting animations
-        // but first, see if curtain_anim is active - if so, barge our way in
-        if (!set_display_anim_latch.tryAcquire()) {
-            LogTools.printDebug(DBG_TAG, "setImageNew() barging");
-            curtain_anim.cancel();
-            set_display_anim_latch.acquire();
-        }
+        set_image_anim_latch.acquire();
 
         // prepare display_curtain. this is the image we transition from
         int foreground_pixels[] = new int[num_pixels];
@@ -509,11 +495,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         postOnAnimation(new Runnable() {
             @Override
             public void run() {
-                curtain_anim = display_curtain.animate();
+                ViewPropertyAnimator curtain_anim = display_curtain.animate();
                 curtain_anim.withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        set_display_anim_latch.release();
+                        set_image_anim_latch.release();
                     }
                 });
                 curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_new));
@@ -536,7 +522,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     protected void setImage(Bitmap bm) {
         // acquire latch to prevent conflicting animations
-        set_display_anim_latch.acquire();
+        set_image_anim_latch.acquire();
 
         // prepare display_curtain. this is the image we transition from
         foreground_bm = display_bm;
@@ -558,11 +544,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             @Override
             public void run() {
                 display.setImageBitmap(display_bm);
-                curtain_anim = display_curtain.animate();
+                ViewPropertyAnimator curtain_anim = display_curtain.animate();
                 curtain_anim.withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        set_display_anim_latch.release();
+                        set_image_anim_latch.release();
                     }
                 });
                 curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_normalise));

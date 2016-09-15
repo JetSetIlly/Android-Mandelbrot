@@ -4,12 +4,10 @@ import android.os.AsyncTask;
 import android.support.annotation.CallSuper;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
-import android.util.Log;
 
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
-import jetsetilly.tools.LogTools;
 
 abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     /* from the android documentation:
@@ -36,7 +34,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @WorkerThread
     @CallSuper
     protected Void doInBackground(Void... v) {
-        c.startDraw(canvas_id);
+        c.startPlot(canvas_id);
         return null;
     }
 
@@ -45,7 +43,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onProgressUpdate(Void... v) {
         MainActivity.progress.kick(m.rescaling_render);
-        c.update(canvas_id);
+        c.updatePlot(canvas_id);
     }
 
     @Override
@@ -60,7 +58,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onPostExecute(Void v) {
-        c.endDraw(canvas_id, false);
+        c.endPlot(canvas_id, false);
         MainActivity.progress.unregister();
     }
 
@@ -68,7 +66,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onCancelled() {
-        c.endDraw(canvas_id, true);
+        c.endPlot(canvas_id, true);
         MainActivity.progress.unregister();
     }
 }

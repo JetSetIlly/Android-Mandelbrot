@@ -40,7 +40,7 @@ public class PlotterTimer extends Plotter {
     }
 
     @Override
-    public void startDraw(Bitmap bitmap) {
+    public void startPlot(Bitmap bitmap) {
         this.bitmap = bitmap;
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         pixel_scheduler.schedule(pixel_scheduler_task, 0, PIXEL_UPDATE_FREQ);
@@ -48,16 +48,16 @@ public class PlotterTimer extends Plotter {
     }
 
     @Override
-    public void update() {
+    public void updatePlot() {
         render_canvas.invalidate();
     }
 
     @Override
-    public void endDraw(boolean cancelled) {
+    public void endPlot(boolean cancelled) {
         pixel_scheduler.cancel();
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
-        // update the most frequent color so we can use_next it as the background colour
+        // updatePlot the most frequent color so we can use_next it as the background colour
         int most_frequent = 0;
         for (int i = 0; i < palette_frequencies.length; ++ i) {
             if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
@@ -66,7 +66,7 @@ public class PlotterTimer extends Plotter {
         }
         render_canvas.setBaseColour(palette[most_frequent]);
 
-        update();
+        updatePlot();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class PlotterTimer extends Plotter {
         // put coloured pixel into pixel buffer - ready for flushing
         pixels[(cy * width) + cx] = palette[palette_entry];
 
-        // update palette frequency
+        // updatePlot palette frequency
         // we don't want to consider palette[0] for the colour_cnt_highest
         // it's the zero space color it's not really a color
         if (palette_entry > 0) {

@@ -24,29 +24,29 @@ public class PlotterSimple extends Plotter {
     }
 
     @Override
-    void startDraw(Bitmap bitmap) {
+    void startPlot(Bitmap bitmap) {
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     }
 
     @Override
-    void update() {
-        // in this buffer implementation update() does nothing
-        // we don't actually show the bitmap until endDraw() is called
+    void updatePlot() {
+        // in this buffer implementation updatePlot() does nothing
+        // we don't actually show the bitmap until endPlot() is called
         // so there's nothing meaningful to do
     }
 
     @UiThread
     @Override
-    public void endDraw(boolean cancelled) {
+    public void endPlot(boolean cancelled) {
         if (!cancelled) {
-            new SimpleAsyncTask("BufferSimple.endDraw()", new Runnable() {
+            new SimpleAsyncTask("BufferSimple.endPlot()", new Runnable() {
                 @Override
                 public void run() {
                     render_canvas.setImageNew(pixels);
                 }
             });
 
-            // update the most frequent color so we can use_next it as the background colour
+            // updatePlot the most frequent color so we can use_next it as the background colour
             int most_frequent = 0;
             for (int i = 0; i < palette_frequencies.length; ++i) {
                 if (palette_frequencies[i] > palette_frequencies[most_frequent]) {
@@ -71,7 +71,7 @@ public class PlotterSimple extends Plotter {
                 // put coloured pixel into pixel buffer - ready for flushing
                 pixels[i] = palette[palette_entry];
 
-                // update palette frequency
+                // updatePlot palette frequency
                 // we don't want to consider palette[0] for the colour_cnt_highest
                 // it's the zero space color it's not really a color
                 if (palette_entry > 0) {

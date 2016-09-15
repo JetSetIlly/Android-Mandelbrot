@@ -17,4 +17,8 @@ public class MandelbrotTransform {
         y = 0.0f;
         scale = 1.0f;
     }
+
+    public boolean isIdentity() {
+        return x == 0.0f && y == 0.0f && scale == 1.0f;
+    }
 }

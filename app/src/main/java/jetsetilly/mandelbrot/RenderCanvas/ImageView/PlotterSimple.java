@@ -42,9 +42,7 @@ public class PlotterSimple extends Plotter {
             new SimpleAsyncTask("BufferSimple.endDraw()", new Runnable() {
                 @Override
                 public void run() {
-                    if (!render_canvas.setImageNew(pixels)) {
-                        LogTools.printDebug(DBG_TAG, "setDisplay() did not complete work");
-                    }
+                    render_canvas.setImageNew(pixels);
                 }
             });
 
@@ -55,7 +53,7 @@ public class PlotterSimple extends Plotter {
                     most_frequent = i;
                 }
             }
-            render_canvas.setBackgroundColor(palette[most_frequent]);
+            render_canvas.setBaseColour(palette[most_frequent]);
         }
     }
 

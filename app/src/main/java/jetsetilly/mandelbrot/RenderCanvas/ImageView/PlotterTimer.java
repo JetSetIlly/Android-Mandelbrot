@@ -64,7 +64,7 @@ public class PlotterTimer extends Plotter {
                 most_frequent = i;
             }
         }
-        render_canvas.setBackgroundColor(palette[most_frequent]);
+        render_canvas.setBaseColour(palette[most_frequent]);
 
         update();
     }

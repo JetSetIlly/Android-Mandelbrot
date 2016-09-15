@@ -1,5 +1,7 @@
 package jetsetilly.mandelbrot.RenderCanvas.ImageView;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -35,11 +37,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // dominant colour to use_next as background colour - visible on scroll and zoom out events
     private int background_colour;
 
-    // we actually use the background color of this main class but the background ImageView
-    // is used to fade between background colors (very low memory usage)
-    private ImageView background;
+    // the animator that handles background_colour changes
+    private ValueAnimator background_transition_anim;
 
-    // layout to contain the display and foreground ImageViews, defined below
+    // layout to contain the display and display_curtain ImageViews, defined below
     // all transforms are performed on this layout
     private RelativeLayout display_group;
 
@@ -49,12 +50,15 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // that ImageView that sits in front of RenderCanvas_ImageView in the layout
     // allows animated changes
-    private ImageView foreground;
+    private ImageView display_curtain;
+
+    // animation used to fade display_curtain when making changes in setImage*()
+    private ViewPropertyAnimator curtain_anim;
 
     // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
 
-    // foreground_bm is whatever bitmap is currently displayed in foreground
+    // foreground_bm is whatever bitmap is currently displayed in display_curtain
     private Bitmap foreground_bm;
 
     // reference to the task that prepares the main render thread
@@ -116,23 +120,21 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // for the fade to work correctly)
         background_colour = 0xFFFFFFFF;
 
-        background = new ImageView(context);
-        background.setAlpha(0.0f);
-
+        /*** display group ***/
         display_group = new RelativeLayout(context);
 
         display = new ImageView(context);
         display.setScaleType(ImageView.ScaleType.CENTER);
         display.setLayerType(LAYER_TYPE_HARDWARE, null);
 
-        foreground = new ImageView(context);
-        foreground.setLayerType(LAYER_TYPE_HARDWARE, null);
-        foreground.setAlpha(0.0f);
+        display_curtain = new ImageView(context);
+        display_curtain.setLayerType(LAYER_TYPE_HARDWARE, null);
+        display_curtain.setAlpha(0.0f);
 
-        addView(background);
         addView(display_group);
         display_group.addView(display);
-        display_group.addView(foreground);
+        display_group.addView(display_curtain);
+        /*** END OF display group ***/
 
         post(new Runnable() {
             @Override
@@ -141,7 +143,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                 foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
 
                 display.setImageBitmap(display_bm);
-                foreground.setImageBitmap(foreground_bm);
+                display_curtain.setImageBitmap(foreground_bm);
                 invalidate();
                 resetCanvas();
             }
@@ -165,17 +167,25 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             @Override
             public void run() {
                 display.invalidate();
-                foreground.invalidate();
+                display_curtain.invalidate();
             }
         });
         // not calling super method
     }
 
-    @Override // View
-    public void setBackgroundColor(final int colour) {
-        if (background_colour != colour) {
-            background_colour = colour;
-            super.setBackgroundColor(colour);
+    public void setBaseColour(int new_colour) {
+        if (background_colour != new_colour) {
+            background_transition_anim = ValueAnimator.ofObject(new ArgbEvaluator(), background_colour, new_colour);
+            background_transition_anim.setIntValues(background_colour, new_colour);
+            background_transition_anim.setDuration(getResources().getInteger(R.integer.background_transition));
+            background_transition_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    background_colour = (int) animator.getAnimatedValue();
+                    setBackgroundColor(background_colour);
+                }
+            });
+            background_transition_anim.start();
         }
     }
 
@@ -264,6 +274,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         stopRender();
 
+        // halt background color changes
+        if (background_transition_anim != null) background_transition_anim.cancel();
+
         startup_render_task = new SimpleAsyncTask("RenderCanvas_ImageView.startRender",
                 new Runnable() {
                     @Override
@@ -320,7 +333,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void scroll(float x, float y) {
-        //stopRender();
+        // do not stop render
 
         display_group.setX(display_group.getX() - (x / mandelbrot_transform.scale));
         display_group.setY(display_group.getY() - (y / mandelbrot_transform.scale));
@@ -433,7 +446,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (mandelbrot_transform.scale > 1.0f && cumulative_scale < BILINEAR_FILTER_LIMIT) {
             Bitmap smooth_pixels_bm = getVisibleImage(false);
             setImageInstant(smooth_pixels_bm);
-            setImageNormalise(block_pixels_bm);
+            setImage(block_pixels_bm);
         } else {
             setImageInstant(block_pixels_bm);
         }
@@ -465,15 +478,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         return bm;
     }
 
-    protected boolean setImageNew(int pixels[]) {
+    protected void setImageNew(int pixels[]) {
         // acquire latch to prevent conflicting animations
-        // don't try too hard though - don't continue if someone
-        // else has the latch
+        // but first, see if curtain_anim is active - if so, barge our way in
         if (!set_display_anim_latch.tryAcquire()) {
-            return false;
+            LogTools.printDebug(DBG_TAG, "setImageNew() barging");
+            curtain_anim.cancel();
+            set_display_anim_latch.acquire();
         }
 
-        // prepare foreground. this is the image we transition from
+        // prepare display_curtain. this is the image we transition from
         int foreground_pixels[] = new int[num_pixels];
         display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
         foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
@@ -481,13 +495,13 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         postOnAnimation(new Runnable() {
             @Override
             public void run() {
-                foreground.setAlpha(1.0f);
-                foreground.invalidate();
+                display_curtain.setAlpha(1.0f);
+                display_curtain.invalidate();
             }
         });
 
         // prepare final image (the image we transition to) this will be
-        // obscured by foreground until the end of the animation
+        // obscured by display_curtain until the end of the animation
         display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
         display.postInvalidate();
 
@@ -495,20 +509,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         postOnAnimation(new Runnable() {
             @Override
             public void run() {
-                ViewPropertyAnimator transition_anim = foreground.animate();
-                transition_anim.withEndAction(new Runnable() {
+                curtain_anim = display_curtain.animate();
+                curtain_anim.withEndAction(new Runnable() {
                     @Override
                     public void run() {
                         set_display_anim_latch.release();
                     }
                 });
-                transition_anim.setDuration(getResources().getInteger(R.integer.image_fade_new));
-                transition_anim.alpha(0.0f);
-                transition_anim.start();
+                curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_new));
+                curtain_anim.alpha(0.0f);
+                curtain_anim.start();
             }
         });
-
-        return true;
     }
 
     protected void setImageInstant(Bitmap bm) {
@@ -522,40 +534,40 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
     }
 
-    protected void setImageNormalise(Bitmap bm) {
+    protected void setImage(Bitmap bm) {
         // acquire latch to prevent conflicting animations
         set_display_anim_latch.acquire();
 
-        // prepare foreground. this is the image we transition from
+        // prepare display_curtain. this is the image we transition from
         foreground_bm = display_bm;
 
         postOnAnimation(new Runnable() {
             @Override
             public void run() {
-                foreground.setImageBitmap(foreground_bm);
-                foreground.setAlpha(1.0f);
+                display_curtain.setImageBitmap(foreground_bm);
+                display_curtain.setAlpha(1.0f);
                 normaliseCanvas();
             }
         });
 
         // prepare final image (the image we transition to) this will be
-        // obscured by foreground until the end of the animation
+        // obscured by display_curtain until the end of the animation
         display_bm = bm;
 
         postOnAnimation(new Runnable() {
             @Override
             public void run() {
                 display.setImageBitmap(display_bm);
-                ViewPropertyAnimator transition_anim = foreground.animate();
-                transition_anim.withEndAction(new Runnable() {
+                curtain_anim = display_curtain.animate();
+                curtain_anim.withEndAction(new Runnable() {
                     @Override
                     public void run() {
                         set_display_anim_latch.release();
                     }
                 });
-                transition_anim.setDuration(getResources().getInteger(R.integer.image_fade_normalise));
-                transition_anim.alpha(0.0f);
-                transition_anim.start();
+                curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_normalise));
+                curtain_anim.alpha(0.0f);
+                curtain_anim.start();
             }
         });
     }

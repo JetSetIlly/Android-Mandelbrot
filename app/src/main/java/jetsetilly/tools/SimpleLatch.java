@@ -19,7 +19,7 @@ public class SimpleLatch {
         return latch.tryAcquire();
     }
 
-    synchronized public void acquire() {
+    public void acquire() {
         try {
             latch.acquire();
         } catch (InterruptedException e) {
@@ -31,7 +31,7 @@ public class SimpleLatch {
         return latch.availablePermits() < 1;
     }
 
-    synchronized public void release() {
+    public void release() {
         if (isLatched()) {
             latch.release();
         }

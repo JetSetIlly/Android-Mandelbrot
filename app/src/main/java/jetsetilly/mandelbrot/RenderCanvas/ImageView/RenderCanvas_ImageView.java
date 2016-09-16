@@ -78,13 +78,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private long this_render_id = NO_RENDER_ID;
 
     // the amount of scaling since the last rendered image
-    private double cumulative_scale = 1.0f;
+    private float cumulative_scale = 1.0f;
 
     // maximum value of cumulative_scale allowed before zoom is paused
-    private static float MAX_SCALE = 16.0f;
-
-    // maximum value of cumulative_scale for bilinear filtering of the zoomed image
-    private static float BILINEAR_FILTER_LIMIT = 9.0f;
+    private static float MAX_SCALE = 9.0f;
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -375,7 +372,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             // no user setting to control how much to zoom out
             mandelbrot_transform.scale *= 0.5f;
         } else {
-            mandelbrot_transform.scale *= settings.double_tap_scale;
+            mandelbrot_transform.scale = Math.min(mandelbrot_transform.scale * settings.double_tap_scale, MAX_SCALE/cumulative_scale);
         }
 
         // update cumulative image scale
@@ -434,7 +431,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private void fixateVisibleImage() {
         Bitmap block_pixels_bm = getVisibleImage(true);
 
-        if (mandelbrot_transform.scale > 1.0f && cumulative_scale < BILINEAR_FILTER_LIMIT) {
+        if (mandelbrot_transform.scale > 1.0f) {
             Bitmap smooth_pixels_bm = getVisibleImage(false);
             setImageInstant(smooth_pixels_bm);
             setImageFade(block_pixels_bm);

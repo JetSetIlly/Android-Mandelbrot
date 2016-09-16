@@ -51,11 +51,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:src="@mipmap/ic_progress"
+        android:src="@drawable/ic_build_black_24dp"
         android:id="@+id/progressView"
         android:visibility="visible"
         android:elevation="@dimen/progress_view_elevation"
-        android:background="@drawable/progress_background"
+        android:background="@drawable/icon_background"
         android:layout_margin="@dimen/progress_margin"
         android:padding="@dimen/progress_padding" />
 
@@ -66,10 +66,10 @@
         android:layout_alignParentLeft="true"
         android:contentDescription="@string/description_gesture_icon"
         android:src="@drawable/ic_pause_black_24dp"
-        android:id="@+id/pause_icon"
+        android:id="@+id/pauseIcon"
         android:visibility="invisible"
         android:elevation="@dimen/progress_view_elevation"
-        android:background="@drawable/progress_background"
+        android:background="@drawable/icon_background"
         android:layout_margin="@dimen/gesture_margin"
         android:padding="@dimen/gesture_padding" />
 

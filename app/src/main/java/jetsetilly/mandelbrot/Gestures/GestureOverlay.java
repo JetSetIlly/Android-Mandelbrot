@@ -67,7 +67,7 @@ public class GestureOverlay extends ImageView implements
         scale_detector.setQuickScaleEnabled(false);
         gestures_detector.setOnDoubleTapListener(this);
 
-        pause_icon = (ImageView) context.findViewById(R.id.pause_icon);
+        pause_icon = (ImageView) context.findViewById(R.id.pauseIcon);
 
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override

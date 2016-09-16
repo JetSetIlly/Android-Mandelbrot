@@ -23,7 +23,8 @@
             android:id="@+id/palette_selected_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@mipmap/ic_swatch_selected"
+            android:src="@drawable/ic_check_black_24dp"
+            android:background="@drawable/icon_background"
             android:layout_alignEnd="@id/palette_swatch"
             android:contentDescription="@string/description_palette_swatch_selected" />
 

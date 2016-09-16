@@ -321,7 +321,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void scroll(float x, float y) {
-        // do not stop render
+        // NOTE: do not stop render
 
         display_group.setX(display_group.getX() - (x / mandelbrot_transform.scale));
         display_group.setY(display_group.getY() - (y / mandelbrot_transform.scale));
@@ -340,7 +340,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return;
         }
 
-        //stopRender();
+        // NOTE: do not stop render
 
         // pause gestures - startRender() will unpause as appropriate
         gestures.pauseZoom(false);
@@ -406,10 +406,10 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     public void manualZoom(float amount) {
         if (amount == 0) return;
 
-        stopRender();
+        // NOTE: do not stop render
 
-        // calculate scale
-        mandelbrot_transform.scale += amount/1000;
+        // calculate scale - adjusting amount sensitivity
+        mandelbrot_transform.scale += amount / 1200;
 
         // limit scale between max in/out ranges
         mandelbrot_transform.scale = Math.max(settings.max_pinch_zoom_out,

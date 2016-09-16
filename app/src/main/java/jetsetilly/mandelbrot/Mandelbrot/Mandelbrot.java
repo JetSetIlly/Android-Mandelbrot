@@ -13,6 +13,7 @@ public class Mandelbrot {
     private final static String DBG_TAG = "mandelbrot";
 
     public static final int NULL_ITERATIONS = -1;
+    public static final int NULL_SPACE = 0;
 
     public @IntDef({CalculationMethod.NATIVE, CalculationMethod.BIG_DECIMAL})
     @interface CalculationMethod {

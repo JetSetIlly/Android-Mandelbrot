@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     // declaring these as static so that they are globally accessible
     // if this seems strange then take a look at this (straight from the horses mouth):
     // https://groups.google.com/d/msg/android-developers/I1swY6FlbPI/gGkY8mt8_IQJ
-    static public ProgressView progress;
+    static public Throbber progress;
     static public MandelbrotActionBar action_bar;
     static public RenderScript render_script;
     /*** END OF static declarations ***/
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // progress view
-        progress = (ProgressView) findViewById(R.id.progressView);
+        progress = (Throbber) findViewById(R.id.progressView);
 
         // create new DialogReceiver
         dialog_receiver = new DialogReceiver(this);

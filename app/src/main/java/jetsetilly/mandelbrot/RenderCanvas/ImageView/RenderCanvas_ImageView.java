@@ -343,7 +343,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             return;
         }
 
-        stopRender();
+        //stopRender();
 
         // pause gestures - startRender() will unpause as appropriate
         gestures.pauseZoom(false);
@@ -437,7 +437,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         if (mandelbrot_transform.scale > 1.0f && cumulative_scale < BILINEAR_FILTER_LIMIT) {
             Bitmap smooth_pixels_bm = getVisibleImage(false);
             setImageInstant(smooth_pixels_bm);
-            setImage(block_pixels_bm);
+            setImageFade(block_pixels_bm);
         } else {
             setImageInstant(block_pixels_bm);
         }
@@ -462,6 +462,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         Canvas canvas = new Canvas(bm);
         Paint paint = new Paint();
         paint.setFilterBitmap(!block_pixels);
+        paint.setAntiAlias(true);
         Matrix matrix = new Matrix();
         matrix.setTranslate(-mandelbrot_transform.x, -mandelbrot_transform.y);
         matrix.postScale(mandelbrot_transform.scale, mandelbrot_transform.scale, half_canvas_width, half_canvas_height);
@@ -520,7 +521,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
     }
 
-    protected void setImage(Bitmap bm) {
+    protected void setImageFade(Bitmap bm) {
         // acquire latch to prevent conflicting animations
         set_image_anim_latch.acquire();
 

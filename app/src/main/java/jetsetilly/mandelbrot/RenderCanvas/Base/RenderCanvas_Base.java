@@ -73,8 +73,6 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     }
 
     protected void startRenderThread() {
-        MainActivity.progress.startSession();
-
         if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
             render_thr = new MandelbrotThread_renderscript(mandelbrot, this);
         } else {

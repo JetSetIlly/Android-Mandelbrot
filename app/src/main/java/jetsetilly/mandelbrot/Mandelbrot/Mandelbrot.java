@@ -34,7 +34,7 @@ public class Mandelbrot {
         int FAST =2;
         int COUNT =3;
     }
-    public int[] IterationsRateValues = {50, 40, 30};
+    public int[] IterationsRateValues = {40, 30, 20};
 
     private final Context context;
 
@@ -150,6 +150,6 @@ public class Mandelbrot {
             }
         }
 
-        rescaling_render = transform.scale != 0;
+        rescaling_render = transform.scale != 1.0f;
     }
 }

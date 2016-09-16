@@ -42,7 +42,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @UiThread
     @CallSuper
     protected void onProgressUpdate(Void... v) {
-        MainActivity.progress.kick(m.rescaling_render);
+        MainActivity.progress.kick();
         c.updatePlot(canvas_id);
     }
 
@@ -59,7 +59,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onPostExecute(Void v) {
         c.endPlot(canvas_id, false);
-        MainActivity.progress.unregister();
+        MainActivity.progress.endSession();
     }
 
     @Override
@@ -67,6 +67,6 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @CallSuper
     protected void onCancelled() {
         c.endPlot(canvas_id, true);
-        MainActivity.progress.unregister();
+        MainActivity.progress.endSession();
     }
 }

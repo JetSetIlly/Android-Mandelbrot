@@ -11,10 +11,12 @@ import android.widget.ImageView;
 public class ProgressView extends ImageView {
     private final String DBG_TAG = "progress view";
 
-    private final double PROGRESS_WAIT = 1000; // in milliseconds
-    private final long UNREGISTER_DELAY = 1000; // in milliseconds
+    private final double KICK_WAIT = 1000; // in milliseconds
+    private final long END_DELAY = 1000; // in milliseconds
+    private final long SESSION_PERSIST = 1000; // in milliseconds
 
     private long start_time = 0;
+    private long end_time = 0;
     private AnimatorSet running_anim;
     private AnimatorSet on_anim;
 
@@ -61,9 +63,13 @@ public class ProgressView extends ImageView {
         // link animations together
         on_anim.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                running_anim = on_anim;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                running_anim = throb_anim;
                 throb_anim.start();
                 // throb runs forever
             }
@@ -71,9 +77,14 @@ public class ProgressView extends ImageView {
 
         throb_anim.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                running_anim = throb_anim;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                running_anim = off_anim;
+                throb_anim_ending = false;
                 off_anim.start();
             }
         });
@@ -92,6 +103,11 @@ public class ProgressView extends ImageView {
 
         off_anim.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                running_anim = off_anim;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 running_anim = null;
@@ -101,31 +117,36 @@ public class ProgressView extends ImageView {
     }
 
     public void startSession() {
-        start_time = System.currentTimeMillis();
+        // something is already happening
+        if (running_anim != null) return;
+
+        long now = System.currentTimeMillis();
+
+        // allow sessions to persist from one call to the next if only
+        // a short amount of time has passed
+        if (now - end_time < SESSION_PERSIST) return;
+
+        // register start time
+        start_time = now;
     }
 
-    public void kick(boolean show_immediately) {
-        // if show_immediately is not set to true
-        // make sure a suitable amount of time has passed before showing progress view
-        if (!show_immediately) {
-            if (System.currentTimeMillis() - start_time < PROGRESS_WAIT) {
-                return;
-            }
-        }
+    public void kick() {
+        // wait until enough time has passed
+        if (System.currentTimeMillis() - start_time < KICK_WAIT) return;
 
         // do nothing if any of the following conditions are met
         if (running_anim == on_anim) return;
         if (running_anim == throb_anim) {
+            // allow throb animation to continue
             throb_anim_ending = false;
             return;
         }
 
         // run on-animation
-        running_anim = on_anim;
         if (running_anim == off_anim) {
             // progressView is about to disappear. wait until it has done so before
             // bringing it back into view
-            postDelayed(new Runnable() {
+            postOnAnimationDelayed(new Runnable() {
                 @Override
                 public void run() {
                     on_anim.start();
@@ -140,35 +161,35 @@ public class ProgressView extends ImageView {
         }
     }
 
-    public void unregister() {
+    public void endSession() {
         // run off-animation if necessary after a short delay
         // the delay should give enough time for a new render event
         // to start without the progress view bobbing out of view
 
-        final long unregister_time = System.currentTimeMillis();
+        end_time = System.currentTimeMillis();
 
-        postDelayed(new Runnable() {
+        postOnAnimationDelayed(new Runnable() {
             @Override
             public void run() {
-                if (unregister_time < start_time) return; // do nothing if a new session has started
-                if (running_anim == off_anim || running_anim == no_anim) return;
+                if (end_time < start_time) return; // do nothing if a new session has started
+                if (running_anim == off_anim || running_anim == no_anim || throb_anim_ending) return;
 
                 if (running_anim == on_anim) {
                     running_anim.end();
                 } else if (running_anim == throb_anim) {
                     throb_anim_ending = true;
-                    postDelayed(new Runnable() {
+                    postOnAnimationDelayed(new Runnable() {
                         @Override
                         public void run() {
                             if (running_anim == throb_anim && throb_anim_ending) {
-                                running_anim = null;
                                 throb_anim.end();
+                                throb_anim_ending = false;
                             }
                         }
                     }, timeToThrobEnd());
                 }
             }
-        }, UNREGISTER_DELAY);
+        }, END_DELAY); ;
     }
 
     // animator property

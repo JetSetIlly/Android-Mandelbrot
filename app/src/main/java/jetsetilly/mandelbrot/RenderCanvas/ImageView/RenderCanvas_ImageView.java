@@ -157,7 +157,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void invalidate() {
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display.invalidate();
@@ -263,6 +263,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void startRender() {
+        // make sure gestures are paused while we're monkeying with the display
+        gestures.pauseGestures();
+
         stopRender();
 
         // halt background color changes
@@ -291,9 +294,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                         if (isCancelled()) return;
 
-                        // make sure gestures are paused while we're monkeying with the display
-                        gestures.pauseGestures();
-
                         // display normalised bitmaps and update mandelbrot for new render
                         if (mandelbrot_transform.scale > 1.0f) {
                             setImageInstant(smooth_pixels_bm);
@@ -304,7 +304,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                         transformMandelbrot();
 
-                        // unpause gestures not that monkeying has finished
+                        // unpause gestures
                         gestures.unpauseGestures();
 
                         // see if MAX_SCALE has been reached
@@ -345,8 +345,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void scroll(float x, float y) {
-        // NOTE: do not stop render
-
         display_group.setX(display_group.getX() - (x / mandelbrot_transform.scale));
         display_group.setY(display_group.getY() - (y / mandelbrot_transform.scale));
 
@@ -358,8 +356,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public boolean autoZoom(float offset_x, float offset_y, boolean zoom_out) {
-        // some combinations of scroll and zooming don't work
-
         // don't allow any further zooming in
         if (!zoom_out && max_scale_reached) return false;
 
@@ -371,6 +367,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             LogTools.printWTF(DBG_TAG, "trying to auto zoom in an unsafe state");
             return false;
         }
+
+        // pause gestures - startRender() will unpause as appropriate
+        gestures.pauseGestures();
 
         // offsets are provided such that they are reckoned from top-left corner of the screen
         // however, for animation purposes we want to reckon from the centre of the screen
@@ -390,9 +389,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         } else if (offset_y < - half_canvas_height + (half_canvas_height / settings.double_tap_scale)) {
             offset_y = - half_canvas_height + (half_canvas_height / settings.double_tap_scale);
         }
-
-        // pause gestures - startRender() will unpause as appropriate
-        gestures.pauseGestures();
 
         // prepare final state -- we'll copy these values to mandelbrot_transform in the endAction()
         mandelbrot_transform.x = offset_x;
@@ -485,7 +481,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
         foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
 
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display_curtain.setAlpha(1.0f);
@@ -499,7 +495,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display.postInvalidate();
 
         // do animation
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 ViewPropertyAnimator curtain_anim = display_curtain.animate();
@@ -518,7 +514,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     protected void setImageInstant(Bitmap bm) {
         display_bm = bm;
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display.setImageBitmap(display_bm);
@@ -534,7 +530,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // prepare display_curtain. this is the image we transition from
         foreground_bm = display_bm;
 
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display_curtain.setImageBitmap(foreground_bm);
@@ -547,7 +543,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // obscured by display_curtain until the end of the animation
         display_bm = bm;
 
-        postOnAnimation(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 display.setImageBitmap(display_bm);

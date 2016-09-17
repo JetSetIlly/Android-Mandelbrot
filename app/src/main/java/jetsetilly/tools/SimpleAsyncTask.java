@@ -34,6 +34,19 @@ public class SimpleAsyncTask {
         init(tag, background_runnable, completion_runnable, run_complete_when_cancelled?completion_runnable:null);
     }
 
+    static abstract public class AsyncRunnable implements Runnable {
+        private Task task;
+
+        private void run(Task task) {
+            this.task = task;
+            run();
+        }
+
+        public boolean isCancelled() {
+            return task.isCancelled();
+        }
+    }
+
     private void init(String tag, Runnable background_runnable, Runnable completion_runnable, Runnable cancelled_runnable) {
         this.tag = tag;
         this.background_runnable = background_runnable;
@@ -48,12 +61,19 @@ public class SimpleAsyncTask {
         task.cancel(false);
     }
 
+
     private class Task extends AsyncTask<Void, Void, Void> {
         @Override
         @WorkerThread
         protected Void doInBackground(Void... v) {
             // priority will be THREAD_PRIORITY_BACKGROUND unless overridden
-            background_runnable.run();
+
+            if (background_runnable instanceof AsyncRunnable) {
+                ((AsyncRunnable)background_runnable).run(task);
+            } else {
+                background_runnable.run();
+            }
+
             return null;
         }
 

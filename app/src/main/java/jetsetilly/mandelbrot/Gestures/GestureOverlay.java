@@ -38,7 +38,6 @@ public class GestureOverlay extends ImageView implements
     private boolean manual_scaling_started;
 
     private ImageView pause_icon;
-    private long pause_icon_time;
     private final long MIN_PAUSE_ICON_DURATION = 1000;
 
     // whether the canvas has been altered somehow
@@ -95,43 +94,35 @@ public class GestureOverlay extends ImageView implements
     }
     /* END OF initialisation */
 
-    public void pauseZoom(boolean show_pause_icon) {
+    public void pauseGestures() {
         pause_zoom = true;
-        if (show_pause_icon) {
-            pause_icon_time = System.currentTimeMillis();
-            pause_icon.setVisibility(VISIBLE);
-        }
-    }
-
-    public void unpauseZoom() {
-        pause_zoom = false;
-        if (pause_icon.getVisibility() == VISIBLE) {
-            long delay_time = System.currentTimeMillis() - pause_icon_time;
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    ViewPropertyAnimator anim = pause_icon.animate();
-                    anim.alpha(0.0f);
-                    anim.withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            pause_icon.setVisibility(INVISIBLE);
-                            pause_icon.setAlpha(1.0f);
-                        }
-                    });
-                    anim.start();
-                }
-            }, MIN_PAUSE_ICON_DURATION - delay_time);
-        }
-    }
-
-    public void pauseScroll() {
         pause_scroll = true;
     }
 
-    public void unpauseScroll() {
+    public void unpauseGestures() {
+        pause_zoom = false;
         pause_scroll = false;
     }
+
+    private void showPauseIcon() {
+        pause_icon.setVisibility(VISIBLE);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ViewPropertyAnimator anim = pause_icon.animate();
+                anim.alpha(0.0f);
+                anim.withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        pause_icon.setVisibility(INVISIBLE);
+                        pause_icon.setAlpha(1.0f);
+                    }
+                });
+                anim.start();
+            }
+        }, MIN_PAUSE_ICON_DURATION);
+    }
+
 
     /* implementation of onGestureListener */
     @Override
@@ -143,7 +134,12 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (pause_scroll || pinch_gesture) return true;
+        if (pinch_gesture) return true;
+
+        if (pause_scroll) {
+            showPauseIcon();
+            return true;
+        }
 
         LogTools.printDebug(DBG_TAG, "onScroll: " + e1.toString() + e2.toString());
         gesture_handler.scroll(distanceX, distanceY);
@@ -153,6 +149,7 @@ public class GestureOverlay extends ImageView implements
 
     @Override
     public void onLongPress(MotionEvent event) {
+        // allow zooming out even if pause_zoom == true
         LogTools.printDebug(DBG_TAG, "onLongPress: " + event.toString());
         gesture_handler.autoZoom(event.getX(), event.getY(), true);
     }
@@ -163,13 +160,14 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onDoubleTap(MotionEvent event) {
         if (pause_zoom) {
-            // call pauseZoom() but force display of icon in case it's not already visible
-            pauseZoom(true);
+            showPauseIcon();
             return true;
         }
 
         LogTools.printDebug(DBG_TAG, "onDoubleTap: " + event.toString());
-        gesture_handler.autoZoom(event.getX(), event.getY(), false);
+        if (!gesture_handler.autoZoom(event.getX(), event.getY(), false)) {
+            showPauseIcon();
+        }
         return true;
     }
 
@@ -187,11 +185,6 @@ public class GestureOverlay extends ImageView implements
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         pinch_gesture = true;
 
-        if (pause_zoom) {
-            pauseZoom(true);
-            return true;
-        }
-
         LogTools.printDebug(DBG_TAG, "onScaleBegin: " + detector.toString());
         manual_scaling_started = true;
         return true;
@@ -201,8 +194,18 @@ public class GestureOverlay extends ImageView implements
     public boolean onScale(ScaleGestureDetector detector) {
         if (!manual_scaling_started) return true;
 
+        if (pause_zoom) {
+            showPauseIcon();
+            return true;
+        }
+
+        float distance = detector.getCurrentSpan() - detector.getPreviousSpan();
+
         LogTools.printDebug(DBG_TAG, "onScale: " + detector.toString());
-        gesture_handler.manualZoom(detector.getCurrentSpan() - detector.getPreviousSpan());
+        if (!gesture_handler.manualZoom(distance)) {
+            showPauseIcon();
+        }
+
         return true;
     }
 

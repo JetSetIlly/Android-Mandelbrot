@@ -62,9 +62,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // used to cancel render_task before it has started properly
     private SimpleAsyncTask startup_render_task;
 
-    // synchronise ending of fixateVisibleImage() - startRender() will pause until latch is free
-    private SimpleLatch fixate_synchronise = new SimpleLatch();
-
     // prevents setDisplay() animation from running if latch has been acquired
     // and pauses startRender() until an active setDisplay() animation has ended
     // more primitive solution is to run setDisplay().animate.withEndAction() before
@@ -82,6 +79,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // maximum value of cumulative_scale allowed before zoom is paused
     private static float MAX_SCALE = 9.0f;
+
+    // has max scale been reached -- used to stop further positive scaling
+    private boolean max_scale_reached;
 
     /*** initialisation ***/
     public RenderCanvas_ImageView(Context context) {
@@ -157,7 +157,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     @Override // View
     public void invalidate() {
-        post(new Runnable() {
+        postOnAnimation(new Runnable() {
             @Override
             public void run() {
                 display.invalidate();
@@ -244,7 +244,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         if (!incomplete_render) {
             cumulative_scale = 1.0f;
-            gestures.unpauseZoom();
+            max_scale_reached = false;
         }
 
         renderThreadEnded();
@@ -263,32 +263,54 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void startRender() {
-        gestures.pauseZoom(false);
-        gestures.pauseScroll();
-
         stopRender();
 
         // halt background color changes
         if (background_transition_anim != null) background_transition_anim.cancel();
 
         startup_render_task = new SimpleAsyncTask("RenderCanvas_ImageView.startRender",
-                new Runnable() {
+                new SimpleAsyncTask.AsyncRunnable() {
                     @Override
                     public void run() {
                         // wait for any setDisplay() animation to finish before proceeding
                         set_image_anim_latch.monitor();
 
-                        // fixate visible image to conclude and wait for everything to complete
-                        fixate_synchronise.acquire();
-                        fixateVisibleImage();
-                        fixate_synchronise.monitor();
+                        if (isCancelled()) return;
 
-                        if (settings.render_mode != Mandelbrot.RenderMode.HARDWARE || cumulative_scale < MAX_SCALE) {
-                            // unpause zoom gesture if we're below that maximum image scale or
-                            // if we're using software rendering
-                            gestures.unpauseZoom();
+                        // wait for plotter task to finish
+                        plotter_latch.monitor();
+
+                        if (isCancelled()) return;
+
+                        // get normalised bitmaps
+                        Bitmap block_pixels_bm = getVisibleImage(true);
+                        Bitmap smooth_pixels_bm = null;
+                        if (mandelbrot_transform.scale > 1.0f) {
+                            smooth_pixels_bm = getVisibleImage(false);
                         }
-                        gestures.unpauseScroll();
+
+                        if (isCancelled()) return;
+
+                        // make sure gestures are paused while we're monkeying with the display
+                        gestures.pauseGestures();
+
+                        // display normalised bitmaps and update mandelbrot for new render
+                        if (mandelbrot_transform.scale > 1.0f) {
+                            setImageInstant(smooth_pixels_bm);
+                            setImageFade(block_pixels_bm);
+                        } else {
+                            setImageInstant(block_pixels_bm);
+                        }
+
+                        transformMandelbrot();
+
+                        // unpause gestures not that monkeying has finished
+                        gestures.unpauseGestures();
+
+                        // see if MAX_SCALE has been reached
+                        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_scale >= MAX_SCALE) {
+                            max_scale_reached = true;
+                        }
                     }
                 },
                 new Runnable() {
@@ -308,7 +330,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     }
 
     public void stopRender() {
-        if (startup_render_task != null) startup_render_task.cancel();
+        if (startup_render_task != null) {
+            startup_render_task.cancel();
+        }
         stopRenderThread();
     }
 
@@ -333,18 +357,20 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         mandelbrot_transform.y += y / mandelbrot_transform.scale;
     }
 
-    public void autoZoom(float offset_x, float offset_y, boolean zoom_out) {
+    public boolean autoZoom(float offset_x, float offset_y, boolean zoom_out) {
         // some combinations of scroll and zooming don't work
-        if (!(display_group.getX() == 0 && display_group.getY() == 0 && mandelbrot_transform.scale == 1.0f)) {
-            gestures.pauseZoom(true);
-            return;
+
+        // don't allow any further zooming in
+        if (!zoom_out && max_scale_reached) return false;
+
+        // this is a special case - we don't want to animate when mandelbrot is not in a safe
+        // condition - we do this by seeing if the mandelbrot_transform is in the identity state
+        // other options here are to wait for the transform (and the display) to normalise
+        // but we'll block the UI thread if we do that
+        if (!mandelbrot_transform.isIdentity()) {
+            LogTools.printWTF(DBG_TAG, "trying to auto zoom in an unsafe state");
+            return false;
         }
-
-        // NOTE: do not stop render
-
-        // pause gestures - startRender() will unpause as appropriate
-        gestures.pauseZoom(false);
-        gestures.pauseScroll();
 
         // offsets are provided such that they are reckoned from top-left corner of the screen
         // however, for animation purposes we want to reckon from the centre of the screen
@@ -365,25 +391,29 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             offset_y = - half_canvas_height + (half_canvas_height / settings.double_tap_scale);
         }
 
-        // set mandelbrot transform ready for the new render
+        // pause gestures - startRender() will unpause as appropriate
+        gestures.pauseGestures();
+
+        // prepare final state -- we'll copy these values to mandelbrot_transform in the endAction()
         mandelbrot_transform.x = offset_x;
         mandelbrot_transform.y = offset_y;
         if (zoom_out) {
             // no user setting to control how much to zoom out
-            mandelbrot_transform.scale *= 0.5f;
+            mandelbrot_transform.scale = 0.5f;
         } else {
-            mandelbrot_transform.scale = Math.min(mandelbrot_transform.scale * settings.double_tap_scale, MAX_SCALE/cumulative_scale);
+            // cap cumulative scale at MAX_SCALE
+            if (cumulative_scale * settings.double_tap_scale > MAX_SCALE) {
+                mandelbrot_transform.scale = MAX_SCALE / cumulative_scale;
+            } else {
+                mandelbrot_transform.scale = settings.double_tap_scale;
+            }
         }
-
-        // update cumulative image scale
-        incomplete_render = true;
-        cumulative_scale *= mandelbrot_transform.scale;
 
         // do animation
         ViewPropertyAnimator anim = display_group.animate();
         anim.setDuration(getResources().getInteger(R.integer.animated_zoom_duration_fast));
-        anim.x(-offset_x * mandelbrot_transform.scale);
-        anim.y(-offset_y * mandelbrot_transform.scale);
+        anim.x(-mandelbrot_transform.x * mandelbrot_transform.scale);
+        anim.y(-mandelbrot_transform.y * mandelbrot_transform.scale);
         anim.scaleX(mandelbrot_transform.scale);
         anim.scaleY(mandelbrot_transform.scale);
 
@@ -396,17 +426,21 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         anim.withEndAction(new Runnable() {
             @Override
             public void run() {
+                cumulative_scale *= mandelbrot_transform.scale;
                 startRender();
             }
         });
 
         anim.start();
+
+        return true;
     }
 
-    public void manualZoom(float amount) {
-        if (amount == 0) return;
+    public boolean manualZoom(float amount) {
+        if (amount == 0) return true;
 
-        // NOTE: do not stop render
+        // don't allow any further zooming in
+        if (amount > 0 && max_scale_reached) return false;
 
         // calculate scale - adjusting amount sensitivity
         mandelbrot_transform.scale += amount / 1200;
@@ -415,43 +449,18 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         mandelbrot_transform.scale = Math.max(settings.max_pinch_zoom_out,
                 Math.min(settings.max_pinch_zoom_in, mandelbrot_transform.scale));
 
-        // update cumulative image scale
-        incomplete_render = true;
-        cumulative_scale *= mandelbrot_transform.scale;
-
         display_group.setScaleX(mandelbrot_transform.scale);
         display_group.setScaleY(mandelbrot_transform.scale);
+
+        return true;
     }
 
     public void endManualZoom() {
-        // do nothing
+        // update cumulative image scale
+        incomplete_render = true;
+        cumulative_scale *= mandelbrot_transform.scale;
     }
     /*** END OF GestureHandler implementation ***/
-
-    private void fixateVisibleImage() {
-        Bitmap block_pixels_bm = getVisibleImage(true);
-
-        if (mandelbrot_transform.scale > 1.0f) {
-            Bitmap smooth_pixels_bm = getVisibleImage(false);
-            setImageInstant(smooth_pixels_bm);
-            setImageFade(block_pixels_bm);
-        } else {
-            setImageInstant(block_pixels_bm);
-        }
-
-        transformMandelbrot();
-
-        // release fixate_synchronise on UI thread to make sure it happens after
-        // all the other UI thread events posted in setDisplay
-        // note that we don't wait for set_image_anim_latch to be released because
-        // we want gesturing to be unpaused as soon as possible
-        post(new Runnable() {
-            @Override
-            public void run() {
-                fixate_synchronise.release();
-            }
-        });
-    }
 
     private Bitmap getVisibleImage(boolean block_pixels) {
         Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);

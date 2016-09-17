@@ -31,6 +31,9 @@ public class GestureOverlay extends ImageView implements
     // scroll gestures will be ignored when pause_scroll == true
     private boolean pause_scroll;
 
+    // keep scroll paused if scroll sequence was started while pause_scroll == true
+    private boolean keep_scroll_paused;
+
     // true while pinch gesture is active - scroll gestures will be ignored while this is true
     private boolean pinch_gesture;
 
@@ -56,10 +59,11 @@ public class GestureOverlay extends ImageView implements
     public void setup(MainActivity context, final GestureHandler gesture_handler) {
         this.context = context;
         this.gesture_handler = gesture_handler;
-        this.pause_zoom = false;
-        this.pause_scroll = false;
-        this.pinch_gesture = false;
-        this.manual_scaling_started = false;
+        pause_zoom = false;
+        pause_scroll = false;
+        keep_scroll_paused = false;
+        pinch_gesture = false;
+        manual_scaling_started = false;
 
         final GestureDetectorCompat gestures_detector = new GestureDetectorCompat(context, this);
         final ScaleGestureDetector scale_detector = new ScaleGestureDetector(context, this);
@@ -85,6 +89,7 @@ public class GestureOverlay extends ImageView implements
                         LogTools.printDebug(DBG_TAG, "onUp (after altered canvas): " + event.toString());
                         gesture_handler.finishManualGesture();
                     }
+                    keep_scroll_paused = false;
                 }
 
                 boolean scale_ret = scale_detector.onTouchEvent(event);
@@ -136,7 +141,8 @@ public class GestureOverlay extends ImageView implements
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (pinch_gesture) return true;
 
-        if (pause_scroll) {
+        if (pause_scroll || keep_scroll_paused) {
+            keep_scroll_paused = true;
             showPauseIcon();
             return true;
         }

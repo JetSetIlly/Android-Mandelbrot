@@ -5,7 +5,6 @@ import android.support.annotation.UiThread;
 
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Palette.Palette;
-import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 
 public class PlotterSimple extends Plotter {
@@ -19,13 +18,13 @@ public class PlotterSimple extends Plotter {
         super(canvas);
 
         palette = Palette.getInstance().getColours();
-        pixels = new int[height * width];
+        pixels = new int[render_canvas.geometry.num_pixels];
         palette_frequencies = new int[palette.length + 1];
     }
 
     @Override
     void startPlot(Bitmap bitmap) {
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.getPixels(pixels, 0, render_canvas.geometry.width, 0, 0, render_canvas.geometry.width, render_canvas.geometry.height);
     }
 
     @Override

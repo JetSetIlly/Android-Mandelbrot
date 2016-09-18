@@ -16,6 +16,7 @@ import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_dalvik;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotThread_renderscript;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotTransform;
 import jetsetilly.mandelbrot.R;
+import jetsetilly.mandelbrot.RenderCanvas.Geometry;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
 
@@ -28,7 +29,10 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     protected final Settings settings = Settings.getInstance();
     private MandelbrotThread render_thr;
 
+    public Geometry geometry = new Geometry();
+
     protected MandelbrotTransform mandelbrot_transform = new MandelbrotTransform();
+
 
     // whether or not the previous render completed its work
     protected boolean incomplete_render;
@@ -43,6 +47,16 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
 
     public RenderCanvas_Base(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    @Override // View
+    public void onSizeChanged(int w, int h, int old_w, int old_h) {
+        super.onSizeChanged(w, h, old_w, old_h);
+        geometry.width = w;
+        geometry.height = h;
+        geometry.half_width = geometry.width / 2;
+        geometry.half_height = geometry.height / 2;
+        geometry.num_pixels = geometry.width * geometry.height;
     }
 
     public void checkActionBar(float x, float y, boolean allow_show) {
@@ -69,7 +83,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     @CallSuper
     public void resetCanvas() {
         // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(context,  getWidth(), getHeight());
+        mandelbrot = new Mandelbrot(context, geometry.width, geometry.height);
     }
 
     protected void startRenderThread() {

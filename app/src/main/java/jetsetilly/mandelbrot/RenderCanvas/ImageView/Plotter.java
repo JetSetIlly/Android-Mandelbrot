@@ -6,12 +6,9 @@ import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 
 abstract class Plotter {
     protected RenderCanvas_ImageView render_canvas;
-    protected int width, height;
 
     public Plotter(RenderCanvas_ImageView canvas) {
         render_canvas = canvas;
-        width = canvas.getWidth();
-        height = canvas.getHeight();
     }
 
     abstract void startPlot(Bitmap bitmap);
@@ -25,7 +22,7 @@ abstract class Plotter {
     public void plotIterations(int iterations[]) {
         for (int i = 0; i < iterations.length; ++ i) {
             if (iterations[i] != Mandelbrot.NULL_ITERATIONS) {
-                plotIteration(i % width, i / width, iterations[i]);
+                plotIteration(i % render_canvas.geometry.width, i / render_canvas.geometry.width, iterations[i]);
             }
         }
     }

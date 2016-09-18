@@ -25,7 +25,7 @@ public class PlotterTimer extends Plotter {
         @Override
         public void run() {
             if (pixel_ct > PIXEL_THRESHOLD) {
-                bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+                bitmap.setPixels(pixels, 0, render_canvas.geometry.width, 0, 0, render_canvas.geometry.width, render_canvas.geometry.height);
                 pixel_ct = 0;
             }
         }
@@ -35,14 +35,14 @@ public class PlotterTimer extends Plotter {
         super(canvas);
 
         palette = Palette.getInstance().getColours();
-        pixels = new int[height * width];
+        pixels = new int[render_canvas.geometry.num_pixels];
         palette_frequencies = new int[palette.length + 1];
     }
 
     @Override
     public void startPlot(Bitmap bitmap) {
         this.bitmap = bitmap;
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.getPixels(pixels, 0, render_canvas.geometry.width, 0, 0, render_canvas.geometry.width, render_canvas.geometry.height);
         pixel_scheduler.schedule(pixel_scheduler_task, 0, PIXEL_UPDATE_FREQ);
         pixel_ct = 0;
     }
@@ -55,7 +55,7 @@ public class PlotterTimer extends Plotter {
     @Override
     public void endPlot(boolean cancelled) {
         pixel_scheduler.cancel();
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.setPixels(pixels, 0, render_canvas.geometry.width, 0, 0, render_canvas.geometry.width, render_canvas.geometry.height);
 
         // updatePlot the most frequent color so we can use_next it as the background colour
         int most_frequent = 0;
@@ -83,7 +83,7 @@ public class PlotterTimer extends Plotter {
         }
 
         // put coloured pixel into pixel buffer - ready for flushing
-        pixels[(cy * width) + cx] = palette[palette_entry];
+        pixels[(cy * render_canvas.geometry.width) + cx] = palette[palette_entry];
 
         // updatePlot palette frequency
         // we don't want to consider palette[0] for the colour_cnt_highest

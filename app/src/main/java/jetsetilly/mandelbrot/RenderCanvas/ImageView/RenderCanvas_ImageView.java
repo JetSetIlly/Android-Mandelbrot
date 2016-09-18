@@ -25,12 +25,6 @@ import jetsetilly.tools.SimpleLatch;
 public class RenderCanvas_ImageView extends RenderCanvas_Base {
     private final String DBG_TAG = "render canvas";
 
-    // width/height values set in onSizeChanged() - rather than relying on getWidth()/getHeight()
-    // which are only callable from the UIThread
-    private int canvas_width, half_canvas_width;
-    private int canvas_height, half_canvas_height;
-    private int num_pixels;
-
     // bitmap config to use_next depending on SystemSettings.deep_colour
     Bitmap.Config bitmap_config;
 
@@ -130,8 +124,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         post(new Runnable() {
             @Override
             public void run() {
-                display_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
-                foreground_bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
+                display_bm = Bitmap.createBitmap(geometry.width, geometry.height, bitmap_config);
+                foreground_bm = Bitmap.createBitmap(geometry.width, geometry.height, bitmap_config);
 
                 display.setImageBitmap(display_bm);
                 display_curtain.setImageBitmap(foreground_bm);
@@ -141,16 +135,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
     }
     /*** END OF initialisation ***/
-
-    @Override // View
-    public void onSizeChanged(int w, int h, int old_w, int old_h) {
-        super.onSizeChanged(w, h, old_w, old_h);
-        canvas_width = w;
-        canvas_height = h;
-        half_canvas_width = w / 2;
-        half_canvas_height = h / 2;
-        num_pixels = canvas_width * canvas_height;
-    }
 
     @Override // View
     public void invalidate() {
@@ -255,8 +239,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_group.setScaleY(1f);
         display_group.setX(0);
         display_group.setY(0);
-        display_group.setPivotX(half_canvas_width);
-        display_group.setPivotY(half_canvas_height);
+        display_group.setPivotX(geometry.half_width);
+        display_group.setPivotY(geometry.half_height);
     }
 
     public void startRender() {
@@ -370,21 +354,21 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // offsets are provided such that they are reckoned from top-left corner of the screen
         // however, for animation purposes we want to reckon from the centre of the screen
-        offset_x -= half_canvas_width;
-        offset_y -= half_canvas_height;
+        offset_x -= geometry.half_width;
+        offset_y -= geometry.half_height;
 
         // restrict offset_x and offset_y so that the zoomed image doesn't show
         // the background image
-        if (offset_x > half_canvas_width - (half_canvas_width / settings.double_tap_scale)) {
-            offset_x = half_canvas_width -  (half_canvas_width / settings.double_tap_scale);
-        } else if (offset_x < - half_canvas_width + (half_canvas_width / settings.double_tap_scale)) {
-            offset_x = - half_canvas_width + (half_canvas_width / settings.double_tap_scale);
+        if (offset_x > geometry.half_width - (geometry.half_width / settings.double_tap_scale)) {
+            offset_x = geometry.half_width -  (geometry.half_width / settings.double_tap_scale);
+        } else if (offset_x < -geometry.half_width + (geometry.half_width / settings.double_tap_scale)) {
+            offset_x = -geometry.half_width + (geometry.half_width / settings.double_tap_scale);
         }
 
-        if (offset_y > half_canvas_height - (half_canvas_height / settings.double_tap_scale)) {
-            offset_y = half_canvas_height - (half_canvas_height / settings.double_tap_scale);
-        } else if (offset_y < - half_canvas_height + (half_canvas_height / settings.double_tap_scale)) {
-            offset_y = - half_canvas_height + (half_canvas_height / settings.double_tap_scale);
+        if (offset_y > geometry.half_height - (geometry.half_height / settings.double_tap_scale)) {
+            offset_y = geometry.half_height - (geometry.half_height / settings.double_tap_scale);
+        } else if (offset_y < -geometry.half_height + (geometry.half_height / settings.double_tap_scale)) {
+            offset_y = -geometry.half_height + (geometry.half_height / settings.double_tap_scale);
         }
 
         // prepare final state -- we'll copy these values to mandelbrot_transform in the endAction()
@@ -456,7 +440,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     /*** END OF GestureHandler implementation ***/
 
     private Bitmap getVisibleImage(boolean block_pixels) {
-        Bitmap bm = Bitmap.createBitmap(canvas_width, canvas_height, bitmap_config);
+        Bitmap bm = Bitmap.createBitmap(geometry.width, geometry.height, bitmap_config);
         bm.eraseColor(background_colour);
         Canvas canvas = new Canvas(bm);
         Paint paint = new Paint();
@@ -464,7 +448,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         paint.setAntiAlias(true);
         Matrix matrix = new Matrix();
         matrix.setTranslate(-mandelbrot_transform.x, -mandelbrot_transform.y);
-        matrix.postScale(mandelbrot_transform.scale, mandelbrot_transform.scale, half_canvas_width, half_canvas_height);
+        matrix.postScale(mandelbrot_transform.scale, mandelbrot_transform.scale, geometry.half_width, geometry.half_height);
         canvas.drawBitmap(display_bm, matrix, paint);
         return bm;
     }
@@ -474,9 +458,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         set_image_anim_latch.acquire();
 
         // prepare display_curtain. this is the image we transition from
-        int foreground_pixels[] = new int[num_pixels];
-        display_bm.getPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
-        foreground_bm.setPixels(foreground_pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        int foreground_pixels[] = new int[geometry.num_pixels];
+        display_bm.getPixels(foreground_pixels, 0, geometry.width, 0, 0, geometry.width, geometry.height);
+        foreground_bm.setPixels(foreground_pixels, 0, geometry.width, 0, 0, geometry.width, geometry.height);
 
         post(new Runnable() {
             @Override
@@ -488,7 +472,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         // prepare final image (the image we transition to) this will be
         // obscured by display_curtain until the end of the animation
-        display_bm.setPixels(pixels, 0, canvas_width, 0, 0, canvas_width, canvas_height);
+        display_bm.setPixels(pixels, 0, geometry.width, 0, 0, geometry.width, geometry.height);
         display.postInvalidate();
 
         // do animation

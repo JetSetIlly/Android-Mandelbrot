@@ -77,9 +77,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
     // the amount of scaling since the last rendered image
     private float cumulative_scale = 1.0f;
 
-    // maximum value of cumulative_scale allowed before zoom is paused
-    private static float MAX_SCALE = 9.0f;
-
     // has max scale been reached -- used to stop further positive scaling
     private boolean max_scale_reached;
 
@@ -307,8 +304,8 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         // unpause gestures
                         gestures.unpauseGestures();
 
-                        // see if MAX_SCALE has been reached
-                        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_scale >= MAX_SCALE) {
+                        // see if MAX_CUMULATIVE_SCALE has been reached
+                        if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE && cumulative_scale >= settings.max_cumulative_scale) {
                             max_scale_reached = true;
                         }
                     }
@@ -397,9 +394,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             // no user setting to control how much to zoom out
             mandelbrot_transform.scale = 0.5f;
         } else {
-            // cap cumulative scale at MAX_SCALE
-            if (cumulative_scale * settings.double_tap_scale > MAX_SCALE) {
-                mandelbrot_transform.scale = MAX_SCALE / cumulative_scale;
+            // cap cumulative scale at MAX_CUMULATIVE_SCALE
+            if (cumulative_scale * settings.double_tap_scale > settings.max_cumulative_scale) {
+                mandelbrot_transform.scale = settings.max_cumulative_scale / cumulative_scale;
             } else {
                 mandelbrot_transform.scale = settings.double_tap_scale;
             }

@@ -13,12 +13,15 @@ public class Settings {
     public int num_passes;
     @Mandelbrot.CalculationMethod public int calculation_method;
 
-    /* Gesture Settings */
+    /* UI Settings */
         // DOUBLE_TAP_SCALE expressed in terms of image_scale
     public float double_tap_scale;
         // PINCH_ZOOM values expressed in terms of fractal_scale
     public float max_pinch_zoom_in;
     public float max_pinch_zoom_out;
+
+        // maximum value of cumulative_scale allowed before zoom is paused
+    public float max_cumulative_scale;
 
     /* Palette Settings */
     public String selected_palette_id;
@@ -33,6 +36,7 @@ public class Settings {
     private static final float DEF_DOUBLE_TAP_SCALE = 3.0f;
     private static final float DEF_MAX_PINCH_ZOOM_IN = 2.0f;
     private static final float DEF_MAX_PINCH_ZOOM_OUT = 0.5f;
+    private static final float DEF_MAX_CUMULATIVE_SCALE = 20.0f;
     private static final String DEF_SELECTED_PALETTE_ID = "";
     public static final int DEF_PALETTE_SMOOTHNESS = 4;
     private static final boolean DEF_ALLOW_SCREEN_ROTATION = false;
@@ -67,6 +71,7 @@ public class Settings {
                 prefs_editor.putFloat("double_tap_scale", double_tap_scale);
                 prefs_editor.putFloat("max_pinch_zoom_in", max_pinch_zoom_in);
                 prefs_editor.putFloat("max_pinch_zoom_out", max_pinch_zoom_out);
+                prefs_editor.putFloat("max_cumulative_scale", max_cumulative_scale);
 
                 // Palette Settings
                 prefs_editor.putString("selected_palette_id", selected_palette_id);
@@ -109,6 +114,7 @@ public class Settings {
         double_tap_scale = prefs.getFloat("double_tap_scale", DEF_DOUBLE_TAP_SCALE);
         max_pinch_zoom_in = prefs.getFloat("max_pinch_zoom_in", DEF_MAX_PINCH_ZOOM_IN);
         max_pinch_zoom_out = prefs.getFloat("max_pinch_zoom_out", DEF_MAX_PINCH_ZOOM_OUT);
+        max_cumulative_scale = prefs.getFloat("max_cumulative_scale", DEF_MAX_CUMULATIVE_SCALE);
 
         // Palette Settings
         selected_palette_id = prefs.getString("selected_palette_id", DEF_SELECTED_PALETTE_ID);

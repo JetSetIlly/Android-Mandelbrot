@@ -13,8 +13,8 @@ public class Throbber extends ImageView {
     private long session_start_time = 0;
     private long session_end_time = 0;
 
-    boolean session_ending;
-    Runnable set_invisible_runnable = new Runnable() {
+    private boolean session_ending;
+    private Runnable set_invisible_runnable = new Runnable() {
         @Override
         public void run() {
             if (session_ending) {

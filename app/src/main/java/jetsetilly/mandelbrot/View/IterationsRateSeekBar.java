@@ -26,11 +26,11 @@ public class IterationsRateSeekBar extends ReportingSeekBar {
 
     @Override
     public String translateValue(Object value) {
-        if (value == Mandelbrot.IterationsRate.FAST)
+        if ((int) value == Mandelbrot.IterationsRate.FAST)
             return getResources().getString(R.string.settings_iterations_rate_fast);
-        else if (value == Mandelbrot.IterationsRate.NORMAL)
+        else if ((int) value == Mandelbrot.IterationsRate.NORMAL)
             return getResources().getString(R.string.settings_iterations_rate_normal);
-        else if (value == Mandelbrot.IterationsRate.SLOW)
+        else if ((int) value == Mandelbrot.IterationsRate.SLOW)
             return getResources().getString(R.string.settings_iterations_rate_slow);
 
         return getResources().getString(R.string.error_ui_alert);

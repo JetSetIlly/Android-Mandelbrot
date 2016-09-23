@@ -87,7 +87,7 @@ public class Mandelbrot {
         double fractal_width = mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left;
         double fractal_height = mandelbrot_coordinates.imaginary_upper - mandelbrot_coordinates.imaginary_lower;
 
-        if (transform.scale != 0) {
+        if (transform.scale != 1.0f) {
             if (pixel_scale < SCALE_LIMIT) {
                 LogTools.printDebug(DBG_TAG, context.getResources().getString(R.string.scale_limit_reached));
             }

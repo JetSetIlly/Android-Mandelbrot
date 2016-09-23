@@ -22,14 +22,14 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         super.doInBackground(params);
 
         Allocation allocation_iterations = Allocation.createSized(MainActivity.render_script,
-                Element.I32(MainActivity.render_script), m.canvas_height * m.canvas_width,
+                Element.I32(MainActivity.render_script), m.geometry.num_pixels,
                 Allocation.USAGE_SCRIPT);
 
         script = new ScriptC_mandelbrot(MainActivity.render_script);
 
         // set variables/arguments for this render
-        script.set_canvas_height(m.canvas_height);
-        script.set_canvas_width(m.canvas_width);
+        script.set_canvas_height(m.geometry.height);
+        script.set_canvas_width(m.geometry.width);
         script.set_max_iterations(mandelbrot_coordinates.max_iterations);
         script.set_null_iteration(Mandelbrot.NULL_ITERATIONS);
         script.set_bailout_value(mandelbrot_coordinates.bailout_value);
@@ -57,14 +57,14 @@ public class MandelbrotThread_renderscript extends MandelbrotThread {
         if (isCancelled()) return null;
 
         // get result ...
-        int iterations[] = new int[m.canvas_height * m.canvas_width];
+        int iterations[] = new int[m.geometry.num_pixels];
         allocation_iterations.copyTo(iterations);
 
         if (isCancelled()) return null;
 
         // ... and draw
         boolean complete_plot;
-        complete_plot = m.render_area.left == 0 && m.render_area.right == m.canvas_width && m.render_area.top == 0 && m.render_area.bottom == m.canvas_height;
+        complete_plot = m.render_area.left == 0 && m.render_area.right == m.geometry.width && m.render_area.top == 0 && m.render_area.bottom == m.geometry.height;
         c.plotIterations(canvas_id, iterations, complete_plot);
 
         return null;

@@ -52,11 +52,11 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     @Override // View
     public void onSizeChanged(int w, int h, int old_w, int old_h) {
         super.onSizeChanged(w, h, old_w, old_h);
+
         geometry.width = w;
         geometry.height = h;
-        geometry.half_width = geometry.width / 2;
-        geometry.half_height = geometry.height / 2;
         geometry.num_pixels = geometry.width * geometry.height;
+        geometry.ratio = (double) geometry.width / (double) geometry.height;
     }
 
     public void checkActionBar(float x, float y, boolean allow_show) {
@@ -83,7 +83,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
     @CallSuper
     public void resetCanvas() {
         // prepare new mandelbrot
-        mandelbrot = new Mandelbrot(context, geometry.width, geometry.height);
+        mandelbrot = new Mandelbrot(context, geometry);
     }
 
     protected void startRenderThread() {

@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.support.annotation.IntDef;
 
 import jetsetilly.mandelbrot.R;
+import jetsetilly.mandelbrot.RenderCanvas.Geometry;
 import jetsetilly.mandelbrot.Settings.MandelbrotCoordinates;
 import jetsetilly.mandelbrot.Settings.Settings;
 import jetsetilly.tools.LogTools;
@@ -48,8 +49,7 @@ public class Mandelbrot {
     // the limit to the amount of scaling the floating point calculations can handle
     private static final double SCALE_LIMIT = 6.0e-17;
 
-    protected final int canvas_width, canvas_height;
-    protected final double canvas_ratio;
+    protected final Geometry geometry;
     protected double pixel_scale;
 
     // render_area is used to define that area of the canvas
@@ -65,12 +65,9 @@ public class Mandelbrot {
     // has the scale of the mandelbrot changed
     protected boolean rescaling_render;
 
-    public Mandelbrot(Context context, int canvas_width, int canvas_height) {
+    public Mandelbrot(Context context, Geometry geometry) {
         this.context = context;
-        this.canvas_width = canvas_width;
-        this.canvas_height = canvas_height;
-        this.canvas_ratio = (double) canvas_width / (double) canvas_height;
-        this.pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas_width;
+        this.geometry = geometry;
     }
 
     @Override
@@ -123,12 +120,12 @@ public class Mandelbrot {
 
         // add padding to real axis
         // note padding will be negative when correcting from landscape to portrait
-        double padding = (canvas_ratio * (mandelbrot_coordinates.imaginary_upper -  mandelbrot_coordinates.imaginary_lower)) - (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left);
+        double padding = (geometry.ratio * (mandelbrot_coordinates.imaginary_upper -  mandelbrot_coordinates.imaginary_lower)) - (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left);
         mandelbrot_coordinates.real_right += padding / 2;
         mandelbrot_coordinates.real_left -= padding / 2;
 
         // correct pixel scale
-        pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / canvas_width;
+        pixel_scale = (mandelbrot_coordinates.real_right - mandelbrot_coordinates.real_left) / geometry.width;
 
         /* SAVE */
         mandelbrot_coordinates.save(context);
@@ -136,18 +133,18 @@ public class Mandelbrot {
         /* FINISH OFF - some calculations that might help some render modes */
 
         // define render_area
-        render_area = new Rect(0, 0, canvas_width, canvas_height);
+        render_area = new Rect(0, 0, geometry.width, geometry.height);
         if (transform.scale == 0 && !redraw_all) {
             if (transform.x < 0) {
                 render_area.right = (int) -transform.x;
             } else if (transform.x > 0) {
-                render_area.left = canvas_width - (int) transform.x;
+                render_area.left = geometry.width - (int) transform.x;
             }
 
             if (transform.y < 0) { // moving down
                 render_area.bottom = (int) -transform.y;
             } else if (transform.y > 0) { // moving up
-                render_area.top = canvas_height - (int) transform.y;
+                render_area.top = geometry.height - (int) transform.y;
             }
         }
 

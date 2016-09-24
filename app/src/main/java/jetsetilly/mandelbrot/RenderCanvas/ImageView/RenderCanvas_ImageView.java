@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
@@ -49,9 +50,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
     // the display_bm is a pointer to whatever bitmap is currently displayed in display
     private Bitmap display_bm;
-
-    // curtain_bm is whatever bitmap is currently displayed in display_curtain
-    private Bitmap curtain_bm;
 
     // reference to the task that prepares the main render thread
     // used to cancel render_task before it has started properly
@@ -128,12 +126,9 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
             @Override
             public void run() {
                 display_bm = Bitmap.createBitmap(geometry.width, geometry.height, bitmap_config);
-                curtain_bm = Bitmap.createBitmap(geometry.width, geometry.height, bitmap_config);
                 display_bm.eraseColor(0xFF000000);
-                curtain_bm.eraseColor(0xFF000000);
 
                 display.setImageBitmap(display_bm);
-                display_curtain.setImageBitmap(curtain_bm);
                 invalidate();
                 resetCanvas();
             }
@@ -281,7 +276,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         if (isCancelled()) return;
 
                         // display normalised bitmaps and update mandelbrot for new render
-                        if (mandelbrot_transform.scale > 1.0f) {
+                        if (smooth_pixels_bm != null) {
                             setImageInstant(smooth_pixels_bm);
                             setImageFade(block_pixels_bm);
                         } else {
@@ -466,13 +461,11 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         set_image_anim_latch.acquire();
 
         // prepare display_curtain. this is the image we transition from
-        int foreground_pixels[] = new int[geometry.num_pixels];
-        display_bm.getPixels(foreground_pixels, 0, geometry.width, 0, 0, geometry.width, geometry.height);
-        curtain_bm.setPixels(foreground_pixels, 0, geometry.width, 0, 0, geometry.width, geometry.height);
-
+        final Bitmap curtain_bm = Bitmap.createBitmap(display_bm);
         post(new Runnable() {
             @Override
             public void run() {
+                display_curtain.setImageBitmap(curtain_bm);
                 display_curtain.setAlpha(1.0f);
                 display_curtain.invalidate();
             }
@@ -492,6 +485,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         set_image_anim_latch.release();
+                        display_curtain.setImageBitmap(null);
                     }
                 });
                 curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_new));
@@ -517,8 +511,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         set_image_anim_latch.acquire();
 
         // prepare display_curtain. this is the image we transition from
-        curtain_bm = display_bm;
-
+        final Bitmap curtain_bm = Bitmap.createBitmap(display_bm);
         post(new Runnable() {
             @Override
             public void run() {
@@ -531,7 +524,6 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         // prepare final image (the image we transition to) this will be
         // obscured by display_curtain until the end of the animation
         display_bm = bm;
-
         post(new Runnable() {
             @Override
             public void run() {
@@ -541,6 +533,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                     @Override
                     public void run() {
                         set_image_anim_latch.release();
+                        display_curtain.setImageBitmap(null);
                     }
                 });
                 curtain_anim.setDuration(getResources().getInteger(R.integer.image_fade_normalise));
@@ -550,9 +543,12 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         });
     }
 
-    public Bitmap getScreenshot() {
-        return display_bm.copy(display_bm.getConfig(), false);
+    private Bitmap getDisplayBitmap() {
+        return ((BitmapDrawable)display.getDrawable()).getBitmap();
     }
 
+    public Bitmap getScreenshot() {
+        Bitmap display_bm = getDisplayBitmap();
+        return display_bm.copy(display_bm.getConfig(), false);
+    }
 }
-

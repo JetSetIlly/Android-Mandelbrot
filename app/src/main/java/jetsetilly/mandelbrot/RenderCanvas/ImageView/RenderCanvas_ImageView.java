@@ -19,7 +19,7 @@ import android.widget.RelativeLayout;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.R;
-import jetsetilly.mandelbrot.RenderCanvas.Base.RenderCanvas_Base;
+import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas_Base;
 import jetsetilly.tools.LogTools;
 import jetsetilly.tools.SimpleAsyncTask;
 import jetsetilly.tools.SimpleLatch;

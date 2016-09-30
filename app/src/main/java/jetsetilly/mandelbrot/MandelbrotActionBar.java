@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot;
 
 import android.content.Context;
+import android.graphics.RectF;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
@@ -9,6 +10,9 @@ public class MandelbrotActionBar extends Toolbar {
     private final String DBG_TAG = "mandelbrot actionbar";
 
     private View status_bar;
+    private RectF hotspot;
+
+    // values of properties take when actionbar is visible
     private float visible_alpha;
     private float visible_y;
 
@@ -24,24 +28,33 @@ public class MandelbrotActionBar extends Toolbar {
         super(context);
     }
 
-    private int getStatusBarHeight(Context context) {
-        int result = 0;
-        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = context.getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
-
-    public void completeSetup(MainActivity context, String title) {
+    public void initialise(MainActivity context, String title) {
         setLayerType(LAYER_TYPE_HARDWARE, null);
         status_bar = context.getWindow().getDecorView();
         setTitle(title);
-        setY(getStatusBarHeight(context));
+
+        /* get status bar height and position action bar just underneath it */
+        {
+            int status_bar_height = 0;
+            int status_bar_id = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (status_bar_id > 0) {
+                status_bar_height = context.getResources().getDimensionPixelSize(status_bar_id);
+            }
+            setY(status_bar_height);
+        }
+
         visible_alpha = getAlpha();
         visible_y = getY();
         setVisibility(false);
+
+        post(new Runnable() {
+            @Override
+            public void run() {
+                hotspot = new RectF(0.0f, 0.0f, getWidth(), getHeight());
+            }
+        });
     }
+
 
     public void enforceVisibility() {
         if (getVisibility() == INVISIBLE) {
@@ -83,7 +96,7 @@ public class MandelbrotActionBar extends Toolbar {
         }
     }
 
-    public boolean inActionBar(float y_coordinate) {
-        return y_coordinate <= getHeight();
+    public boolean hotspot(float x, float y) {
+        return hotspot.contains(x, y);
     }
 }

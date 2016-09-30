@@ -24,6 +24,7 @@ public class GestureOverlay extends ImageView implements
     MainActivity context;
 
     private GestureHandler gesture_handler;
+    private HotspotHandler hotspot_handler;
 
     // zoom gestures will be ignored when pause_zoom == true
     private boolean pause_zoom;
@@ -57,8 +58,13 @@ public class GestureOverlay extends ImageView implements
 
     /* initialisation */
     public void setup(MainActivity context, final GestureHandler gesture_handler) {
+        setup(context, gesture_handler, null);
+    }
+
+    public void setup(MainActivity context, final GestureHandler gesture_handler, final HotspotHandler hotspot_handler) {
         this.context = context;
         this.gesture_handler = gesture_handler;
+        this.hotspot_handler = hotspot_handler;
         pause_zoom = false;
         pause_scroll = false;
         keep_scroll_paused = false;
@@ -133,7 +139,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onDown(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onDown: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), false);
+        hotspot_handler.onDown(event.getX(), event.getY());
         return true;
     }
 
@@ -180,7 +186,7 @@ public class GestureOverlay extends ImageView implements
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         LogTools.printDebug(DBG_TAG, "onSingleTapConfirmed: " + event.toString());
-        gesture_handler.checkActionBar(event.getX(), event.getY(), true);
+        hotspot_handler.onSingleTapConfirmed(event.getX(), event.getY());
         return true;
     }
     /* END OF implementation of onDoubleTapListener interface */

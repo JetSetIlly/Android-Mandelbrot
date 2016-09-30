@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set up actionbar
         action_bar = (MandelbrotActionBar) findViewById(R.id.toolbar);
-        action_bar.completeSetup(this, getResources().getString(R.string.app_name));
+        action_bar.initialise(this, getResources().getString(R.string.app_name));
         setSupportActionBar(action_bar);
 
         // render script instance -- alive for the entire lifespan of the app

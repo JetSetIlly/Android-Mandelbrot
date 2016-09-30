@@ -1,6 +1,7 @@
-package jetsetilly.mandelbrot.RenderCanvas.Base;
+package jetsetilly.mandelbrot.RenderCanvas;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.annotation.CallSuper;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 
 import jetsetilly.mandelbrot.Gestures.GestureHandler;
 import jetsetilly.mandelbrot.Gestures.GestureOverlay;
+import jetsetilly.mandelbrot.Gestures.HotspotHandler;
 import jetsetilly.mandelbrot.MainActivity;
 import jetsetilly.mandelbrot.Mandelbrot.Mandelbrot;
 import jetsetilly.mandelbrot.Mandelbrot.MandelbrotCanvas;
@@ -20,7 +22,7 @@ import jetsetilly.mandelbrot.RenderCanvas.Geometry;
 import jetsetilly.mandelbrot.RenderCanvas.RenderCanvas;
 import jetsetilly.mandelbrot.Settings.Settings;
 
-abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler {
+abstract public class RenderCanvas_Base extends RelativeLayout implements RenderCanvas, MandelbrotCanvas, GestureHandler, HotspotHandler {
     protected MainActivity context;
     protected Mandelbrot mandelbrot;
     protected GestureOverlay gestures;
@@ -59,24 +61,14 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         geometry.ratio = (double) geometry.width / (double) geometry.height;
     }
 
-    public void checkActionBar(float x, float y, boolean allow_show) {
-        // returns false if coordinates are in action bar, otherwise true
-       if (!MainActivity.action_bar.inActionBar(y)) {
-           MainActivity.action_bar.setVisibility(true);
-        } else {
-           if (allow_show) {
-               MainActivity.action_bar.setVisibility(false);
-           }
-        }
-    }
-
+    /* RenderCanvas interface implementation */
     @CallSuper
     public void initialise(final MainActivity main_activity) {
         // get a reference to the gesture overlay and set it up
         this.context = main_activity;
         this.gestures = (GestureOverlay) main_activity.findViewById(R.id.gestureOverlay);
         assert this.gestures != null;
-        this.gestures.setup(main_activity, this);
+        this.gestures.setup(main_activity, this, this);
         this.fractal_info = (TextView) context.findViewById(R.id.infoPane);
     }
 
@@ -85,6 +77,7 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         // prepare new mandelbrot
         mandelbrot = new Mandelbrot(context, geometry);
     }
+    /* END OF RenderCanvas interface implementation */
 
     protected void startRenderThread() {
         if (settings.render_mode == Mandelbrot.RenderMode.HARDWARE) {
@@ -120,6 +113,25 @@ abstract public class RenderCanvas_Base extends RelativeLayout implements Render
         );
     }
 
-    abstract public void startRender();
-    abstract public void stopRender();
+    /* HotspotHandler implementation */
+    public boolean onDown(float x, float y) {
+        if (!MainActivity.action_bar.hotspot(x, y)) {
+            MainActivity.action_bar.setVisibility(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean onSingleTapConfirmed(float x, float y) {
+        if (!MainActivity.action_bar.hotspot(x, y)) {
+            MainActivity.action_bar.setVisibility(true);
+            return true;
+        } else {
+            MainActivity.action_bar.setVisibility(false);
+        }
+
+        return false;
+    }
+    /* END OF HotspotHandler implementation */
 }

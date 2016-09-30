@@ -276,7 +276,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
                         if (isCancelled()) return;
 
                         // display normalised bitmaps and update mandelbrot for new render
-                        if (smooth_pixels_bm != null) {
+                        if (mandelbrot_transform.scale > 1.0f) {
                             setImageInstant(smooth_pixels_bm);
                             setImageFade(block_pixels_bm);
                         } else {
@@ -449,6 +449,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         Paint paint = new Paint();
         paint.setFilterBitmap(!block_pixels);
         paint.setAntiAlias(true);
+        paint.setDither(bitmap_config == Bitmap.Config.RGB_565);
         Matrix matrix = new Matrix();
         matrix.setTranslate(-mandelbrot_transform.x, -mandelbrot_transform.y);
         matrix.postScale(mandelbrot_transform.scale, mandelbrot_transform.scale, geometry.width/2, geometry.height/2);

@@ -44,7 +44,6 @@ public class Throbber extends ImageView {
     }
 
     private void init() {
-        setLayerType(LAYER_TYPE_HARDWARE, null);
         setVisibility(INVISIBLE);
     }
 

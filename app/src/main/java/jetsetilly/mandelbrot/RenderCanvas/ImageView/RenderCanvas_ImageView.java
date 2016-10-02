@@ -106,15 +106,16 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
         /*** display group ***/
         display_group = new RelativeLayout(context);
+        display_group.setLayerType(getLayerType(), null);
         display_group.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         display = new ImageView(context);
         display.setScaleType(ImageView.ScaleType.MATRIX);
-        display.setLayerType(LAYER_TYPE_HARDWARE, null);
+        display.setLayerType(getLayerType(), null);
 
         display_curtain = new ImageView(context);
         display_curtain.setScaleType(ImageView.ScaleType.MATRIX);
-        display_curtain.setLayerType(LAYER_TYPE_HARDWARE, null);
+        display_curtain.setLayerType(getLayerType(), null);
         display_curtain.setAlpha(0.0f);
 
         addView(display_group);
@@ -239,6 +240,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         display_group.setScaleY(1f);
         display_group.setPivotX(geometry.width/2);
         display_group.setPivotY(geometry.height/2);
+
         display_group.setX(0);
         display_group.setY(0);
     }
@@ -268,20 +270,25 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
 
                         // get normalised bitmaps
                         Bitmap block_pixels_bm = getVisibleImage(true);
+                        /*
                         Bitmap smooth_pixels_bm = null;
                         if (mandelbrot_transform.scale > 1.0f) {
                             smooth_pixels_bm = getVisibleImage(false);
                         }
+                        */
 
                         if (isCancelled()) return;
 
                         // display normalised bitmaps and update mandelbrot for new render
+                        /*
                         if (mandelbrot_transform.scale > 1.0f) {
                             setImageInstant(smooth_pixels_bm);
                             setImageFade(block_pixels_bm);
                         } else {
                             setImageInstant(block_pixels_bm);
                         }
+                        */
+                        setImageInstant(block_pixels_bm);
 
                         transformMandelbrot();
 
@@ -448,7 +455,7 @@ public class RenderCanvas_ImageView extends RenderCanvas_Base {
         Canvas canvas = new Canvas(bm);
         Paint paint = new Paint();
         paint.setFilterBitmap(!block_pixels);
-        paint.setAntiAlias(true);
+        paint.setAntiAlias(false);
         paint.setDither(bitmap_config == Bitmap.Config.RGB_565);
         Matrix matrix = new Matrix();
         matrix.setTranslate(-mandelbrot_transform.x, -mandelbrot_transform.y);

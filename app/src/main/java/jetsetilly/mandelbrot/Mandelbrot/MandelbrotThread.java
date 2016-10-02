@@ -1,6 +1,7 @@
 package jetsetilly.mandelbrot.Mandelbrot;
 
 import android.os.AsyncTask;
+import android.os.Process;
 import android.support.annotation.CallSuper;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -34,6 +35,7 @@ abstract public class MandelbrotThread extends AsyncTask<Void, Void, Void> {
     @WorkerThread
     @CallSuper
     protected Void doInBackground(Void... v) {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST);
         c.startPlot(canvas_id);
         return null;
     }

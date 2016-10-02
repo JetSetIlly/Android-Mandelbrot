@@ -29,7 +29,6 @@ public class MandelbrotActionBar extends Toolbar {
     }
 
     public void initialise(MainActivity context, String title) {
-        setLayerType(LAYER_TYPE_HARDWARE, null);
         status_bar = context.getWindow().getDecorView();
         setTitle(title);
 

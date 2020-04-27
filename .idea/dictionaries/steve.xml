@@ -1,22 +1,32 @@
 <component name="ProjectDictionaryState">
   <dictionary name="steve">
     <words>
+      <w>blocky</w>
+      <w>coords</w>
+      <w>denormalise</w>
       <w>doubletap</w>
       <w>hhmmss</w>
+      <w>horiz</w>
       <w>imag</w>
+      <w>mand</w>
       <w>noanim</w>
       <w>nofade</w>
       <w>pixelation</w>
       <w>rendermode</w>
       <w>seekbar</w>
+      <w>setdisplay</w>
       <w>showbitmap</w>
       <w>sunnydale</w>
+      <w>throbber</w>
       <w>topdown</w>
       <w>unpause</w>
+      <w>unpaused</w>
+      <w>unpausing</w>
       <w>untick</w>
       <w>vert</w>
       <w>vfast</w>
       <w>vslow</w>
+      <w>wibble</w>
       <w>yyyymmdd</w>
     </words>
   </dictionary>

@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         Settings.getInstance().save(this);
     }
 
+    @Override
     protected void onResume() {
         action_bar.enforceVisibility();
         super.onResume();

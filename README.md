@@ -1,2 +1,2 @@
 # Android-Mandelbrot
-Mandelbrot explorer for Android phones
+Mandelbrot explorer for Android phones. I created this as a way of learning about the Android platform. It has some nice features, including pinch zooming and palette changing. Nothing too fancy, just enough to get me used to the system. It will form a good base for someone to develop further. (I have noticed that the maths breaks down rather quickly so the first thing to fix should be that).
